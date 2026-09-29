@@ -101,6 +101,53 @@ class Transaction extends Model
                 $invoiceUpdates['paid_at'] = now();
             }
             $this->invoice->update($invoiceUpdates);
+
+            // Automatically activate pending subscription tied to this invoice
+            if ($targetStatus === 'PAID') {
+                $subscription = Subscription::where('invoice_id', $this->invoice->id)
+                    ->where('status', 'pending_payment')
+                    ->first();
+
+                if ($subscription) {
+                    $plan = $subscription->plan;
+                    $customer = $subscription->customer;
+                    $currentActive = $customer ? $customer->activeSubscription : null;
+
+                    $startsAt = now();
+                    $expiresAt = now()->addDays($plan->duration_days);
+
+                    if ($currentActive && $currentActive->id !== $subscription->id && $currentActive->expires_at->isFuture()) {
+                        $expiresAt = $currentActive->expires_at->copy()->addDays($plan->duration_days);
+                    }
+
+                    $subscription->update([
+                        'status' => 'active',
+                        'starts_at' => $startsAt,
+                        'expires_at' => $expiresAt,
+                        'grace_period_days' => 3,
+                        'auto_renew' => true,
+                    ]);
+
+                    SubscriptionHistory::create([
+                        'subscription_id' => $subscription->id,
+                        'customer_id' => $customer->id,
+                        'plan_id' => $plan->id,
+                        'event' => $currentActive ? 'upgraded' : 'created',
+                        'note' => "Pembayaran QRIS lunas untuk paket {$plan->name} ({$plan->duration_days} hari)",
+                        'amount_paid' => $this->amount,
+                    ]);
+
+                    AuditLog::record('SUBSCRIBE_PLAN_PAID', $subscription, null, [
+                        'plan' => $plan->name,
+                        'amount' => $this->amount,
+                        'invoice_id' => $this->invoice->id,
+                    ]);
+
+                    if ($customer && $customer->apiCredentials()->count() === 0) {
+                        ApiCredential::generateCredentials($customer->id, 'sandbox', 'Sandbox Key');
+                    }
+                }
+            }
         }
 
         // Record history

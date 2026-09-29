@@ -103,7 +103,7 @@ const submitReply = () => {
                         'rounded-3xl p-5 border cursor-pointer transition-all shadow-sm',
                         currentStatus === 'OPEN'
                             ? 'bg-blue-500/15 border-blue-500 ring-2 ring-blue-500/20'
-                            : 'bg-white dark:bg-slate-950 border-slate-200/80 dark:border-slate-800 hover:border-blue-400'
+                            : 'bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl border-slate-200/80 dark:border-slate-800 hover:border-blue-400'
                     ]"
                 >
                     <div class="flex items-center justify-between">
@@ -123,7 +123,7 @@ const submitReply = () => {
                         'rounded-3xl p-5 border cursor-pointer transition-all shadow-sm',
                         currentStatus === 'IN_PROGRESS'
                             ? 'bg-amber-500/15 border-amber-500 ring-2 ring-amber-500/20'
-                            : 'bg-white dark:bg-slate-950 border-slate-200/80 dark:border-slate-800 hover:border-amber-400'
+                            : 'bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl border-slate-200/80 dark:border-slate-800 hover:border-amber-400'
                     ]"
                 >
                     <div class="flex items-center justify-between">
@@ -143,7 +143,7 @@ const submitReply = () => {
                         'rounded-3xl p-5 border cursor-pointer transition-all shadow-sm',
                         currentStatus === 'RESOLVED'
                             ? 'bg-emerald-500/15 border-emerald-500 ring-2 ring-emerald-500/20'
-                            : 'bg-white dark:bg-slate-950 border-slate-200/80 dark:border-slate-800 hover:border-emerald-400'
+                            : 'bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl border-slate-200/80 dark:border-slate-800 hover:border-emerald-400'
                     ]"
                 >
                     <div class="flex items-center justify-between">
@@ -163,7 +163,7 @@ const submitReply = () => {
                         'rounded-3xl p-5 border cursor-pointer transition-all shadow-sm',
                         currentStatus === 'CLOSED'
                             ? 'bg-slate-500/15 border-slate-500 ring-2 ring-slate-500/20'
-                            : 'bg-white dark:bg-slate-950 border-slate-200/80 dark:border-slate-800 hover:border-slate-400'
+                            : 'bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl border-slate-200/80 dark:border-slate-800 hover:border-slate-400'
                     ]"
                 >
                     <div class="flex items-center justify-between">
@@ -178,7 +178,7 @@ const submitReply = () => {
             </div>
 
             <!-- Filter Tabs & Search -->
-            <div class="bg-white dark:bg-slate-950 p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div class="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
                     <button
                         type="button"
@@ -259,7 +259,7 @@ const submitReply = () => {
             </div>
 
             <!-- Tickets Table -->
-            <div class="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs">
                         <thead>

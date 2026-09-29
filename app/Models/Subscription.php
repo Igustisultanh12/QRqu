@@ -13,6 +13,7 @@ class Subscription extends Model
     protected $fillable = [
         'customer_id',
         'plan_id',
+        'invoice_id',
         'starts_at',
         'expires_at',
         'grace_period_days',
@@ -43,6 +44,11 @@ class Subscription extends Model
     public function histories()
     {
         return $this->hasMany(SubscriptionHistory::class);
+    }
+
+    public function invoice()
+    {
+        return $this->belongsTo(Invoice::class);
     }
 
     public function isActive(): bool

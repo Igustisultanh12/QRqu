@@ -26,16 +26,16 @@
 
             <!-- Heading -->
             <div>
-                <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Monitoring & Uji Coba Gateway</h1>
+                <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Monitoring & Uji Coba Gateway</h1>
                 <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    Pantau status koneksi DOKU, antrean worker webhook, dan uji coba pembayaran QRIS secara live produksi.
+                    Pantau status koneksi Gateway, antrean worker webhook, dan uji coba pembayaran QRIS secara live produksi.
                 </p>
             </div>
 
-            <!-- Health Cards (Romei Style) -->
+            <!-- Health Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Database -->
-                <div class="bg-white dark:bg-slate-950 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Database SQL</span>
                         <span class="w-2.5 h-2.5 rounded-full" :class="health.database ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'"></span>
@@ -45,7 +45,7 @@
                 </div>
 
                 <!-- Cache & Memory -->
-                <div class="bg-white dark:bg-slate-950 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cache & Memory</span>
                         <span class="w-2.5 h-2.5 rounded-full" :class="health.cache ? 'bg-emerald-500' : 'bg-rose-500'"></span>
@@ -54,10 +54,10 @@
                     <span class="text-[11px] text-slate-500 mt-0.5 block">Memory lock & caching ready</span>
                 </div>
 
-                <!-- DOKU Payment API -->
-                <div class="bg-white dark:bg-slate-950 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors">
+                <!-- Payment API -->
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">DOKU Gateway</span>
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Payment Gateway</span>
                         <span class="w-2.5 h-2.5 rounded-full" :class="health.doku_api ? 'bg-emerald-500' : 'bg-amber-500'"></span>
                     </div>
                     <div class="text-lg font-bold text-slate-900 dark:text-white mt-2">{{ health.doku_api ? 'Connected' : 'Simulation Mode' }}</div>
@@ -65,7 +65,7 @@
                 </div>
 
                 <!-- PHP Runtime -->
-                <div class="bg-white dark:bg-slate-950 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">PHP & Engine</span>
                         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
@@ -75,13 +75,13 @@
                 </div>
             </div>
 
-            <!-- GATEWAY TEST & WEBHOOK MONITORING (Romei 1 Exact Grid) -->
+            <!-- GATEWAY TEST & WEBHOOK MONITORING -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Uji Coba Gate Transaksi DOKU (Production Page) -->
-                <div class="bg-white dark:bg-slate-950 p-6 sm:p-7 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-5 transition-colors">
+                <!-- Uji Coba Gate Transaksi (Production Page) -->
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 sm:p-7 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-5 transition-colors">
                     <div>
-                        <h3 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">Uji Coba Gate Transaksi DOKU (Production Page)</h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Tembak langsung request pembuatan invoice live ke server DOKU untuk memastikan keabsahan *Signature* komersial.</p>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">Uji Coba Gate Transaksi Gateway</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Tembak langsung request pembuatan invoice live ke server gateway untuk memastikan keabsahan *Signature* komersial.</p>
                     </div>
 
                     <form @submit.prevent="runPaymentSimulation" class="space-y-4">

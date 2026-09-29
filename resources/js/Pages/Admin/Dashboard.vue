@@ -6,21 +6,21 @@
             <!-- Platform KPIs -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Subscription Revenue -->
-                <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
                     <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pendapatan Subscription QRqu</span>
                     <div class="text-2xl sm:text-3xl font-black text-indigo-600 dark:text-indigo-400 mt-2">{{ metrics.subscription_revenue_formatted }}</div>
                     <span class="text-xs text-slate-500 dark:text-slate-400 mt-2 block">Revenue murni biaya langganan paket</span>
                 </div>
 
                 <!-- Gross Transaction Volume -->
-                <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
                     <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Gross Transaction Value (GTV)</span>
                     <div class="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-2">{{ metrics.gross_transaction_value_formatted }}</div>
                     <span class="text-xs text-slate-500 dark:text-slate-400 mt-2 block">Total perputaran transaksi gateway</span>
                 </div>
 
                 <!-- Total Customers -->
-                <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
                     <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Pelanggan / Merchant</span>
                     <div class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-2">{{ metrics.total_customers }}</div>
                     <div class="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 mt-2">
@@ -31,7 +31,7 @@
                 </div>
 
                 <!-- Webhook Success Rate -->
-                <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
                     <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Webhook Success Rate</span>
                     <div class="text-2xl sm:text-3xl font-black text-teal-600 dark:text-teal-300 mt-2">{{ metrics.webhook_success_rate }}%</div>
                     <span class="text-xs text-slate-500 dark:text-slate-400 mt-2 block">Gagal: {{ metrics.webhook_failed_count }} tembakan</span>
@@ -40,19 +40,19 @@
 
             <!-- Volume & Transactions Summary -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
                     <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Transaksi Hari Ini</span>
                     <div class="text-2xl font-black text-slate-900 dark:text-white mt-2">{{ metrics.today_transactions }} transaksi</div>
                     <span class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-1 block">{{ metrics.today_volume_formatted }}</span>
                 </div>
 
-                <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
                     <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Transaksi Selesai</span>
                     <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2">{{ metrics.successful_transactions }} Transaksi Lunas</div>
                     <span class="text-xs text-slate-500 dark:text-slate-400 mt-1 block">Dari total {{ metrics.total_transactions }} invoice</span>
                 </div>
 
-                <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
                     <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pending & Gagal</span>
                     <div class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2">{{ metrics.pending_transactions }} Pending</div>
                     <span class="text-xs text-rose-600 dark:text-rose-400 font-semibold mt-1 block">{{ metrics.failed_transactions }} Gagal / Expired</span>
@@ -60,7 +60,7 @@
             </div>
 
             <!-- Visual Chart -->
-            <div class="bg-white dark:bg-slate-950 p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all">
+            <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all">
                 <div class="mb-6">
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white">Tren Transaksi Platform (14 Hari Terakhir)</h3>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Total volume dan jumlah invoice QRIS yang diproses sistem</p>
@@ -81,7 +81,7 @@
             </div>
 
             <!-- Recent Master Transactions -->
-            <div class="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm transition-all">
+            <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm transition-all">
                 <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                     <div>
                         <h3 class="text-lg font-bold text-slate-900 dark:text-white">Transaksi Sistem Terbaru</h3>

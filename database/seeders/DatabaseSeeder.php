@@ -51,7 +51,7 @@ class DatabaseSeeder extends Seeder
                 'api_limit' => 10000,
                 'rate_limit_rpm' => 60,
                 'webhook_limit' => 10000,
-                'features' => ['QRIS Dinamis', 'DOKU Direct Integration', 'Sandbox & Live Environment', 'Rate Limit 60 RPM'],
+                'features' => ['QRIS Dinamis', 'Direct Gateway Integration', 'Sandbox & Live Environment', 'Rate Limit 60 RPM'],
                 'status' => 'active',
             ]
         );

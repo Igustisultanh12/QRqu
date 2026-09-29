@@ -113,7 +113,7 @@ const submitStatusUpdate = () => {
                         'rounded-3xl p-5 border cursor-pointer transition-all shadow-sm',
                         currentStatus === 'verifikasi'
                             ? 'bg-amber-500/15 border-amber-500 ring-2 ring-amber-500/20'
-                            : 'bg-white dark:bg-slate-950 border-slate-200/80 dark:border-slate-800 hover:border-amber-400'
+                            : 'bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl border-slate-200/80 dark:border-slate-800 hover:border-amber-400'
                     ]"
                 >
                     <div class="flex items-center justify-between">
@@ -137,7 +137,7 @@ const submitStatusUpdate = () => {
                         'rounded-3xl p-5 border cursor-pointer transition-all shadow-sm',
                         currentStatus === 'proses'
                             ? 'bg-blue-500/15 border-blue-500 ring-2 ring-blue-500/20'
-                            : 'bg-white dark:bg-slate-950 border-slate-200/80 dark:border-slate-800 hover:border-blue-400'
+                            : 'bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl border-slate-200/80 dark:border-slate-800 hover:border-blue-400'
                     ]"
                 >
                     <div class="flex items-center justify-between">
@@ -161,7 +161,7 @@ const submitStatusUpdate = () => {
                         'rounded-3xl p-5 border cursor-pointer transition-all shadow-sm',
                         currentStatus === 'selesai'
                             ? 'bg-emerald-500/15 border-emerald-500 ring-2 ring-emerald-500/20'
-                            : 'bg-white dark:bg-slate-950 border-slate-200/80 dark:border-slate-800 hover:border-emerald-400'
+                            : 'bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl border-slate-200/80 dark:border-slate-800 hover:border-emerald-400'
                     ]"
                 >
                     <div class="flex items-center justify-between">
@@ -185,7 +185,7 @@ const submitStatusUpdate = () => {
                         'rounded-3xl p-5 border cursor-pointer transition-all shadow-sm',
                         currentStatus === 'all'
                             ? 'bg-indigo-500/15 border-indigo-500 ring-2 ring-indigo-500/20'
-                            : 'bg-white dark:bg-slate-950 border-slate-200/80 dark:border-slate-800 hover:border-indigo-400'
+                            : 'bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl border-slate-200/80 dark:border-slate-800 hover:border-indigo-400'
                     ]"
                 >
                     <div class="flex items-center justify-between">
@@ -204,7 +204,7 @@ const submitStatusUpdate = () => {
             </div>
 
             <!-- Filter & Search Controls -->
-            <div class="bg-white dark:bg-slate-950 p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
                 <!-- Status Filter Pills -->
                 <div class="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
                     <button
@@ -287,7 +287,7 @@ const submitStatusUpdate = () => {
             </div>
 
             <!-- Table of Settlements -->
-            <div class="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs">
                         <thead>

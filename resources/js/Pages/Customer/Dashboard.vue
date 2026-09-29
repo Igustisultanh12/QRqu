@@ -33,44 +33,44 @@
             </div>
 
             <!-- Active Subscription Alert Card -->
-            <div v-if="subscription" class="bg-gradient-to-r from-emerald-50 to-white dark:from-emerald-950/60 dark:to-slate-900 border border-emerald-200 dark:border-emerald-500/30 p-6 sm:p-8 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
+            <div v-if="subscription" class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl border border-emerald-500/30 p-6 sm:p-8 rounded-[2rem] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
                 <div>
                     <div class="flex items-center space-x-2">
-                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30">
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
                             {{ subscription.status }}
                         </span>
-                        <h2 class="text-xl font-bold text-slate-900 dark:text-white">{{ subscription.plan_name }}</h2>
+                        <h2 class="text-xl font-black text-slate-900 dark:text-white">{{ subscription.plan_name }}</h2>
                     </div>
                     <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                        Berlaku sampai: <strong class="text-slate-800 dark:text-slate-200">{{ subscription.expires_at }}</strong> (Sisa <span class="text-emerald-600 dark:text-emerald-400 font-semibold">{{ subscription.remaining_days }} hari</span>) • Kuota Transaksi: {{ subscription.transaction_limit }} • Limit Kecepatan: {{ subscription.rate_limit_rpm }} RPM
+                        Berlaku sampai: <strong class="text-slate-800 dark:text-slate-200">{{ subscription.expires_at }}</strong> (Sisa <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ subscription.remaining_days }} hari</span>) • Kuota Transaksi: {{ subscription.transaction_limit }} • Limit Kecepatan: {{ subscription.rate_limit_rpm }} RPM
                     </p>
                 </div>
-                <Link :href="route('customer.subscription.index')" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition shadow-md shrink-0">
-                    Perpanjang / Upgrade Paket
+                <Link :href="route('customer.subscription.index')" class="px-5 py-2.5 rounded-full bg-slate-950 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-bold text-xs tracking-tight transition shadow-sm active:scale-95 shrink-0">
+                    Perpanjang / Upgrade Paket →
                 </Link>
             </div>
 
-            <div v-else class="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-500/40 p-6 sm:p-8 rounded-3xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+            <div v-else class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl border border-amber-500/30 p-6 sm:p-8 rounded-[2rem] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
                 <div>
-                    <h2 class="text-lg font-bold text-amber-900 dark:text-amber-200">Belum Ada Subscription Aktif</h2>
-                    <p class="text-xs text-amber-700 dark:text-amber-300/80 mt-1">Pilih paket langganan untuk mulai menerima transaksi QRIS dan menggunakan API QRqu.</p>
+                    <h2 class="text-lg font-black text-slate-900 dark:text-white">Belum Ada Subscription Aktif</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pilih paket langganan untuk mulai menerima transaksi QRIS dan menggunakan API QRqu.</p>
                 </div>
-                <Link :href="route('customer.subscription.index')" class="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs transition shadow-md">
-                    Pilih Paket Langganan
+                <Link :href="route('customer.subscription.index')" class="px-5 py-2.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs tracking-tight transition shadow-lg shadow-orange-500/25 active:scale-95 shrink-0">
+                    Pilih Paket Langganan →
                 </Link>
             </div>
 
             <!-- KPI Metric Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Total Volume -->
-                <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
                     <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Volume Transaksi Lunas</span>
                     <div class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-2">{{ kpi.total_volume_formatted }}</div>
                     <span class="text-xs text-emerald-600 dark:text-emerald-400 mt-2 block font-medium">✓ Berhasil diselesaikan</span>
                 </div>
 
                 <!-- Total Transaksi -->
-                <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
                     <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Transaksi</span>
                     <div class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-2">{{ kpi.total_transactions }}</div>
                     <div class="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 mt-2">
@@ -81,14 +81,14 @@
                 </div>
 
                 <!-- API Today -->
-                <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
                     <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">API Request Hari Ini</span>
                     <div class="text-2xl sm:text-3xl font-black text-teal-600 dark:text-teal-300 mt-2">{{ kpi.api_today }}</div>
                     <span class="text-xs text-slate-500 dark:text-slate-400 mt-2 block">Bulan ini: {{ kpi.api_month }} hits</span>
                 </div>
 
                 <!-- Failed / Expired -->
-                <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
                     <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Gagal / Expired</span>
                     <div class="text-2xl sm:text-3xl font-black text-rose-600 dark:text-rose-400 mt-2">{{ kpi.failed_transactions }}</div>
                     <span class="text-xs text-slate-500 dark:text-slate-400 mt-2 block">Invoice batal atau kedaluwarsa</span>
@@ -96,7 +96,7 @@
             </div>
 
             <!-- Chart & Visual Summary -->
-            <div class="bg-white dark:bg-slate-950 p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all">
+            <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all">
                 <div class="flex items-center justify-between mb-6">
                     <div>
                         <h3 class="text-lg font-bold text-slate-900 dark:text-white">Aktivitas Transaksi (7 Hari Terakhir)</h3>
@@ -120,7 +120,7 @@
             </div>
 
             <!-- Recent Transactions Table -->
-            <div class="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm transition-all">
+            <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm transition-all">
                 <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                     <div>
                         <h3 class="text-lg font-bold text-slate-900 dark:text-white">Transaksi Terkini</h3>

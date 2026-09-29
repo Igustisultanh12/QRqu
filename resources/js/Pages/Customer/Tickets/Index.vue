@@ -99,9 +99,9 @@ const submitTicket = () => {
             </div>
 
             <!-- Form Buat Tiket Baru -->
-            <div class="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
+            <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
                 <div class="flex items-center space-x-3 mb-6">
-                    <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                    <div class="w-10 h-10 rounded-2xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
                     </div>
                     <div>
@@ -116,7 +116,7 @@ const submitTicket = () => {
                         <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Pilih Kategori Kendala</label>
                         <select
                             v-model="form.category"
-                            class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                             required
                         >
                             <option value="" disabled>-- Pilih Kategori Kendala --</option>
@@ -132,7 +132,7 @@ const submitTicket = () => {
                             v-model="form.subject"
                             type="text"
                             placeholder="Contoh: Pembayaran invoice INV-xxx status belum berubah atau kendala webhook"
-                            class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                         />
                         <span v-if="form.errors.subject" class="text-[11px] text-red-500 font-bold block">{{ form.errors.subject }}</span>
                     </div>
@@ -144,7 +144,7 @@ const submitTicket = () => {
                             v-model="form.description"
                             rows="4"
                             placeholder="Jelaskan kronologi kendala atau lampirkan nomor transaksi/invoice terkait secara lengkap..."
-                            class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                             required
                         ></textarea>
                         <span v-if="form.errors.description" class="text-[11px] text-red-500 font-bold block">{{ form.errors.description }}</span>
@@ -153,16 +153,16 @@ const submitTicket = () => {
                     <button
                         type="submit"
                         :disabled="form.processing"
-                        class="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 text-slate-950 font-bold rounded-xl text-xs transition-all shadow-md flex items-center gap-2"
+                        class="px-6 py-2.5 bg-slate-950 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 disabled:opacity-50 text-white dark:text-slate-950 font-bold rounded-full text-xs tracking-tight transition-all shadow-sm active:scale-95 flex items-center gap-2"
                     >
-                        <svg v-if="form.processing" class="animate-spin h-3.5 w-3.5 text-slate-950" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                        <svg v-if="form.processing" class="animate-spin h-3.5 w-3.5 text-white dark:text-slate-950" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
                         <span>{{ form.processing ? 'Mengirim Aduan...' : 'Submit Laporan Tiket' }}</span>
                     </button>
                 </form>
             </div>
 
             <!-- Riwayat Tiket Bantuan -->
-            <div class="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
+            <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">Riwayat Tiket Bantuan Anda</h3>
                 </div>

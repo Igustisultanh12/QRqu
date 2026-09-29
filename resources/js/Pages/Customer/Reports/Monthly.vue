@@ -104,7 +104,7 @@
             <!-- Ringkasan Statistik 4 Kolom: Berhasil vs Gagal -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Transaksi Berhasil -->
-                <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors duration-200">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors duration-200">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Transaksi Berhasil</span>
                         <span class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
@@ -121,7 +121,7 @@
                 </div>
 
                 <!-- Transaksi Gagal -->
-                <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors duration-200">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors duration-200">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Transaksi Gagal</span>
                         <span class="p-2 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20">
@@ -138,7 +138,7 @@
                 </div>
 
                 <!-- Transaksi Kedaluwarsa -->
-                <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors duration-200">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors duration-200">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kedaluwarsa (Expired)</span>
                         <span class="p-2 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
@@ -155,7 +155,7 @@
                 </div>
 
                 <!-- Rasio Sukses & Total Transaksi -->
-                <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors duration-200">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors duration-200">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tingkat Keberhasilan</span>
                         <span class="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20">
@@ -173,7 +173,7 @@
             </div>
 
             <!-- Tabel Daftar Rincian Transaksi Bulanan -->
-            <div class="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden transition-colors duration-200">
+            <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden transition-colors duration-200">
                 <!-- Filter & Search Bar -->
                 <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/50 dark:bg-transparent">
                     <div class="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">

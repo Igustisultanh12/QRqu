@@ -4,7 +4,7 @@
 
         <div class="space-y-6">
             <!-- Create Plan Form -->
-            <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors duration-200">
+            <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors duration-200">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h3 class="text-base font-bold text-slate-900 dark:text-white">Buat Paket Berlangganan Baru</h3>
@@ -98,7 +98,7 @@
                         <button
                             type="submit"
                             :disabled="form.processing"
-                            class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-md flex items-center justify-center gap-1.5"
+                            class="w-full py-2.5 px-4 rounded-full bg-slate-950 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-bold text-xs tracking-tight transition shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
                         >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                             <span>{{ form.processing ? 'Menyimpan...' : 'Tambah Paket' }}</span>
@@ -108,7 +108,7 @@
             </div>
 
             <!-- Existing Plans Table -->
-            <div class="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden transition-colors duration-200">
+            <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden transition-colors duration-200">
                 <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                     <div>
                         <h3 class="text-base font-bold text-slate-900 dark:text-white">Daftar Paket Langganan</h3>

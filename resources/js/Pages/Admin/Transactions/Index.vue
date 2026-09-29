@@ -5,19 +5,19 @@
                 <span>Master Transaksi Gateway</span>
                 <span v-if="hasPendingTransactions" class="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-3 py-1 rounded-full border border-amber-200 dark:border-amber-500/30">
                     <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                    <span>Live Monitoring DOKU (Auto-Sync)</span>
+                    <span>Live Monitoring Gateway (Auto-Sync)</span>
                 </span>
             </div>
         </template>
 
         <div class="space-y-6">
             <!-- Filter Bar -->
-            <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors duration-200">
+            <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors duration-200">
                 <form @submit.prevent="applyFilters" class="flex flex-wrap items-center gap-3">
                     <input
                         v-model="filterForm.search"
                         type="text"
-                        placeholder="Cari TRX / Invoice / DOKU Ref..."
+                        placeholder="Cari TRX / Invoice / Gateway Ref..."
                         class="px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 w-full sm:w-64"
                     />
 
@@ -45,7 +45,7 @@
 
                     <button
                         type="submit"
-                        class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition shadow-sm"
+                        class="px-5 py-2.5 rounded-full bg-slate-950 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-bold text-xs tracking-tight transition shadow-sm active:scale-95"
                     >
                         Filter
                     </button>
@@ -54,21 +54,21 @@
                         type="button"
                         @click="syncAll"
                         :disabled="isSyncingAll"
-                        class="px-4 py-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30 font-semibold text-xs transition flex items-center justify-center space-x-1.5 ml-auto"
-                        title="Periksa status transaksi PENDING ke server DOKU sekarang"
+                        class="px-4 py-2.5 rounded-full bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30 font-semibold text-xs transition flex items-center justify-center space-x-1.5 ml-auto"
+                        title="Periksa status transaksi PENDING ke server gateway sekarang"
                     >
                         <svg v-if="isSyncingAll" class="animate-spin h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                         </svg>
                         <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                        <span>{{ isSyncingAll ? 'Mengecek...' : '🔄 Sinkron DOKU' }}</span>
+                        <span>{{ isSyncingAll ? 'Mengecek...' : '🔄 Sinkron Gateway' }}</span>
                     </button>
                 </form>
             </div>
 
             <!-- Master Table -->
-            <div class="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden transition-colors duration-200">
+            <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden transition-colors duration-200">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs">
                         <thead class="bg-slate-50/80 dark:bg-slate-900/60 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-800">
@@ -77,7 +77,7 @@
                                 <th class="p-4">Merchant / Customer</th>
                                 <th class="p-4">Nominal</th>
                                 <th class="p-4">Status</th>
-                                <th class="p-4">DOKU Ref</th>
+                                <th class="p-4">Gateway Ref</th>
                                 <th class="p-4">Waktu</th>
                                 <th class="p-4 text-right">Aksi</th>
                             </tr>

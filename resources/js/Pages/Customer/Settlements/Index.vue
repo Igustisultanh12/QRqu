@@ -137,7 +137,7 @@ const submitWithdrawal = () => {
                 <button
                     @click="openModal"
                     type="button"
-                    class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 active:scale-95 transition-all"
+                    class="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-slate-950 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-bold text-xs tracking-tight shadow-sm active:scale-95 transition-all shrink-0"
                 >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     <span>Ajukan Tarik Saldo</span>
@@ -163,7 +163,7 @@ const submitWithdrawal = () => {
                 </div>
 
                 <!-- Total Income -->
-                <div class="bg-white dark:bg-slate-950 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">Total Pendapatan</span>
                         <div class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
@@ -179,7 +179,7 @@ const submitWithdrawal = () => {
                 </div>
 
                 <!-- Pending Withdrawal -->
-                <div class="bg-white dark:bg-slate-950 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider font-mono">Diproses / Verifikasi</span>
                         <div class="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
@@ -195,7 +195,7 @@ const submitWithdrawal = () => {
                 </div>
 
                 <!-- Total Withdrawn -->
-                <div class="bg-white dark:bg-slate-950 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">Berhasil Dicairkan</span>
                         <div class="w-8 h-8 rounded-xl bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center">
@@ -212,7 +212,7 @@ const submitWithdrawal = () => {
             </div>
 
             <!-- Settlement History Table -->
-            <div class="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
                 <div class="p-6 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
                     <div>
                         <h2 class="text-base font-bold text-slate-900 dark:text-white">Riwayat Pengajuan Penarikan Dana</h2>
@@ -456,7 +456,7 @@ const submitWithdrawal = () => {
                         <button
                             type="submit"
                             :disabled="form.processing"
-                            class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-slate-950 font-bold text-xs shadow-md disabled:opacity-50 transition-all flex items-center gap-1.5"
+                            class="px-6 py-2.5 rounded-full bg-slate-950 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-bold text-xs tracking-tight shadow-sm active:scale-95 disabled:opacity-50 transition-all flex items-center gap-1.5"
                         >
                             <svg v-if="form.processing" class="animate-spin h-3.5 w-3.5 text-slate-950" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
                             <span>{{ form.processing ? 'Mengirim Pengajuan...' : 'Kirim Pengajuan' }}</span>

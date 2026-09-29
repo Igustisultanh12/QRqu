@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Customer;
 use App\Models\Plan;
+use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -102,7 +103,14 @@ class RegistrationVerificationAndSubscriptionLockTest extends TestCase
 
         $subRes = $this->actingAs($user)->post("/subscription/{$plan->id}/subscribe");
         $subRes->assertRedirect();
-        $subRes->assertSessionHas('success');
+
+        $subscription = Subscription::where('customer_id', $customer->id)->latest()->first();
+        $this->assertNotNull($subscription);
+        $this->assertEquals('pending_payment', $subscription->status);
+
+        // Simulasi pembayaran QRIS untuk mengaktifkan paket langganan
+        $simRes = $this->postJson("/checkout/{$subscription->invoice_id}/simulate");
+        $simRes->assertStatus(200);
 
         $this->assertTrue($customer->fresh()->hasActiveSubscription());
 

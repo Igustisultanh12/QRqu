@@ -10,16 +10,16 @@
                         { id: 'general', label: 'Umum & Platform', icon: 'platform' },
                         { id: 'api', label: 'Operasional API', icon: 'api' },
                         { id: 'pricing', label: 'Harga & Kuota Bulanan', icon: 'pricing' },
-                        { id: 'doku', label: 'DOKU Gateway API', icon: 'doku' },
+                        { id: 'doku', label: 'Gateway API', icon: 'doku' },
                         { id: 'mail', label: 'Mail Gateway (SMTP)', icon: 'mail' },
                     ]"
                     :key="tab.id"
                     @click="activeTab = tab.id"
                     :class="[
-                        'px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2',
+                        'px-4 py-2 rounded-full text-xs font-bold transition flex items-center gap-2',
                         activeTab === tab.id
-                            ? 'bg-indigo-600 text-white shadow-md'
-                            : 'bg-white dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            ? 'bg-slate-950 text-white dark:bg-white dark:text-slate-950 shadow-md'
+                            : 'bg-white/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
                     ]"
                 >
                     {{ tab.label }}
@@ -30,7 +30,7 @@
             <form @submit.prevent="submitSettings" class="space-y-6">
 
                 <!-- TAB 1: UMUM & PLATFORM -->
-                <div v-show="activeTab === 'general'" class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6 transition-colors duration-200">
+                <div v-show="activeTab === 'general'" class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6 transition-colors duration-200">
                     <div>
                         <h3 class="text-base font-bold text-slate-900 dark:text-white">Identitas Platform & Lokalisasi</h3>
                         <p class="text-xs text-slate-500 dark:text-slate-400">Atur nama aplikasi, mata uang, zona waktu, dan mode pemeliharaan platform.</p>
@@ -96,7 +96,7 @@
                 </div>
 
                 <!-- TAB 2: OPERASIONAL API -->
-                <div v-show="activeTab === 'api'" class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6 transition-colors duration-200">
+                <div v-show="activeTab === 'api'" class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6 transition-colors duration-200">
                     <div>
                         <h3 class="text-base font-bold text-slate-900 dark:text-white">Parameter & Protokol API Gateway</h3>
                         <p class="text-xs text-slate-500 dark:text-slate-400">Atur batas waktu invoice, toleransi header keamanan HMAC, dan kuota retry webhook merchant.</p>
@@ -168,7 +168,7 @@
                 </div>
 
                 <!-- TAB 3: HARGA & KUOTA BULANAN -->
-                <div v-show="activeTab === 'pricing'" class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6 transition-colors duration-200">
+                <div v-show="activeTab === 'pricing'" class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6 transition-colors duration-200">
                     <div>
                         <h3 class="text-base font-bold text-slate-900 dark:text-white">Standar Paket & Kuota Bulanan Merchant</h3>
                         <p class="text-xs text-slate-500 dark:text-slate-400">Tentukan harga langganan default dan kuota transaksi yang dialokasikan per bulan untuk merchant.</p>
@@ -183,7 +183,7 @@
                                 required
                                 min="0"
                                 step="5000"
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-sm font-black text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 font-mono"
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-300 dark:border-slate-700 text-sm font-black text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 font-mono"
                             />
                             <div class="text-xs font-bold text-indigo-600 dark:text-indigo-400 pt-1">
                                 Rp {{ Number(form.monthly_price || 0).toLocaleString('id-ID') }} / bulan
@@ -198,7 +198,7 @@
                                 type="number"
                                 required
                                 min="1"
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-sm font-black text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 font-mono"
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-300 dark:border-slate-700 text-sm font-black text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 font-mono"
                             />
                             <div class="text-xs font-bold text-indigo-600 dark:text-indigo-400 pt-1">
                                 {{ Number(form.monthly_quota || 0).toLocaleString('id-ID') }} transaksi / bulan
@@ -209,7 +209,7 @@
                 </div>
 
                 <!-- TAB 4: DOKU PAYMENT GATEWAY API -->
-                <div v-show="activeTab === 'doku'" class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6 transition-colors duration-200">
+                <div v-show="activeTab === 'doku'" class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6 transition-colors duration-200">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h3 class="text-base font-bold text-slate-900 dark:text-white">Integrasi DOKU Payment Gateway</h3>
@@ -303,7 +303,7 @@
                 </div>
 
                 <!-- TAB 5: MAIL GATEWAY (SMTP) -->
-                <div v-show="activeTab === 'mail'" class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6 transition-colors duration-200">
+                <div v-show="activeTab === 'mail'" class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6 transition-colors duration-200">
                     <div>
                         <h3 class="text-base font-bold text-slate-900 dark:text-white">Konfigurasi Mail Gateway (SMTP)</h3>
                         <p class="text-xs text-slate-500 dark:text-slate-400">Pengaturan server email transaksi untuk notifikasi pendaftaran, laporan, dan tagihan invoice.</p>
@@ -433,7 +433,7 @@
                     <button
                         type="submit"
                         :disabled="form.processing"
-                        class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold text-xs rounded-xl transition shadow-md flex items-center gap-2"
+                        class="px-6 py-2.5 bg-slate-950 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 disabled:opacity-50 text-white dark:text-slate-950 font-bold text-xs rounded-full transition shadow-sm active:scale-95 flex items-center gap-2"
                     >
                         <svg v-if="form.processing" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                         {{ form.processing ? 'Menyimpan...' : 'Simpan Semua Pengaturan' }}
