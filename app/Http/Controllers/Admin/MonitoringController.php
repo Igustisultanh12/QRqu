@@ -7,6 +7,7 @@ use App\Models\AuditLog;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Transaction;
+use App\Models\User;
 use App\Models\WebhookDelivery;
 use App\Services\Payment\Doku\DokuService;
 use Illuminate\Http\JsonResponse;
@@ -73,17 +74,48 @@ class MonitoringController extends Controller
                 $amount = 1000;
             }
 
-            $user = auth()->user();
-            $customer = $user->customer ?? Customer::where('user_id', $user->id)->first();
+            // Dapatkan user aktif dari session atau fallback ke admin user pertama
+            $user = auth()->user() ?? User::where('role', 'admin')->first() ?? User::first();
+            $userId = $user?->id;
+            $userEmail = $user?->email ?? 'admin@qrqu.id';
+            $userName = $user?->name ?? 'Master Administrator';
+
+            // Dapatkan customer terdaftar atau buat profil customer internal
+            $customer = null;
+            if ($user && method_exists($user, 'customer')) {
+                $customer = $user->customer;
+            }
+            if (!$customer && $userId) {
+                $customer = Customer::where('user_id', $userId)->first();
+            }
             if (!$customer) {
+                $customer = Customer::where('email', $userEmail)->first() ?? Customer::first();
+            }
+
+            if (!$customer) {
+                if (!$user) {
+                    $user = User::firstOrCreate(
+                        ['email' => 'admin@qrqu.id'],
+                        [
+                            'name' => 'Master Administrator',
+                            'password' => bcrypt(Str::random(16)),
+                            'role' => 'admin',
+                            'status' => 'active',
+                        ]
+                    );
+                    $userId = $user->id;
+                    $userName = $user->name;
+                    $userEmail = $user->email;
+                }
+
                 $customer = Customer::firstOrCreate(
-                    ['email' => $user->email ?? 'admin@qrqu.id'],
+                    ['email' => $userEmail],
                     [
-                        'user_id' => $user->id,
-                        'name' => $user->name ?? 'Admin Tester',
+                        'user_id' => $userId,
+                        'name' => $userName,
                         'company_name' => 'QRqu Platform',
                         'phone' => '081234567890',
-                        'status' => 'ACTIVE',
+                        'status' => 'active',
                     ]
                 );
             }
@@ -96,9 +128,9 @@ class MonitoringController extends Controller
                 'external_id' => $externalId,
                 'amount' => $amount,
                 'description' => 'Uji Coba Gate Transaksi DOKU (Production Page)',
-                'customer_name' => $user->name ?? 'Admin Tester',
-                'customer_email' => $user->email ?? 'admin@qrqu.id',
-                'customer_phone' => '081234567890',
+                'customer_name' => $customer->name ?? $userName,
+                'customer_email' => $customer->email ?? $userEmail,
+                'customer_phone' => $customer->phone ?? '081234567890',
                 'status' => 'PENDING',
                 'expired_at' => now()->addMinutes(60),
                 'callback_url' => url('/dashboard'),
@@ -120,11 +152,17 @@ class MonitoringController extends Controller
                 $invoice->update(['qr_url' => $paymentUrl, 'qr_string' => $dokuResult['qr_string'] ?? null]);
                 Cache::put('payment_status_' . $invoiceId, 'PENDING', 600);
 
-                AuditLog::record('TEST_PAYMENT_CREATED', $user, null, [
-                    'invoice_id' => $invoiceId,
-                    'amount' => $amount,
-                    'payment_url' => $paymentUrl,
-                ]);
+                AuditLog::record(
+                    'TEST_PAYMENT_CREATED',
+                    $user,
+                    null,
+                    [
+                        'invoice_id' => $invoiceId,
+                        'amount' => $amount,
+                        'payment_url' => $paymentUrl,
+                    ],
+                    $userId
+                );
 
                 return response()->json([
                     'status'      => 'success',

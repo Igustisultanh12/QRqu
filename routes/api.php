@@ -32,7 +32,7 @@ Route::post('/v1/callback/doku', [DokuWebhookController::class, 'handleQrisCallb
 | ADMIN MONITORING & GATEWAY LIVE TEST (Protokol Romei 1)
 |--------------------------------------------------------------------------
 */
-Route::prefix('admin/monitoring')->group(function () {
+Route::prefix('admin/monitoring')->middleware(['web'])->group(function () {
     Route::post('/test-payment', [\App\Http\Controllers\Admin\MonitoringController::class, 'testPayment'])->name('api.admin.monitoring.test-payment');
     Route::get('/check-status/{invoice_id}', [\App\Http\Controllers\Admin\MonitoringController::class, 'checkStatus'])->name('api.admin.monitoring.check-status');
     Route::post('/simulate/{invoice_id}', [\App\Http\Controllers\Admin\MonitoringController::class, 'simulatePayment'])->name('api.admin.monitoring.simulate');

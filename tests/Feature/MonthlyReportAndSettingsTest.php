@@ -402,4 +402,22 @@ class MonthlyReportAndSettingsTest extends TestCase
             'is_paid' => true,
         ]);
     }
+
+    public function test_admin_monitoring_test_payment_succeeds_even_when_unauthenticated(): void
+    {
+        $response = $this->postJson('/api/admin/monitoring/test-payment', [
+            'amount' => 5000,
+            'payment_method' => 'qris',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'status' => 'success',
+            'success' => true,
+        ]);
+
+        $this->assertNotEmpty($response->json('invoice_id'));
+        $this->assertNotEmpty($response->json('payment_url'));
+    }
 }
+

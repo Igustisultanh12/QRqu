@@ -133,4 +133,7 @@ Route::middleware(['auth', EnsureAdmin::class])->prefix('admin')->name('admin.')
 
     // Monitoring & Health
     Route::get('/monitoring', [Admin\MonitoringController::class, 'index'])->name('monitoring.index');
+    Route::post('/monitoring/test-payment', [Admin\MonitoringController::class, 'testPayment'])->name('monitoring.test-payment');
+    Route::get('/monitoring/check-status/{invoice_id}', [Admin\MonitoringController::class, 'checkStatus'])->name('monitoring.check-status');
+    Route::post('/monitoring/simulate/{invoice_id}', [Admin\MonitoringController::class, 'simulatePayment'])->name('monitoring.simulate');
 });
