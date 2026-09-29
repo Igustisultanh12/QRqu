@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
+use App\Services\Payment\Doku\DokuService;
+use App\Services\Webhook\CustomerWebhookService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -53,7 +56,7 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function show(Request $request, Transaction $transaction): Response
+    public function show(Request $request, Transaction $transaction, DokuService $dokuService, CustomerWebhookService $webhookService): Response
     {
         $user = $request->user();
         $customer = $user->customer;
@@ -61,11 +64,38 @@ class TransactionController extends Controller
             abort(403);
         }
 
+        // Jika transaksi masih PENDING, sinkronkan otomatis ke server DOKU live
+        if ($transaction->status === 'PENDING') {
+            $dokuService->syncTransactionWithDoku($transaction, $webhookService);
+            $transaction->refresh();
+        }
+
         $transaction->load(['invoice', 'statusHistories', 'dokuTransaction']);
 
         return Inertia::render('Customer/Transactions/Show', [
             'transaction' => $transaction,
         ]);
+    }
+
+    public function syncStatus(Request $request, Transaction $transaction, DokuService $dokuService, CustomerWebhookService $webhookService)
+    {
+        $user = $request->user();
+        $customer = $user->customer;
+        if (!$user->isAdmin() && (!$customer || $transaction->customer_id !== $customer->id)) {
+            abort(403);
+        }
+
+        $result = $dokuService->syncTransactionWithDoku($transaction, $webhookService);
+
+        if ($request->wantsJson()) {
+            return response()->json($result);
+        }
+
+        if ($result['is_paid']) {
+            return redirect()->back()->with('success', "Pembayaran BERHASIL diverifikasi DOKU! Ref: {$result['doku_reference']}. Status transaksi kini LUNAS.");
+        }
+
+        return redirect()->back()->with('info', $result['message']);
     }
 
     public function simulate(Request $request, Transaction $transaction, \App\Services\Webhook\CustomerWebhookService $webhookService): RedirectResponse

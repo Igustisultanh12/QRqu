@@ -94,6 +94,33 @@ class CheckoutController extends Controller
             Cache::put('payment_status_' . $invoiceId, 'EXPIRED', 300);
         }
 
+        // Active verify with DOKU (Mengikuti alur monitoring gateway yang otomatis deteksi lunas)
+        if ($invoice->status === 'PENDING') {
+            $throttleKey = 'doku_verify_throttle_' . $invoice->id;
+            if (!Cache::has($throttleKey)) {
+                Cache::put($throttleKey, true, 2);
+                try {
+                    $transaction = $invoice->latestTransaction;
+                    if ($transaction) {
+                        $dokuService = app(\App\Services\Payment\Doku\DokuService::class);
+                        $webhookService = app(\App\Services\Webhook\CustomerWebhookService::class);
+                        $result = $dokuService->syncTransactionWithDoku($transaction, $webhookService);
+
+                        if ($result['is_paid']) {
+                            return response()->json([
+                                'status' => 'PAID',
+                                'is_paid' => true,
+                                'doku_reference' => $result['doku_reference'] ?? $transaction->fresh()->doku_reference,
+                                'paid_at' => now()->toIso8601String(),
+                            ]);
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning("Checkout status DOKU active check error: " . $e->getMessage());
+                }
+            }
+        }
+
         return response()->json([
             'status' => $invoice->status,
             'is_paid' => $invoice->status === 'PAID',

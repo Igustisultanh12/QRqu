@@ -217,21 +217,20 @@ class MonitoringController extends Controller
                 ]);
             }
 
-            // Verify with DOKU
-            $dokuStatus = $dokuService->verifyPayment($invoice->id);
-            if (isset($dokuStatus['transaction']['status']) && strtoupper($dokuStatus['transaction']['status']) === 'SUCCESS') {
-                $invoice->update(['status' => 'PAID', 'paid_at' => now()]);
-                $transaction = $invoice->latestTransaction;
-                if ($transaction) {
-                    $transaction->update(['status' => 'PAID']);
+            // Verify with DOKU using unified sync
+            $transaction = $invoice->latestTransaction;
+            if ($transaction) {
+                $webhookService = app(\App\Services\Webhook\CustomerWebhookService::class);
+                $result = $dokuService->syncTransactionWithDoku($transaction, $webhookService);
+                if ($result['is_paid']) {
+                    Cache::put('payment_status_' . $invoiceId, 'SUCCESS', 300);
+                    return response()->json([
+                        'status' => 'success',
+                        'payment_status' => 'SUCCESS',
+                        'is_paid' => true,
+                        'doku_reference' => $result['doku_reference'] ?? $transaction->fresh()->doku_reference,
+                    ]);
                 }
-                Cache::put('payment_status_' . $invoiceId, 'SUCCESS', 300);
-
-                return response()->json([
-                    'status' => 'success',
-                    'payment_status' => 'SUCCESS',
-                    'is_paid' => true,
-                ]);
             }
         }
 

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Customer;
 use App\Models\Transaction;
+use App\Services\Payment\Doku\DokuService;
+use App\Services\Webhook\CustomerWebhookService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -53,13 +55,34 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function show(Transaction $transaction): Response
+    public function show(Transaction $transaction, DokuService $dokuService, CustomerWebhookService $webhookService): Response
     {
+        // Jika transaksi masih PENDING, sinkronkan otomatis ke server DOKU live
+        if ($transaction->status === 'PENDING') {
+            $dokuService->syncTransactionWithDoku($transaction, $webhookService);
+            $transaction->refresh();
+        }
+
         $transaction->load(['customer', 'invoice', 'statusHistories', 'dokuTransaction']);
 
         return Inertia::render('Admin/Transactions/Show', [
             'transaction' => $transaction,
         ]);
+    }
+
+    public function syncStatus(Request $request, Transaction $transaction, DokuService $dokuService, CustomerWebhookService $webhookService)
+    {
+        $result = $dokuService->syncTransactionWithDoku($transaction, $webhookService);
+
+        if ($request->wantsJson()) {
+            return response()->json($result);
+        }
+
+        if ($result['is_paid']) {
+            return redirect()->back()->with('success', "Pembayaran BERHASIL diverifikasi DOKU! Ref: {$result['doku_reference']}. Status transaksi kini LUNAS.");
+        }
+
+        return redirect()->back()->with('info', $result['message']);
     }
 
     public function cancel(Request $request, Transaction $transaction): RedirectResponse

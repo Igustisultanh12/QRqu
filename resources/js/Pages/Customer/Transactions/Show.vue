@@ -24,6 +24,23 @@
                         {{ transaction.status }}
                     </span>
 
+                    <!-- Tombol Sinkron Status Langsung ke Server DOKU -->
+                    <button
+                        v-if="transaction.status === 'PENDING'"
+                        @click="syncDokuStatus"
+                        :disabled="isSyncing"
+                        type="button"
+                        class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition flex items-center justify-center space-x-1.5 shadow-sm"
+                        title="Cek langsung status pembayaran ke server resmi DOKU"
+                    >
+                        <svg v-if="isSyncing" class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                        </svg>
+                        <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        <span>{{ isSyncing ? 'Mengecek DOKU...' : '🔄 Sinkron Status DOKU' }}</span>
+                    </button>
+
                     <!-- Prioritas Utama: Buka Halaman DOKU Resmi jika URL DOKU tersedia -->
                     <a
                         v-if="dokuCheckoutUrl"
@@ -47,7 +64,7 @@
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                         </svg>
                         <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                        <span>{{ isSimulating ? 'Memproses...' : '⚡ Simulasi Bayar Lunas (Testing)' }}</span>
+                        <span>{{ isSimulating ? 'Memproses...' : '⚡ Simulasi Lunas' }}</span>
                     </button>
 
                     <a
@@ -69,18 +86,33 @@
                     <div>
                         <span class="font-bold text-amber-800 dark:text-amber-300">Status Transaksi Menunggu Pembayaran (PENDING):</span>
                         <p class="text-[11px] text-amber-700 dark:text-amber-300/90 mt-0.5 leading-relaxed">
-                            Pelanggan belum scan atau mentransfer dana QRIS. Jika Anda sedang mengetes alur checkout Romei, klik tombol <strong>"Simulasi Bayar Lunas"</strong> untuk otomatis mengubah status menjadi <strong>PAID</strong> dan menembakkan notifikasi webhook lunas ke platform Romei.
+                            Pelanggan belum scan atau mentransfer dana QRIS. Jika Anda sudah bayar di DOKU tapi belum update, klik <strong>"Cek Status DOKU"</strong>. Untuk keperluan simulasi testing, klik <strong>"⚡ Lunaskan"</strong>.
                         </p>
                     </div>
                 </div>
-                <button
-                    @click="simulatePayment"
-                    :disabled="isSimulating"
-                    type="button"
-                    class="w-full sm:w-auto shrink-0 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition shadow-sm text-center"
-                >
-                    {{ isSimulating ? 'Memproses...' : '⚡ Lunaskan Sekarang' }}
-                </button>
+                <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                    <button
+                        @click="syncDokuStatus"
+                        :disabled="isSyncing"
+                        type="button"
+                        class="flex-1 sm:flex-initial px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition shadow-sm text-center flex items-center justify-center gap-1.5"
+                    >
+                        <svg v-if="isSyncing" class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                        </svg>
+                        <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        <span>{{ isSyncing ? 'Mengecek...' : 'Cek Status DOKU' }}</span>
+                    </button>
+                    <button
+                        @click="simulatePayment"
+                        :disabled="isSimulating"
+                        type="button"
+                        class="flex-1 sm:flex-initial px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition shadow-sm text-center"
+                    >
+                        {{ isSimulating ? 'Memproses...' : '⚡ Lunaskan' }}
+                    </button>
+                </div>
             </div>
 
             <!-- Details Grid -->
@@ -95,7 +127,19 @@
                         </div>
                         <div class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800/80">
                             <span class="text-slate-500 dark:text-slate-400">DOKU Reference</span>
-                            <span class="text-emerald-600 dark:text-emerald-400 font-mono font-semibold">{{ transaction.doku_reference || 'N/A' }}</span>
+                            <span class="font-mono font-semibold">
+                                <template v-if="transaction.doku_reference">
+                                    <span class="text-emerald-600 dark:text-emerald-400">{{ transaction.doku_reference }}</span>
+                                </template>
+                                <template v-else-if="transaction.status === 'PENDING'">
+                                    <span class="text-amber-500 dark:text-amber-400 font-sans text-[11px] font-normal italic">
+                                        ⏳ Belum Terbit (Menunggu Pembayaran)
+                                    </span>
+                                </template>
+                                <template v-else>
+                                    <span class="text-slate-400">N/A</span>
+                                </template>
+                            </span>
                         </div>
                         <div class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800/80">
                             <span class="text-slate-500 dark:text-slate-400">DOKU Request ID</span>
@@ -161,8 +205,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { router } from '@inertiajs/vue3';
+import axios from 'axios';
 import CustomerLayout from '@/Layouts/CustomerLayout.vue';
 
 const props = defineProps({
@@ -170,6 +215,8 @@ const props = defineProps({
 });
 
 const isSimulating = ref(false);
+const isSyncing = ref(false);
+let pollTimer = null;
 
 const dokuCheckoutUrl = computed(() => {
     const url = props.transaction?.invoice?.qr_url || props.transaction?.doku_transaction?.doku_url;
@@ -179,6 +226,16 @@ const dokuCheckoutUrl = computed(() => {
     return null;
 });
 
+const syncDokuStatus = () => {
+    isSyncing.value = true;
+    router.post(route('customer.transactions.sync', props.transaction.id), {}, {
+        preserveScroll: true,
+        onFinish: () => {
+            isSyncing.value = false;
+        }
+    });
+};
+
 const simulatePayment = () => {
     isSimulating.value = true;
     router.post(route('customer.transactions.simulate', props.transaction.id), {}, {
@@ -187,4 +244,30 @@ const simulatePayment = () => {
         }
     });
 };
+
+onMounted(() => {
+    if (props.transaction?.status === 'PENDING' && props.transaction?.invoice_id) {
+        pollTimer = setInterval(async () => {
+            try {
+                const res = await axios.get(route('checkout.status', props.transaction.invoice_id));
+                if (res.data?.is_paid || res.data?.status === 'PAID') {
+                    if (pollTimer) {
+                        clearInterval(pollTimer);
+                        pollTimer = null;
+                    }
+                    router.reload({ preserveScroll: true });
+                }
+            } catch (e) {
+                // background poll silent catch
+            }
+        }, 4000);
+    }
+});
+
+onUnmounted(() => {
+    if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+    }
+});
 </script>

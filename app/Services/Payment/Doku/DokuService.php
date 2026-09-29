@@ -5,6 +5,7 @@ namespace App\Services\Payment\Doku;
 use App\Contracts\PaymentGatewayInterface;
 use App\Models\DokuTransaction;
 use App\Models\SystemSetting;
+use App\Models\Transaction;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -199,6 +200,94 @@ class DokuService implements PaymentGatewayInterface
             return $response->json() ?? ['status' => 'OK'];
         } catch (\Exception $e) {
             return ['status' => 'ERROR', 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Verifikasi status transaksi ke DOKU dan sinkronkan jika sudah dibayar
+     */
+    public function syncTransactionWithDoku(Transaction $transaction, ?\App\Services\Webhook\CustomerWebhookService $webhookService = null): array
+    {
+        if (in_array(strtoupper($transaction->status), ['PAID', 'SUCCESS'], true)) {
+            return [
+                'success' => true,
+                'is_paid' => true,
+                'status' => 'PAID',
+                'doku_reference' => $transaction->doku_reference,
+                'message' => 'Transaksi sudah berstatus lunas sebelumnya.',
+            ];
+        }
+
+        $invoice = $transaction->invoice;
+        if (!$invoice) {
+            return [
+                'success' => false,
+                'is_paid' => false,
+                'status' => $transaction->status,
+                'message' => 'Invoice transaksi tidak ditemukan.',
+            ];
+        }
+
+        try {
+            $dokuStatus = $this->verifyPayment($invoice->id);
+            $statusUpper = strtoupper($dokuStatus['transaction']['status'] ?? $dokuStatus['status'] ?? '');
+
+            if (in_array($statusUpper, ['SUCCESS', 'PAID'], true)) {
+                $dokuReference = $dokuStatus['transaction']['original_request_id']
+                    ?? $dokuStatus['emoney_payment']['approval_code']
+                    ?? $dokuStatus['emoney_payment']['reference_number']
+                    ?? $dokuStatus['transaction']['id']
+                    ?? ('DOKU-' . time());
+
+                \Illuminate\Support\Facades\DB::transaction(function () use ($transaction, $invoice, $dokuReference) {
+                    $invoice->update([
+                        'status' => 'PAID',
+                        'paid_at' => now(),
+                    ]);
+
+                    $transaction->update([
+                        'status' => 'PAID',
+                        'doku_reference' => $dokuReference,
+                        'payment_gateway_ref' => $dokuReference,
+                    ]);
+
+                    $transaction->transitionTo('PAID', 'doku_verify', "DOKU payment verified (Ref: {$dokuReference})", [
+                        'doku_reference' => $dokuReference,
+                    ]);
+                });
+
+                \Illuminate\Support\Facades\Cache::put('payment_status_' . $invoice->id, 'PAID', 300);
+                if ($invoice->external_id) {
+                    \Illuminate\Support\Facades\Cache::put('payment_status_' . $invoice->external_id, 'PAID', 300);
+                }
+
+                if ($webhookService) {
+                    $webhookService->dispatchPaymentEvent($transaction->fresh(), 'payment.paid');
+                }
+
+                return [
+                    'success' => true,
+                    'is_paid' => true,
+                    'status' => 'PAID',
+                    'doku_reference' => $dokuReference,
+                    'message' => "Pembayaran berhasil diverifikasi oleh DOKU! Ref: {$dokuReference}",
+                ];
+            }
+
+            return [
+                'success' => true,
+                'is_paid' => false,
+                'status' => $transaction->status,
+                'message' => 'DOKU melaporkan pembayaran belum diselesaikan (PENDING).',
+            ];
+        } catch (\Throwable $e) {
+            Log::error("syncTransactionWithDoku exception: " . $e->getMessage());
+            return [
+                'success' => false,
+                'is_paid' => false,
+                'status' => $transaction->status,
+                'message' => 'Gagal menghubungi DOKU: ' . $e->getMessage(),
+            ];
         }
     }
 

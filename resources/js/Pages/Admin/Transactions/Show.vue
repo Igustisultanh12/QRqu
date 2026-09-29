@@ -27,6 +27,23 @@
                         {{ transaction.status }}
                     </span>
 
+                    <!-- Tombol Sinkron Status Langsung ke Server DOKU -->
+                    <button
+                        v-if="transaction.status === 'PENDING'"
+                        @click="syncDokuStatus"
+                        :disabled="isSyncing"
+                        type="button"
+                        class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 shadow-sm"
+                        title="Cek langsung status pembayaran ke server resmi DOKU"
+                    >
+                        <svg v-if="isSyncing" class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                        </svg>
+                        <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        <span>{{ isSyncing ? 'Mengecek DOKU...' : '🔄 Sinkron Status DOKU' }}</span>
+                    </button>
+
                     <!-- Link Langsung ke Portal DOKU Resmi -->
                     <a
                         v-if="dokuCheckoutUrl"
@@ -84,7 +101,19 @@
                     </div>
                     <div class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800/80">
                         <span class="text-slate-500 dark:text-slate-400">DOKU Reference</span>
-                        <span class="text-emerald-600 dark:text-emerald-400 font-mono font-bold">{{ transaction.doku_reference || 'N/A' }}</span>
+                        <span class="font-mono font-bold">
+                            <template v-if="transaction.doku_reference">
+                                <span class="text-emerald-600 dark:text-emerald-400">{{ transaction.doku_reference }}</span>
+                            </template>
+                            <template v-else-if="transaction.status === 'PENDING'">
+                                <span class="text-amber-500 dark:text-amber-400 font-sans text-[11px] font-normal italic">
+                                    ⏳ Belum Terbit (Menunggu Pembayaran)
+                                </span>
+                            </template>
+                            <template v-else>
+                                <span class="text-slate-400">N/A</span>
+                            </template>
+                        </span>
                     </div>
                     <div class="flex justify-between py-2">
                         <span class="text-slate-500 dark:text-slate-400">DOKU Request UUID</span>
@@ -136,8 +165,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { router } from '@inertiajs/vue3';
+import axios from 'axios';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 
 const props = defineProps({
@@ -145,6 +175,8 @@ const props = defineProps({
 });
 
 const isSimulating = ref(false);
+const isSyncing = ref(false);
+let pollTimer = null;
 
 const dokuCheckoutUrl = computed(() => {
     const url = props.transaction?.invoice?.qr_url || props.transaction?.doku_transaction?.doku_url;
@@ -153,6 +185,16 @@ const dokuCheckoutUrl = computed(() => {
     }
     return null;
 });
+
+const syncDokuStatus = () => {
+    isSyncing.value = true;
+    router.post(route('transactions.sync', props.transaction.id), {}, {
+        preserveScroll: true,
+        onFinish: () => {
+            isSyncing.value = false;
+        }
+    });
+};
 
 const cancelTrx = () => {
     if (confirm('Batalkan transaksi ini? Invoice dan QRIS tidak akan dapat dibayar lagi.')) {
@@ -168,4 +210,30 @@ const simulatePayment = () => {
         }
     });
 };
+
+onMounted(() => {
+    if (props.transaction?.status === 'PENDING' && props.transaction?.invoice_id) {
+        pollTimer = setInterval(async () => {
+            try {
+                const res = await axios.get(route('checkout.status', props.transaction.invoice_id));
+                if (res.data?.is_paid || res.data?.status === 'PAID') {
+                    if (pollTimer) {
+                        clearInterval(pollTimer);
+                        pollTimer = null;
+                    }
+                    router.reload({ preserveScroll: true });
+                }
+            } catch (e) {
+                // background poll silent catch
+            }
+        }, 4000);
+    }
+});
+
+onUnmounted(() => {
+    if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+    }
+});
 </script>
