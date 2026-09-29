@@ -3,6 +3,35 @@
         <template #header>Dashboard Ringkasan Merchant</template>
 
         <div class="space-y-6">
+            <!-- Email Verification Reminder Card -->
+            <div
+                v-if="!$page.props.auth.user?.has_verified_email"
+                class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 p-5 sm:p-6 rounded-3xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm"
+            >
+                <div class="flex items-start sm:items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-black text-amber-900 dark:text-amber-200">Anda belum melakukan verifikasi email</h4>
+                        <p class="text-xs text-amber-700 dark:text-amber-300/80 mt-0.5">
+                            Tautan konfirmasi telah dikirimkan ke <strong>{{ $page.props.auth.user?.email }}</strong>. Silakan verifikasi untuk melindungi akun merchant Anda.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <Link
+                        :href="route('verification.send')"
+                        method="post"
+                        as="button"
+                        class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition shadow-sm inline-flex items-center gap-1.5"
+                    >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        <span>Kirim Ulang Verifikasi</span>
+                    </Link>
+                </div>
+            </div>
+
             <!-- Active Subscription Alert Card -->
             <div v-if="subscription" class="bg-gradient-to-r from-emerald-50 to-white dark:from-emerald-950/60 dark:to-slate-900 border border-emerald-200 dark:border-emerald-500/30 p-6 sm:p-8 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
                 <div>

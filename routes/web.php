@@ -34,8 +34,8 @@ require __DIR__ . '/auth.php';
 | Customer Portal (Authenticated)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'verified'])->group(function () {
-    // Customer Dashboard
+Route::middleware(['auth'])->group(function () {
+    // Customer Dashboard (Bisa diakses, menampilkan notifikasi verifikasi jika belum verifikasi email)
     Route::get('/dashboard', [Customer\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/customer/dashboard', [Customer\DashboardController::class, 'index'])->name('customer.dashboard');
 

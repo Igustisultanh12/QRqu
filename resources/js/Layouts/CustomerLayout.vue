@@ -242,7 +242,50 @@
                 </div>
             </header>
 
+            <!-- Unverified Email Notification Banner -->
+            <div
+                v-if="$page.props.auth.user && !$page.props.auth.user.has_verified_email"
+                class="bg-amber-500/15 border-b border-amber-500/30 px-6 py-3.5 text-xs text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm transition-all"
+            >
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    </div>
+                    <div>
+                        <span class="font-black text-amber-800 dark:text-amber-300">Pemberitahuan Akun:</span>
+                        <span class="ml-1 text-amber-700 dark:text-amber-200/90">
+                            Anda belum melakukan verifikasi email (<strong>{{ $page.props.auth.user.email }}</strong>). Silakan lakukan verifikasi email Anda untuk mengamankan akun dan menikmati seluruh fitur QRqu.
+                        </span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 shrink-0 pl-11 sm:pl-0">
+                    <Link
+                        :href="route('verification.send')"
+                        method="post"
+                        as="button"
+                        class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition shadow-sm inline-flex items-center gap-1.5"
+                    >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        <span>Kirim Ulang Email</span>
+                    </Link>
+                    <Link
+                        :href="route('verification.notice')"
+                        class="px-3 py-1.5 rounded-lg bg-white/80 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs border border-amber-300 dark:border-amber-500/40 transition"
+                    >
+                        Halaman Verifikasi
+                    </Link>
+                </div>
+            </div>
+
             <!-- Flash Message Banner -->
+            <div v-if="$page.props.flash.status === 'verification-link-sent'" class="m-6 mb-0 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <svg class="w-5 h-5 text-emerald-500 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>Tautan verifikasi email baru telah berhasil dikirim ke alamat email Anda. Silakan periksa kotak masuk atau spam.</span>
+                </div>
+            </div>
+
             <div v-if="$page.props.flash.success" class="m-6 mb-0 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <svg class="w-5 h-5 text-emerald-500 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>

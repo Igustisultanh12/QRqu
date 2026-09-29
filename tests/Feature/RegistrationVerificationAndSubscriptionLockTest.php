@@ -41,9 +41,14 @@ class RegistrationVerificationAndSubscriptionLockTest extends TestCase
         $this->assertFalse($customer->hasActiveSubscription());
         $this->assertNull($customer->activeSubscription);
 
-        // Unverified user accessing dashboard must be redirected to verify-email
+        // Unverified user can access dashboard and see unverified status notification
         $dashRes = $this->actingAs($user)->get('/dashboard');
-        $dashRes->assertRedirect(route('verification.notice'));
+        $dashRes->assertStatus(200);
+        $dashRes->assertInertia(fn ($page) => $page
+            ->component('Customer/Dashboard')
+            ->where('auth.user.has_verified_email', false)
+            ->where('auth.user.customer.has_active_subscription', false)
+        );
     }
 
     public function test_unsubscribed_customer_cannot_access_locked_api_menus(): void
