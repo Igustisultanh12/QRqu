@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'admin.2fa' => \App\Http\Middleware\EnsureAdmin2FaVerified::class,
+            'customer.subscribed' => \App\Http\Middleware\EnsureActiveSubscription::class,
         ]);
 
         // 2. PERBAIKAN FATAL TUNNELING: Daftarkan Cloudflare/Reverse Proxy sebagai Trusted Proxy agar aset dibaca via HTTPS murni

@@ -69,6 +69,11 @@ class SubscriptionController extends Controller
             'amount' => $plan->price,
         ]);
 
-        return redirect()->back()->with('success', "Berhasil mengaktifkan langganan {$plan->name}!");
+        // Otomatis terbitkan Kredensial API Sandbox jika baru pertama kali berlangganan
+        if ($customer->apiCredentials()->count() === 0) {
+            \App\Models\ApiCredential::generateCredentials($customer->id, 'sandbox', 'Sandbox Key');
+        }
+
+        return redirect()->back()->with('success', "Berhasil mengaktifkan langganan {$plan->name}! Fitur API & Webhook kini telah terbuka.");
     }
 }

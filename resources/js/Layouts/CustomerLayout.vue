@@ -77,48 +77,66 @@
                     </Link>
 
                     <Link
-                        :href="route('customer.credentials.index')"
+                        :href="$page.props.auth.user?.customer?.has_active_subscription ? route('customer.credentials.index') : route('customer.subscription.index')"
                         :class="[
-                            'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                            'flex items-center justify-between px-3.5 py-2.5 rounded-lg transition-colors',
                             route().current('customer.credentials.*')
                                 ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20'
                                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
                         ]"
                     >
-                        <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
-                        </svg>
-                        API Credentials
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                            </svg>
+                            <span>API Credentials</span>
+                        </div>
+                        <span v-if="!$page.props.auth.user?.customer?.has_active_subscription" class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 dark:text-amber-400 font-bold border border-amber-500/30">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            Terkunci
+                        </span>
                     </Link>
 
                     <Link
-                        :href="route('customer.webhooks.index')"
+                        :href="$page.props.auth.user?.customer?.has_active_subscription ? route('customer.webhooks.index') : route('customer.subscription.index')"
                         :class="[
-                            'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                            'flex items-center justify-between px-3.5 py-2.5 rounded-lg transition-colors',
                             route().current('customer.webhooks.*')
                                 ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20'
                                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
                         ]"
                     >
-                        <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                        </svg>
-                        Webhooks
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            <span>Webhooks</span>
+                        </div>
+                        <span v-if="!$page.props.auth.user?.customer?.has_active_subscription" class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 dark:text-amber-400 font-bold border border-amber-500/30">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            Terkunci
+                        </span>
                     </Link>
 
                     <Link
-                        :href="route('customer.api-usage.index')"
+                        :href="$page.props.auth.user?.customer?.has_active_subscription ? route('customer.api-usage.index') : route('customer.subscription.index')"
                         :class="[
-                            'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                            'flex items-center justify-between px-3.5 py-2.5 rounded-lg transition-colors',
                             route().current('customer.api-usage.*')
                                 ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20'
                                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
                         ]"
                     >
-                        <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                        </svg>
-                        API Usage & Logs
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                            <span>API Usage & Logs</span>
+                        </div>
+                        <span v-if="!$page.props.auth.user?.customer?.has_active_subscription" class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 dark:text-amber-400 font-bold border border-amber-500/30">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            Terkunci
+                        </span>
                     </Link>
 
                     <Link

@@ -60,32 +60,6 @@ class RegisteredUserController extends Controller
                 'status' => 'active',
             ]);
 
-            // Assign default active starter subscription (Free Trial / Starter)
-            $plan = Plan::where('slug', 'starter-30d')->orWhere('duration_days', 30)->first();
-            if ($plan) {
-                $sub = Subscription::create([
-                    'customer_id' => $customer->id,
-                    'plan_id' => $plan->id,
-                    'starts_at' => now(),
-                    'expires_at' => now()->addDays($plan->duration_days),
-                    'grace_period_days' => 3,
-                    'status' => 'active',
-                    'auto_renew' => false,
-                ]);
-
-                SubscriptionHistory::create([
-                    'subscription_id' => $sub->id,
-                    'customer_id' => $customer->id,
-                    'plan_id' => $plan->id,
-                    'event' => 'created',
-                    'note' => 'Paket Starter bawaan pendaftaran',
-                    'amount_paid' => 0,
-                ]);
-            }
-
-            // Auto-generate Sandbox Credential for rapid testing
-            ApiCredential::generateCredentials($customer->id, 'sandbox', 'Sandbox Key');
-
             AuditLog::record('USER_REGISTRATION', $user, null, ['email' => $user->email], $user->id);
 
             return $user;

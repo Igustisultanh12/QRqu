@@ -34,7 +34,7 @@ require __DIR__ . '/auth.php';
 | Customer Portal (Authenticated)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     // Customer Dashboard
     Route::get('/dashboard', [Customer\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/customer/dashboard', [Customer\DashboardController::class, 'index'])->name('customer.dashboard');
@@ -42,12 +42,6 @@ Route::middleware(['auth'])->group(function () {
     // Subscription & Plans
     Route::get('/subscription', [Customer\SubscriptionController::class, 'index'])->name('customer.subscription.index');
     Route::post('/subscription/{plan}/subscribe', [Customer\SubscriptionController::class, 'subscribe'])->name('customer.subscription.subscribe');
-
-    // API Credentials
-    Route::get('/credentials', [Customer\ApiCredentialController::class, 'index'])->name('customer.credentials.index');
-    Route::post('/credentials', [Customer\ApiCredentialController::class, 'store'])->name('customer.credentials.store');
-    Route::post('/credentials/{credential}/revoke', [Customer\ApiCredentialController::class, 'revoke'])->name('customer.credentials.revoke');
-    Route::post('/credentials/{credential}/ip-whitelist', [Customer\ApiCredentialController::class, 'updateIpWhitelist'])->name('customer.credentials.ip-whitelist');
 
     // Transactions & Invoices
     Route::get('/transactions', [Customer\TransactionController::class, 'index'])->name('customer.transactions.index');
@@ -58,15 +52,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/monthly', [Customer\MonthlyReportController::class, 'index'])->name('customer.reports.monthly');
     Route::get('/reports/monthly/export', [Customer\MonthlyReportController::class, 'exportCsv'])->name('customer.reports.monthly.export');
 
-    // Webhooks
-    Route::get('/webhooks', [Customer\WebhookController::class, 'index'])->name('customer.webhooks.index');
-    Route::post('/webhooks', [Customer\WebhookController::class, 'store'])->name('customer.webhooks.store');
-    Route::post('/webhooks/test-ping', [Customer\WebhookController::class, 'testPing'])->name('customer.webhooks.test-ping');
-    Route::post('/webhooks/{delivery}/retry', [Customer\WebhookController::class, 'retry'])->name('customer.webhooks.retry');
-
-    // API Usage & Logs
-    Route::get('/api-usage', [Customer\ApiUsageController::class, 'index'])->name('customer.api-usage.index');
-
     // Documentation
     Route::get('/docs', [Customer\DocumentationController::class, 'index'])->name('customer.docs.index');
 
@@ -75,6 +60,24 @@ Route::middleware(['auth'])->group(function () {
     Route::match(['patch', 'post'], '/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
+
+    // Fitur API & Webhook Terkunci (Wajib Berlangganan)
+    Route::middleware(['customer.subscribed'])->group(function () {
+        // API Credentials
+        Route::get('/credentials', [Customer\ApiCredentialController::class, 'index'])->name('customer.credentials.index');
+        Route::post('/credentials', [Customer\ApiCredentialController::class, 'store'])->name('customer.credentials.store');
+        Route::post('/credentials/{credential}/revoke', [Customer\ApiCredentialController::class, 'revoke'])->name('customer.credentials.revoke');
+        Route::post('/credentials/{credential}/ip-whitelist', [Customer\ApiCredentialController::class, 'updateIpWhitelist'])->name('customer.credentials.ip-whitelist');
+
+        // Webhooks
+        Route::get('/webhooks', [Customer\WebhookController::class, 'index'])->name('customer.webhooks.index');
+        Route::post('/webhooks', [Customer\WebhookController::class, 'store'])->name('customer.webhooks.store');
+        Route::post('/webhooks/test-ping', [Customer\WebhookController::class, 'testPing'])->name('customer.webhooks.test-ping');
+        Route::post('/webhooks/{delivery}/retry', [Customer\WebhookController::class, 'retry'])->name('customer.webhooks.retry');
+
+        // API Usage & Logs
+        Route::get('/api-usage', [Customer\ApiUsageController::class, 'index'])->name('customer.api-usage.index');
+    });
 });
 
 /*
