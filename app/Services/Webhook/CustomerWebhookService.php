@@ -17,11 +17,20 @@ class CustomerWebhookService
      */
     public function dispatchPaymentEvent(Transaction $transaction, string $event = 'payment.paid'): ?WebhookDelivery
     {
-        $customer = $transaction->customer;
         $invoice = $transaction->invoice;
+        $customer = $transaction->customer ?? $invoice?->customer;
+        if (!$customer && $transaction->customer_id) {
+            $customer = Customer::find($transaction->customer_id);
+        }
+        if (!$customer && $invoice && $invoice->customer_id) {
+            $customer = Customer::find($invoice->customer_id);
+        }
+        if (!$customer) {
+            $customer = Customer::first();
+        }
 
         // Find customer webhook url (either specified in invoice or in customer's registered webhooks)
-        $targetUrl = $invoice->webhook_url;
+        $targetUrl = $invoice?->webhook_url;
         $secret = 'whsec_default_fallback';
 
         if ($customer) {
@@ -44,6 +53,7 @@ class CustomerWebhookService
         }
 
         if (empty($targetUrl)) {
+            \Illuminate\Support\Facades\Log::info("QRqu: Webhook tidak dikirim karena URL webhook belum dikonfigurasi untuk transaksi #{$transaction->id}.");
             return null;
         }
 
@@ -53,13 +63,14 @@ class CustomerWebhookService
         $payload = [
             'event' => $event,
             'event_id' => $eventId,
-            'invoice_id' => $invoice->id,
-            'external_id' => $invoice->external_id,
+            'invoice_id' => $invoice?->id,
+            'external_id' => $invoice?->external_id,
             'transaction_id' => $transaction->id,
             'amount' => (float) $transaction->amount,
             'status' => $transaction->status,
-            'payment_method' => $invoice->payment_method ?? 'QRIS',
-            'paid_at' => $transaction->status === 'PAID' ? ($invoice->paid_at ? $invoice->paid_at->toIso8601String() : $now->toIso8601String()) : null,
+            'doku_reference' => $transaction->doku_reference,
+            'payment_method' => $invoice?->payment_method ?? 'QRIS',
+            'paid_at' => $transaction->status === 'PAID' ? ($invoice?->paid_at ? $invoice->paid_at->toIso8601String() : $now->toIso8601String()) : null,
             'timestamp' => $now->timestamp,
         ];
 
