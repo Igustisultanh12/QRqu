@@ -1,7 +1,228 @@
 <template>
     <div class="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col md:flex-row antialiased transition-colors duration-200">
-        <!-- Sidebar Navigation -->
-        <aside class="w-full md:w-64 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between shrink-0 transition-colors duration-200">
+        <!-- Mobile Top Bar (< md) -->
+        <div class="md:hidden h-14 bg-white/95 dark:bg-slate-950/95 backdrop-blur border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 sticky top-0 z-40 transition-colors duration-200 w-full shrink-0">
+            <div class="flex items-center space-x-3">
+                <button
+                    @click="mobileNavOpen = true"
+                    type="button"
+                    class="p-2 -ml-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all"
+                    aria-label="Buka Menu"
+                >
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-sm">
+                    <span class="font-black text-sm text-slate-950">Q</span>
+                </div>
+                <span class="font-black text-sm tracking-tight text-slate-900 dark:text-white">QRqu</span>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <Link
+                    v-if="$page.props.auth.user?.is_admin"
+                    :href="route('admin.dashboard')"
+                    class="px-2.5 py-1 text-[11px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-500/20 rounded-lg border border-indigo-200 dark:border-indigo-500/30"
+                >
+                    👑 Admin
+                </Link>
+                <ThemeToggle />
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Drawer Overlay (< md) -->
+        <div v-if="mobileNavOpen" class="fixed inset-0 z-50 md:hidden flex">
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity" @click="mobileNavOpen = false"></div>
+
+            <!-- Drawer Content -->
+            <div class="relative w-4/5 max-w-xs bg-white dark:bg-slate-950 h-full flex flex-col justify-between shadow-2xl z-10 overflow-y-auto">
+                <div>
+                    <!-- Drawer Header -->
+                    <div class="h-14 flex items-center justify-between px-4 border-b border-slate-200 dark:border-slate-800">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-sm">
+                                <span class="font-black text-base text-slate-950">Q</span>
+                            </div>
+                            <div>
+                                <span class="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">QRqu Gateway</span>
+                                <span class="block text-[9px] text-emerald-600 dark:text-emerald-400 font-mono uppercase font-semibold">Merchant Portal</span>
+                            </div>
+                        </div>
+                        <button @click="mobileNavOpen = false" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+
+                    <!-- Drawer Nav Links -->
+                    <nav class="p-3.5 space-y-1 text-sm font-medium">
+                        <Link
+                            v-if="$page.props.auth.user?.is_admin"
+                            :href="route('admin.dashboard')"
+                            @click="mobileNavOpen = false"
+                            class="flex items-center px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-500/30 hover:bg-indigo-100 dark:hover:bg-indigo-500/25 transition-colors text-xs mb-2 shadow-sm"
+                        >
+                            <svg class="w-4 h-4 mr-2.5 shrink-0 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                            <span>👑 Masuk Panel Admin</span>
+                        </Link>
+
+                        <Link
+                            :href="route('customer.dashboard')"
+                            @click="mobileNavOpen = false"
+                            :class="[
+                                'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                                route().current('customer.dashboard')
+                                    ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-200 dark:border-emerald-500/20'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                            ]"
+                        >
+                            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                            Dashboard
+                        </Link>
+
+                        <Link
+                            :href="route('customer.transactions.index')"
+                            @click="mobileNavOpen = false"
+                            :class="[
+                                'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                                route().current('customer.transactions.*')
+                                    ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                            ]"
+                        >
+                            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z"/></svg>
+                            Transaksi & Invoice
+                        </Link>
+
+                        <Link
+                            :href="route('customer.reports.monthly')"
+                            @click="mobileNavOpen = false"
+                            :class="[
+                                'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                                route().current('customer.reports.*')
+                                    ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                            ]"
+                        >
+                            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            Laporan Bulanan
+                        </Link>
+
+                        <Link
+                            :href="route('customer.subscription.index')"
+                            @click="mobileNavOpen = false"
+                            :class="[
+                                'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                                route().current('customer.subscription.*')
+                                    ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                            ]"
+                        >
+                            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                            Paket Langganan
+                        </Link>
+
+                        <Link
+                            :href="$page.props.auth.user?.customer?.has_active_subscription ? route('customer.credentials.index') : route('customer.subscription.index')"
+                            @click="mobileNavOpen = false"
+                            :class="[
+                                'flex items-center justify-between px-3.5 py-2.5 rounded-lg transition-colors',
+                                route().current('customer.credentials.*')
+                                    ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                            ]"
+                        >
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                                <span>API Credentials</span>
+                            </div>
+                        </Link>
+
+                        <Link
+                            :href="$page.props.auth.user?.customer?.has_active_subscription ? route('customer.webhooks.index') : route('customer.subscription.index')"
+                            @click="mobileNavOpen = false"
+                            :class="[
+                                'flex items-center justify-between px-3.5 py-2.5 rounded-lg transition-colors',
+                                route().current('customer.webhooks.*')
+                                    ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                            ]"
+                        >
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                <span>Webhooks</span>
+                            </div>
+                        </Link>
+
+                        <Link
+                            :href="$page.props.auth.user?.customer?.has_active_subscription ? route('customer.api-usage.index') : route('customer.subscription.index')"
+                            @click="mobileNavOpen = false"
+                            :class="[
+                                'flex items-center justify-between px-3.5 py-2.5 rounded-lg transition-colors',
+                                route().current('customer.api-usage.*')
+                                    ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                            ]"
+                        >
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                                <span>API Usage & Logs</span>
+                            </div>
+                        </Link>
+
+                        <Link
+                            :href="route('customer.docs.index')"
+                            @click="mobileNavOpen = false"
+                            :class="[
+                                'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                                route().current('customer.docs.*')
+                                    ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                            ]"
+                        >
+                            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                            Dokumentasi API
+                        </Link>
+
+                        <Link
+                            :href="route('profile.edit')"
+                            @click="mobileNavOpen = false"
+                            :class="[
+                                'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                                route().current('profile.edit')
+                                    ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                            ]"
+                        >
+                            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                            Profil & Keamanan
+                        </Link>
+                    </nav>
+                </div>
+
+                <!-- Drawer Footer Profile -->
+                <div class="p-4 border-t border-slate-200 dark:border-slate-800">
+                    <Link
+                        :href="route('profile.edit')"
+                        @click="mobileNavOpen = false"
+                        class="block bg-slate-50 dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 mb-2"
+                    >
+                        <p class="text-xs font-bold text-slate-900 dark:text-white truncate">{{ $page.props.auth.user?.name }}</p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">{{ $page.props.auth.user?.email }}</p>
+                    </Link>
+                    <Link
+                        :href="route('logout')"
+                        method="post"
+                        as="button"
+                        class="w-full flex items-center justify-center space-x-2 py-2 text-rose-500 text-xs font-bold rounded-xl bg-rose-50 dark:bg-rose-500/10"
+                    >
+                        <span>Keluar Aplikasi</span>
+                    </Link>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Navigation (Desktop md+) -->
+        <aside class="hidden md:flex md:w-64 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex-col justify-between shrink-0 transition-colors duration-200">
             <div>
                 <!-- Brand Logo -->
                 <div class="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-800 space-x-3">
@@ -319,7 +540,13 @@
             </div>
 
             <!-- Page Body Content -->
-            <main class="flex-1 p-6">
+            <main class="flex-1 p-4 sm:p-6">
+                <!-- Mobile Header Title -->
+                <div class="md:hidden mb-4">
+                    <h2 class="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                        <slot name="header">Portal Merchant</slot>
+                    </h2>
+                </div>
                 <slot />
             </main>
         </div>
@@ -327,6 +554,9 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import ThemeToggle from '@/Components/ThemeToggle.vue';
+
+const mobileNavOpen = ref(false);
 </script>

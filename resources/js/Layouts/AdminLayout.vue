@@ -1,7 +1,164 @@
 <template>
     <div class="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col md:flex-row antialiased transition-colors duration-200">
-        <!-- Sidebar Navigation -->
-        <aside class="w-full md:w-64 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between shrink-0 transition-colors duration-200">
+        <!-- Mobile Top Bar (< md) -->
+        <div class="md:hidden h-14 bg-white/95 dark:bg-slate-950/95 backdrop-blur border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 sticky top-0 z-40 transition-colors duration-200 w-full shrink-0">
+            <div class="flex items-center space-x-3">
+                <button
+                    @click="mobileNavOpen = true"
+                    type="button"
+                    class="p-2 -ml-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all"
+                    aria-label="Buka Menu"
+                >
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-500 to-violet-400 flex items-center justify-center shadow-sm">
+                    <span class="font-black text-sm text-slate-950">Q</span>
+                </div>
+                <span class="font-black text-sm tracking-tight text-slate-900 dark:text-white">Admin QRqu</span>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <Link
+                    :href="route('dashboard')"
+                    class="px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/20 rounded-lg border border-emerald-200 dark:border-emerald-500/30"
+                >
+                    🏪 Merchant
+                </Link>
+                <ThemeToggle />
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Drawer Overlay (< md) -->
+        <div v-if="mobileNavOpen" class="fixed inset-0 z-50 md:hidden flex">
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity" @click="mobileNavOpen = false"></div>
+
+            <!-- Drawer Content -->
+            <div class="relative w-4/5 max-w-xs bg-white dark:bg-slate-950 h-full flex flex-col justify-between shadow-2xl z-10 overflow-y-auto">
+                <div>
+                    <!-- Drawer Header -->
+                    <div class="h-14 flex items-center justify-between px-4 border-b border-slate-200 dark:border-slate-800">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-violet-400 flex items-center justify-center shadow-sm">
+                                <span class="font-black text-base text-slate-950">Q</span>
+                            </div>
+                            <div>
+                                <span class="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">QRqu Core</span>
+                                <span class="block text-[9px] text-indigo-500 dark:text-indigo-400 font-mono uppercase font-semibold">Master Admin</span>
+                            </div>
+                        </div>
+                        <button @click="mobileNavOpen = false" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+
+                    <!-- Drawer Nav Links -->
+                    <nav class="p-3.5 space-y-1 text-sm font-medium">
+                        <Link
+                            :href="route('dashboard')"
+                            @click="mobileNavOpen = false"
+                            class="flex items-center px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-500/25 transition-colors text-xs mb-2 shadow-sm"
+                        >
+                            <svg class="w-4 h-4 mr-2.5 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                            <span>🏪 Beralih ke Portal Merchant</span>
+                        </Link>
+
+                        <Link
+                            :href="route('admin.dashboard')"
+                            @click="mobileNavOpen = false"
+                            :class="[
+                                'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                                route().current('admin.dashboard')
+                                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-semibold border border-indigo-200 dark:border-indigo-500/20'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                            ]"
+                        >
+                            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                            Platform Dashboard
+                        </Link>
+
+                        <Link
+                            :href="route('admin.customers.index')"
+                            @click="mobileNavOpen = false"
+                            :class="[
+                                'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                                route().current('admin.customers.*')
+                                    ? 'bg-indigo-500/10 text-indigo-400 font-semibold border border-indigo-500/20'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                            ]"
+                        >
+                            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                            Kelola Pelanggan
+                        </Link>
+
+                        <Link
+                            :href="route('admin.plans.index')"
+                            @click="mobileNavOpen = false"
+                            :class="[
+                                'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                                route().current('admin.plans.*')
+                                    ? 'bg-indigo-500/10 text-indigo-400 font-semibold border border-indigo-500/20'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                            ]"
+                        >
+                            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                            Paket & Harga
+                        </Link>
+
+                        <Link
+                            :href="route('admin.transactions.index')"
+                            @click="mobileNavOpen = false"
+                            :class="[
+                                'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                                route().current('admin.transactions.*')
+                                    ? 'bg-indigo-500/10 text-indigo-400 font-semibold border border-indigo-500/20'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                            ]"
+                        >
+                            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                            Master Transaksi
+                        </Link>
+
+                        <Link
+                            :href="route('admin.doku.index')"
+                            @click="mobileNavOpen = false"
+                            :class="[
+                                'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                                route().current('admin.doku.*')
+                                    ? 'bg-indigo-500/10 text-indigo-400 font-semibold border border-indigo-500/20'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                            ]"
+                        >
+                            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            Integrasi DOKU
+                        </Link>
+                    </nav>
+                </div>
+
+                <!-- Drawer Footer -->
+                <div class="p-4 border-t border-slate-200 dark:border-slate-800">
+                    <Link
+                        :href="route('profile.edit')"
+                        @click="mobileNavOpen = false"
+                        class="block bg-slate-50 dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 mb-2"
+                    >
+                        <p class="text-xs font-bold text-slate-900 dark:text-white truncate">{{ $page.props.auth.user?.name }}</p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">Administrator</p>
+                    </Link>
+                    <Link
+                        :href="route('logout')"
+                        method="post"
+                        as="button"
+                        class="w-full flex items-center justify-center space-x-2 py-2 text-rose-500 text-xs font-bold rounded-xl bg-rose-50 dark:bg-rose-500/10"
+                    >
+                        <span>Keluar Aplikasi</span>
+                    </Link>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Navigation (Desktop md+) -->
+        <aside class="hidden md:flex md:w-64 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex-col justify-between shrink-0 transition-colors duration-200">
             <div>
                 <!-- Brand Logo -->
                 <div class="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-800 space-x-3">
@@ -242,7 +399,13 @@
             </div>
 
             <!-- Page Body Content -->
-            <main class="flex-1 p-6">
+            <main class="flex-1 p-4 sm:p-6">
+                <!-- Mobile Header Title -->
+                <div class="md:hidden mb-4">
+                    <h2 class="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                        <slot name="header">Platform Admin</slot>
+                    </h2>
+                </div>
                 <slot />
             </main>
         </div>
@@ -250,6 +413,9 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import ThemeToggle from '@/Components/ThemeToggle.vue';
+
+const mobileNavOpen = ref(false);
 </script>

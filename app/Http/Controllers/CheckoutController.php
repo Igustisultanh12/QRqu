@@ -17,9 +17,24 @@ class CheckoutController extends Controller
     /**
      * Display QRIS Checkout Page
      */
-    public function show(string $invoiceId): Response
+    public function show(Request $request, string $invoiceId): Response|\Illuminate\Http\RedirectResponse
     {
-        $invoice = Invoice::with('customer')->findOrFail($invoiceId);
+        $invoice = Invoice::with(['customer', 'latestTransaction.dokuTransaction'])
+            ->where('id', $invoiceId)
+            ->orWhere('external_id', $invoiceId)
+            ->firstOrFail();
+
+        // 1. Jika invoice memiliki URL pembayaran eksternal DOKU (Hosted Checkout):
+        // Dan pengunjung tidak meminta secara eksplisit view internal (?view=internal):
+        // LANGSUNG REDIRECT ("TERLEMPAR") KE HALAMAN CHECKOUT DOKU RESMI!
+        $dokuUrl = $invoice->qr_url ?: $invoice->latestTransaction?->dokuTransaction?->doku_url;
+        $hasExternalDokuUrl = !empty($dokuUrl)
+            && !str_contains($dokuUrl, '/checkout/' . $invoice->id)
+            && filter_var($dokuUrl, FILTER_VALIDATE_URL);
+
+        if ($hasExternalDokuUrl && $request->query('view') !== 'internal') {
+            return redirect()->away($dokuUrl);
+        }
 
         return Inertia::render('Checkout/Show', [
             'invoice' => [
@@ -31,6 +46,7 @@ class CheckoutController extends Controller
                 'status' => $invoice->status,
                 'customer_name' => $invoice->customer_name,
                 'qr_url' => $invoice->qr_url,
+                'doku_url' => $hasExternalDokuUrl ? $dokuUrl : null,
                 'qr_string' => $invoice->qr_string,
                 'expired_at' => $invoice->expired_at?->toIso8601String(),
                 'callback_url' => $invoice->callback_url,

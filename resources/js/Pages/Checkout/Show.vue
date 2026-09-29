@@ -1,34 +1,34 @@
 <template>
-    <div class="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col items-center justify-center p-4 sm:p-6 antialiased transition-colors duration-200 relative">
+    <div class="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col items-center justify-center p-3 sm:p-6 antialiased transition-colors duration-200 relative">
         <!-- Floating Theme Toggle in Checkout -->
-        <div class="absolute top-4 right-4 z-50">
+        <div class="absolute top-3 right-3 sm:top-4 sm:right-4 z-50">
             <ThemeToggle />
         </div>
 
-        <div class="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl dark:shadow-2xl overflow-hidden transition-colors duration-200">
+        <div class="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl shadow-xl dark:shadow-2xl overflow-hidden transition-colors duration-200 my-auto">
             <!-- Header -->
-            <div class="bg-gradient-to-r from-emerald-600 to-teal-500 p-6 text-center relative overflow-hidden">
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-500 p-5 sm:p-6 text-center relative overflow-hidden">
                 <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
-                <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-white/10 backdrop-blur border border-white/20 mb-3 shadow-inner">
-                    <span class="text-white font-black text-2xl">Q</span>
+                <div class="inline-flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-white/10 backdrop-blur border border-white/20 mb-2 sm:mb-3 shadow-inner">
+                    <span class="text-white font-black text-xl sm:text-2xl">Q</span>
                 </div>
-                <h1 class="text-xl font-extrabold text-white tracking-tight">QRqu Payment Gateway</h1>
+                <h1 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">QRqu Payment Gateway</h1>
                 <p class="text-xs text-emerald-100 font-medium mt-1">Merchant: {{ invoice.merchant_name }}</p>
             </div>
 
             <!-- Invoice Details -->
-            <div class="p-6 text-center border-b border-slate-200 dark:border-slate-800">
-                <div class="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold mb-1">Total Pembayaran</div>
-                <div class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{{ invoice.amount_formatted }}</div>
-                <div class="inline-flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 mt-2 bg-slate-100 dark:bg-slate-800/80 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700/50">
+            <div class="p-4 sm:p-6 text-center border-b border-slate-200 dark:border-slate-800">
+                <div class="text-[11px] sm:text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold mb-1">Total Pembayaran</div>
+                <div class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">{{ invoice.amount_formatted }}</div>
+                <div class="inline-flex items-center space-x-2 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-2 bg-slate-100 dark:bg-slate-800/80 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700/50 max-w-full">
                     <span class="font-mono">#{{ invoice.id }}</span>
                     <span>•</span>
-                    <span class="truncate max-w-[140px]">{{ invoice.external_id }}</span>
+                    <span class="truncate max-w-[120px] sm:max-w-[180px] font-mono">{{ invoice.external_id }}</span>
                 </div>
             </div>
 
             <!-- Body: States -->
-            <div class="p-6">
+            <div class="p-4 sm:p-6">
                 <!-- State: PAID -->
                 <div v-if="paymentStatus === 'PAID'" class="text-center py-6 space-y-4">
                     <div class="w-20 h-20 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center mx-auto animate-bounce">
@@ -71,8 +71,8 @@
                     </div>
 
                     <!-- QR Code Display Box -->
-                    <div class="bg-white p-6 rounded-2xl flex flex-col items-center justify-center border border-slate-200 dark:border-transparent shadow-inner relative group">
-                        <div class="w-56 h-56 flex items-center justify-center bg-white">
+                    <div class="bg-white p-4 sm:p-6 rounded-2xl flex flex-col items-center justify-center border border-slate-200 dark:border-transparent shadow-inner relative group">
+                        <div class="w-48 h-48 sm:w-56 sm:h-56 flex items-center justify-center bg-white">
                             <!-- Dynamic QR generator image or QR string QR code -->
                             <img
                                 :src="qrCodeImageUrl"
@@ -93,6 +93,16 @@
 
                     <!-- Actions -->
                     <div class="space-y-2.5">
+                        <!-- Direct DOKU Hosted Checkout Button if available -->
+                        <a
+                            v-if="invoice.doku_url"
+                            :href="invoice.doku_url"
+                            class="w-full py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-bold text-xs transition shadow-md shadow-rose-600/20 flex items-center justify-center space-x-2"
+                        >
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            <span>Bayar via Portal Resmi DOKU ↗</span>
+                        </a>
+
                         <button
                             v-if="invoice.qr_string"
                             @click="copyQrString"
