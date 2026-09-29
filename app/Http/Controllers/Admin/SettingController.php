@@ -245,7 +245,7 @@ class SettingController extends Controller
             $amount = 1000;
         }
 
-        $invoiceId = Invoice::generateId();
+        $invoiceId = 'INV-QRQU-' . date('YmdHis') . '-' . strtoupper(Str::random(4));
         $externalId = 'TEST-' . strtoupper(Str::random(8));
 
         $invoice = Invoice::create([
@@ -280,6 +280,11 @@ class SettingController extends Controller
                 'qr_url' => $dokuResult['payment_url'] ?? null,
             ]);
 
+            $nmid = 'ID1026478551298';
+            if (!empty($invoice->qr_string) && preg_match('/ID\d{11,15}/', $invoice->qr_string, $matches)) {
+                $nmid = $matches[0];
+            }
+
             AuditLog::record('TEST_PAYMENT_CREATED', $user, null, [
                 'invoice_id' => $invoice->id,
                 'amount' => $amount,
@@ -293,6 +298,7 @@ class SettingController extends Controller
                 'amount_formatted' => 'Rp ' . number_format($amount, 0, ',', '.'),
                 'qr_string' => $invoice->qr_string,
                 'qr_url' => $invoice->qr_url,
+                'nmid' => $nmid,
                 'checkout_url' => url('/checkout/' . $invoice->id),
                 'expired_at' => $invoice->expired_at->toIso8601String(),
                 'status' => $invoice->status,

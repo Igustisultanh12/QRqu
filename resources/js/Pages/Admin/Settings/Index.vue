@@ -630,6 +630,20 @@
                 </div>
             </form>
         </div>
+
+        <!-- Romei Exact QRIS Payment Modal -->
+        <QrisPaymentModal
+            :show="showPaymentModal"
+            :invoice-id="testPaymentData?.invoice_id"
+            :amount="testPaymentData?.amount"
+            :qr-string="testPaymentData?.qr_string"
+            :qr-url="testPaymentData?.qr_url"
+            :nmid="testPaymentData?.nmid"
+            :checkout-url="testPaymentData?.checkout_url"
+            :status="testPaymentData?.status"
+            @close="showPaymentModal = false"
+            @status-updated="(status) => { if (testPaymentData) testPaymentData.status = status; }"
+        />
     </AdminLayout>
 </template>
 
@@ -638,6 +652,7 @@ import { ref, onUnmounted } from 'vue';
 import { useForm, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
+import QrisPaymentModal from '@/Components/QrisPaymentModal.vue';
 
 const props = defineProps({
     settings: Object,
@@ -649,6 +664,7 @@ const sendingTestMail = ref(false);
 const testingDoku = ref(false);
 
 // Test Pembayaran QRIS State
+const showPaymentModal = ref(false);
 const testAmount = ref(1000);
 const testCustomerName = ref('Admin Tester');
 const creatingTestPayment = ref(false);
@@ -755,6 +771,7 @@ const createTestPayment = async () => {
 
         if (response.data.success) {
             testPaymentData.value = response.data;
+            showPaymentModal.value = true;
             startTestPolling();
         } else {
             testPaymentError.value = response.data.message || 'Gagal membuat QRIS test.';
