@@ -2,7 +2,6 @@
 import { ref, computed } from 'vue';
 import { Link, Head, router } from '@inertiajs/vue3';
 import ThemeToggle from '@/Components/ThemeToggle.vue';
-import BankLogo from '@/Components/BankLogo.vue';
 
 const props = defineProps({
     plans: {
@@ -20,19 +19,6 @@ const handleQuickStart = () => {
         router.get(route('register'));
     }
 };
-
-const bankPartners = [
-    { name: 'BCA', code: 'bca' },
-    { name: 'Mandiri', code: 'mandiri' },
-    { name: 'BRI', code: 'bri' },
-    { name: 'BNI', code: 'bni' },
-    { name: 'BSI', code: 'bsi' },
-    { name: 'QRIS', code: 'qris' },
-    { name: 'GoPay', code: 'gopay' },
-    { name: 'OVO', code: 'ovo' },
-    { name: 'DANA', code: 'dana' },
-    { name: 'ShopeePay', code: 'shopeepay' },
-];
 
 const formattedPlans = computed(() => {
     if (!props.plans || props.plans.length === 0) {
@@ -345,23 +331,7 @@ const formattedPlans = computed(() => {
                     </div>
                 </section>
 
-                <!-- 3. Geometric Partner Ecosystem Strip (Brand Logos) -->
-                <section class="border-t border-b border-slate-100 dark:border-slate-800/80 py-8 px-6 sm:px-10 bg-slate-50/50 dark:bg-slate-950/40">
-                    <p class="text-center text-[11px] font-bold uppercase tracking-widest text-slate-400 font-mono mb-6">
-                        Kompatibel Penuh Dengan Seluruh Bank & Dompet Digital Nasional
-                    </p>
-                    <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-5xl mx-auto">
-                        <div
-                            v-for="bank in bankPartners"
-                            :key="bank.code"
-                            class="p-2 sm:px-4 sm:py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition flex items-center justify-center"
-                        >
-                            <BankLogo :name="bank.code" />
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 4. 3-Card Geometric Feature Grid (Image 2 style) -->
+                <!-- 3. 3-Card Geometric Feature Grid (Image 2 style) -->
                 <section id="fitur" class="px-6 sm:px-12 lg:px-16 py-16 lg:py-20 border-b border-slate-100 dark:border-slate-800/80">
                     <div class="text-center max-w-2xl mx-auto mb-14 space-y-2">
                         <span class="text-xs font-mono font-bold uppercase tracking-widest text-orange-500">FITUR UTAMA</span>
