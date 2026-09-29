@@ -419,5 +419,161 @@ class MonthlyReportAndSettingsTest extends TestCase
         $this->assertNotEmpty($response->json('invoice_id'));
         $this->assertNotEmpty($response->json('payment_url'));
     }
+
+    public function test_customer_can_export_passbook_pdf_statement(): void
+    {
+        $invoice = Invoice::create([
+            'id' => 'INV-API-TEST-001',
+            'customer_id' => $this->customer->id,
+            'external_id' => 'ORDER-ORD-1234',
+            'amount' => 50000,
+            'currency' => 'IDR',
+            'description' => 'Pembayaran Pesanan Kopi Susu',
+            'customer_name' => 'Budi Santoso',
+            'status' => 'PAID',
+            'expired_at' => now()->addHour(),
+        ]);
+
+        Transaction::create([
+            'id' => 'TRX-API-TEST-001',
+            'customer_id' => $this->customer->id,
+            'invoice_id' => $invoice->id,
+            'external_id' => 'ORDER-ORD-1234',
+            'amount' => 50000,
+            'fee' => 350,
+            'net_amount' => 49650,
+            'status' => 'PAID',
+        ]);
+
+        $response = $this->actingAs($this->merchantUser)
+            ->get('/reports/monthly/pdf?month=' . now()->month . '&year=' . now()->year);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('application/pdf', $response->headers->get('Content-Type'));
+        $this->assertStringContainsString('attachment;', $response->headers->get('Content-Disposition'));
+    }
+
+    public function test_admin_can_export_passbook_pdf_statement(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->get('/admin/reports/monthly/pdf?month=' . now()->month . '&year=' . now()->year);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('application/pdf', $response->headers->get('Content-Type'));
+    }
+
+    public function test_admin_can_view_subscription_transactions_menu(): void
+    {
+        // 1. Regular API Transaction
+        $ordInvoice = Invoice::create([
+            'id' => 'INV-ORD-101',
+            'customer_id' => $this->customer->id,
+            'external_id' => 'ORDER-REGULAR-101',
+            'amount' => 20000,
+            'status' => 'PAID',
+            'expired_at' => now()->addHour(),
+        ]);
+
+        Transaction::create([
+            'id' => 'TRX-ORD-101',
+            'customer_id' => $this->customer->id,
+            'invoice_id' => $ordInvoice->id,
+            'external_id' => 'ORDER-REGULAR-101',
+            'amount' => 20000,
+            'status' => 'PAID',
+        ]);
+
+        // 2. Subscription Transaction
+        $subInvoice = Invoice::create([
+            'id' => 'INV-SUB-TEST-99',
+            'customer_id' => $this->customer->id,
+            'external_id' => 'SUB-' . $this->customer->id . '-' . $this->plan->id . '-12345',
+            'amount' => 150000,
+            'description' => 'Langganan Starter 30 Hari',
+            'status' => 'PAID',
+            'expired_at' => now()->addHour(),
+        ]);
+
+        $subTrx = Transaction::create([
+            'id' => 'TRX-SUB-99',
+            'customer_id' => $this->customer->id,
+            'invoice_id' => $subInvoice->id,
+            'external_id' => 'SUB-' . $this->customer->id . '-' . $this->plan->id . '-12345',
+            'amount' => 150000,
+            'status' => 'PAID',
+        ]);
+
+        Subscription::create([
+            'customer_id' => $this->customer->id,
+            'plan_id' => $this->plan->id,
+            'invoice_id' => $subInvoice->id,
+            'starts_at' => now(),
+            'expires_at' => now()->addDays(30),
+            'status' => 'active',
+        ]);
+
+        $response = $this->actingAs($this->adminUser)
+            ->get('/admin/subscriptions/transactions');
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('Admin/Subscriptions/Transactions')
+            ->has('transactions.data', 1)
+            ->where('transactions.data.0.external_id', 'SUB-' . $this->customer->id . '-' . $this->plan->id . '-12345')
+        );
+    }
+
+    public function test_passbook_pdf_and_monthly_report_excludes_subscription_transactions(): void
+    {
+        // Subscription Transaction
+        $invSub = Invoice::create([
+            'id' => 'INV-SUB-ISOLATE',
+            'customer_id' => $this->customer->id,
+            'external_id' => 'SUB-999-1-99999',
+            'amount' => 500000,
+            'status' => 'PAID',
+            'expired_at' => now()->addHour(),
+        ]);
+
+        Transaction::create([
+            'id' => 'TRX-SUB-ISOLATE',
+            'customer_id' => $this->customer->id,
+            'invoice_id' => $invSub->id,
+            'external_id' => 'SUB-999-1-99999',
+            'amount' => 500000,
+            'status' => 'PAID',
+        ]);
+
+        // Regular API Transaction
+        $invApi = Invoice::create([
+            'id' => 'INV-API-ISOLATE',
+            'customer_id' => $this->customer->id,
+            'external_id' => 'API-MERCHANT-INV-01',
+            'amount' => 75000,
+            'status' => 'PAID',
+            'expired_at' => now()->addHour(),
+        ]);
+
+        Transaction::create([
+            'id' => 'TRX-API-ISOLATE',
+            'customer_id' => $this->customer->id,
+            'invoice_id' => $invApi->id,
+            'external_id' => 'API-MERCHANT-INV-01',
+            'amount' => 75000,
+            'status' => 'PAID',
+        ]);
+
+        $response = $this->actingAs($this->merchantUser)
+            ->get('/reports/monthly?month=' . now()->month . '&year=' . now()->year);
+
+        $response->assertStatus(200);
+        // Only the API transaction should be counted
+        $response->assertInertia(fn ($page) => $page
+            ->component('Customer/Reports/Monthly')
+            ->has('transactions.data', 1)
+            ->where('transactions.data.0.external_id', 'API-MERCHANT-INV-01')
+        );
+    }
 }
+
 

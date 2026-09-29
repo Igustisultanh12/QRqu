@@ -9,7 +9,7 @@
             <ThemeToggle />
         </div>
 
-        <div class="w-full max-w-md bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-[2rem] shadow-2xl shadow-slate-200/50 dark:shadow-black/70 overflow-hidden transition-all duration-300 my-auto relative z-10">
+        <div :class="['w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-[2rem] shadow-2xl shadow-slate-200/50 dark:shadow-black/70 overflow-hidden transition-all duration-300 my-auto relative z-10', invoice.doku_url ? 'max-w-xl' : 'max-w-md']">
             <!-- Header -->
             <div class="bg-slate-950 dark:bg-white p-5 sm:p-6 text-center relative overflow-hidden">
                 <div class="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-white/10 dark:bg-slate-950/10 backdrop-blur border border-white/20 dark:border-slate-950/20 mb-2 shadow-inner">
@@ -60,7 +60,7 @@
                     </div>
                 </div>
 
-                <!-- State: PENDING (QR Code display) -->
+                <!-- State: PENDING (DOKU Live Iframe or QRIS display) -->
                 <div v-else class="space-y-6">
                     <!-- Countdown & Status -->
                     <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-950 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800">
@@ -73,39 +73,85 @@
                         </div>
                     </div>
 
-                    <!-- QR Code Display Box -->
-                    <div class="bg-white p-4 sm:p-6 rounded-2xl flex flex-col items-center justify-center border border-slate-200 dark:border-transparent shadow-inner relative group">
-                        <div class="w-48 h-48 sm:w-56 sm:h-56 flex items-center justify-center bg-white">
-                            <!-- Dynamic QR generator image or QR string QR code -->
-                            <img
-                                :src="qrCodeImageUrl"
-                                alt="QRIS QR Code"
-                                class="w-full h-full object-contain"
-                            />
-                        </div>
-                        <div class="mt-3 text-center">
-                            <span class="inline-block text-[11px] font-bold text-slate-800 tracking-wider uppercase bg-slate-100 px-3 py-0.5 rounded-full border border-slate-200">
-                                QRIS STANDAR NASIONAL
+                    <!-- Real DOKU Hosted QRIS Checkout (Iframe) -->
+                    <div v-if="invoice.doku_url" class="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md bg-white">
+                        <div class="px-4 py-2 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                            <span class="text-[11px] font-mono font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                Portal Resmi QRIS DOKU
                             </span>
+                            <a
+                                :href="invoice.doku_url"
+                                target="_blank"
+                                class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                            >
+                                <span>Buka Tab Baru</span>
+                                <span>↗</span>
+                            </a>
+                        </div>
+                        <div class="w-full h-[620px] bg-white relative">
+                            <iframe
+                                :src="invoice.doku_url"
+                                class="w-full h-full border-0"
+                                allow="payment; geolocation; microphone; camera font-mono"
+                            ></iframe>
                         </div>
                     </div>
 
-                    <p class="text-xs text-slate-500 dark:text-slate-400 text-center leading-relaxed">
-                        Scan QR menggunakan aplikasi e-wallet (GoPay, OVO, Dana, ShopeePay) atau mobile banking BCA, Mandiri, BRI, BNI.
-                    </p>
+                    <!-- Official QRIS DOKU Layout (when not using hosted iframe) -->
+                    <div v-else class="space-y-4">
+                        <div class="bg-white p-5 rounded-2xl flex flex-col items-center justify-center border-2 border-red-500 shadow-md relative group">
+                            <!-- Official QRIS Header -->
+                            <div class="w-full pb-3 mb-3 border-b border-slate-100 flex items-center justify-between">
+                                <div class="flex items-center space-x-1.5">
+                                    <span class="px-2 py-0.5 bg-red-600 text-white font-black text-[10px] tracking-wider rounded font-mono">QRIS</span>
+                                    <span class="text-[10px] font-bold text-slate-700">Pembayaran Nasional</span>
+                                </div>
+                                <span class="text-[9px] font-mono text-slate-400">NMID: ID1020021893601</span>
+                            </div>
+
+                            <!-- Merchant Identity on QRIS -->
+                            <div class="text-center mb-3">
+                                <div class="text-xs font-black text-slate-900 tracking-tight">{{ invoice.merchant_name }}</div>
+                                <div class="text-[10px] text-slate-500">QRqu DOKU Payment Gateway</div>
+                            </div>
+
+                            <!-- QR Code Box -->
+                            <div class="w-52 h-52 sm:w-60 sm:h-60 p-2 border border-slate-200 rounded-xl flex items-center justify-center bg-white shadow-inner">
+                                <img
+                                    :src="qrCodeImageUrl"
+                                    alt="QRIS DOKU Code"
+                                    class="w-full h-full object-contain"
+                                />
+                            </div>
+
+                            <!-- GPN & BI Footer Stamp -->
+                            <div class="w-full pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-[9px] text-slate-400 font-semibold">
+                                <span class="flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                    GPN / Gerbang Pembayaran Nasional
+                                </span>
+                                <span>Dicetak Resmi DOKU</span>
+                            </div>
+                        </div>
+
+                        <!-- Instructions -->
+                        <div class="bg-slate-50 dark:bg-slate-950/80 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 space-y-1.5">
+                            <div class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <span>Petunjuk Pembayaran:</span>
+                            </div>
+                            <ol class="list-decimal list-inside space-y-0.5 pl-1 leading-relaxed text-[10.5px]">
+                                <li>Buka aplikasi m-Banking (BCA, Mandiri Livin', BRImo, BNI) atau E-Wallet (GoPay, OVO, Dana, ShopeePay).</li>
+                                <li>Pilih menu <strong>Pindai / Scan QRIS</strong> lalu arahkan kamera ke kode QR di atas.</li>
+                                <li>Periksa nominal <strong class="text-slate-900 dark:text-white font-mono">{{ invoice.amount_formatted }}</strong> dan konfirmasi PIN Anda.</li>
+                                <li>Status pembayaran akan terverifikasi secara otomatis secara realtime.</li>
+                            </ol>
+                        </div>
+                    </div>
 
                     <!-- Actions -->
                     <div class="space-y-2.5">
-                        <!-- Direct DOKU Hosted Checkout Button if available -->
-                        <a
-                            v-if="invoice.doku_url"
-                            :href="invoice.doku_url"
-                            class="w-full py-3 px-4 rounded-full bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-bold text-xs transition shadow-md shadow-rose-600/20 flex items-center justify-center space-x-2"
-                        >
-                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                            <span>Bayar via Portal Resmi ↗</span>
-                        </a>
-
                         <button
                             v-if="invoice.qr_string"
                             @click="copyQrString"
@@ -115,19 +161,6 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
                             <span>{{ copied ? 'Tersalin ke Clipboard!' : 'Salin Kode QRIS' }}</span>
                         </button>
-
-                        <!-- Sandbox Simulator Button (For Test Mode) -->
-                        <div v-if="invoice.is_sandbox" class="pt-2 border-t border-slate-200 dark:border-slate-800/80">
-                            <button
-                                @click="simulateSandboxPayment"
-                                :disabled="simulating"
-                                type="button"
-                                class="w-full py-2.5 px-4 rounded-full bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-600/30 dark:hover:bg-indigo-600/50 text-indigo-700 dark:text-indigo-300 font-bold text-xs transition border border-indigo-200 dark:border-indigo-500/40 flex items-center justify-center space-x-2"
-                            >
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                                <span>{{ simulating ? 'Memproses Simulasi...' : '⚡ Simulasi Pembayaran Sukses (Sandbox)' }}</span>
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>

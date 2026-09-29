@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\SystemSetting;
 use App\Models\Transaction;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -35,8 +36,9 @@ class MonthlyReportController extends Controller
         $quotaLimit = $plan?->transaction_limit ?? (int) SystemSetting::get('monthly_quota', 1000);
         $monthlyPrice = $plan?->price ?? (float) SystemSetting::get('monthly_price', 150000);
 
-        // Kuota Terpakai di bulan & tahun terpilih
+        // Kuota Terpakai di bulan & tahun terpilih (Hanya Transaksi API Pelanggan, tanpa transaksi langganan SUB-)
         $baseMonthlyQuery = Transaction::where('customer_id', $customer->id)
+            ->where('external_id', 'not like', 'SUB-%')
             ->whereYear('created_at', $year)
             ->whereMonth('created_at', $month);
 
@@ -162,6 +164,7 @@ class MonthlyReportController extends Controller
         $month = max(1, min(12, $month));
 
         $query = Transaction::where('customer_id', $customer->id)
+            ->where('external_id', 'not like', 'SUB-%')
             ->whereYear('created_at', $year)
             ->whereMonth('created_at', $month)
             ->with('invoice')
@@ -239,5 +242,118 @@ class MonthlyReportController extends Controller
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ]);
+    }
+
+    /**
+     * Cetak PDF Buku Tabungan & Mutasi Rekening Transaksi API
+     */
+    public function exportPdf(Request $request)
+    {
+        $customer = $request->user()->customer;
+        if (!$customer) {
+            abort(403, 'Profil merchant tidak ditemukan.');
+        }
+
+        $year = (int) $request->input('year', now()->year);
+        $month = (int) $request->input('month', now()->month);
+        $status = $request->input('status', 'all');
+        $search = $request->input('search');
+
+        $month = max(1, min(12, $month));
+
+        // Hanya transaksi API pelanggan, abaikan transaksi subs
+        $baseMonthlyQuery = Transaction::where('customer_id', $customer->id)
+            ->where('external_id', 'not like', 'SUB-%')
+            ->whereYear('created_at', $year)
+            ->whereMonth('created_at', $month);
+
+        $successfulQuery = (clone $baseMonthlyQuery)->where('status', 'PAID');
+        $successfulCount = $successfulQuery->count();
+        $successfulAmount = (float) $successfulQuery->sum('amount');
+        $totalFee = (float) $successfulQuery->sum('fee');
+        $netAmount = (float) $successfulQuery->sum('net_amount');
+
+        $totalCount = (clone $baseMonthlyQuery)->count();
+        $successRate = $totalCount > 0 ? round(($successfulCount / $totalCount) * 100, 1) : 0;
+
+        // Ambil transaksi secara kronologis (dari awal bulan) sesuai format buku tabungan bank
+        $query = (clone $baseMonthlyQuery)->with('invoice')->orderBy('created_at', 'asc')->orderBy('id', 'asc');
+
+        if ($status !== 'all' && !empty($status)) {
+            $query->where('status', strtoupper($status));
+        }
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', "%{$search}%")
+                    ->orWhere('external_id', 'like', "%{$search}%")
+                    ->orWhere('invoice_id', 'like', "%{$search}%")
+                    ->orWhere('doku_reference', 'like', "%{$search}%")
+                    ->orWhereHas('invoice', function ($iq) use ($search) {
+                        $iq->where('description', 'like', "%{$search}%")
+                            ->orWhere('customer_name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $rawTransactions = $query->get();
+
+        $runningBalance = 0;
+        $transactions = [];
+
+        foreach ($rawTransactions as $trx) {
+            if ($trx->status === 'PAID') {
+                $runningBalance += (float) ($trx->net_amount > 0 ? $trx->net_amount : ($trx->amount - $trx->fee));
+            }
+
+            $transactions[] = [
+                'id' => $trx->id,
+                'invoice_id' => $trx->invoice_id,
+                'external_id' => $trx->external_id,
+                'created_at_formatted' => $trx->created_at->format('d/m/Y H:i'),
+                'description' => $trx->invoice?->description ?: ($trx->external_id ?: 'Transaksi Pembayaran QRIS'),
+                'customer_name' => $trx->invoice?->customer_name ?: '-',
+                'amount' => (float) $trx->amount,
+                'fee' => (float) $trx->fee,
+                'net_amount' => (float) $trx->net_amount,
+                'running_balance' => $runningBalance,
+                'status' => $trx->status,
+                'doku_reference' => $trx->doku_reference,
+            ];
+        }
+
+        $monthNames = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+        $monthName = ($monthNames[$month] ?? 'Bulan ' . $month) . ' ' . $year;
+
+        $docId = 'PB-' . $year . str_pad($month, 2, '0', STR_PAD_LEFT) . '-' . str_pad($customer->id, 5, '0', STR_PAD_LEFT);
+        $printedAt = now()->format('d/m/Y H:i:s') . ' WIB';
+
+        $data = [
+            'customer' => $customer,
+            'transactions' => $transactions,
+            'year' => $year,
+            'month' => $month,
+            'monthName' => $monthName,
+            'successfulCount' => $successfulCount,
+            'successfulAmount' => $successfulAmount,
+            'totalFee' => $totalFee,
+            'netAmount' => $netAmount,
+            'totalCount' => $totalCount,
+            'successRate' => $successRate,
+            'docId' => $docId,
+            'printedAt' => $printedAt,
+        ];
+
+        $pdf = Pdf::loadView('pdf.passbook_statement', $data)
+            ->setPaper('a4', 'landscape');
+
+        $cleanCustomerName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $customer->name);
+        $filename = "buku-tabungan-{$cleanCustomerName}-{$year}-" . str_pad($month, 2, '0', STR_PAD_LEFT) . ".pdf";
+
+        return $pdf->download($filename);
     }
 }

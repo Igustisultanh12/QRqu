@@ -63,6 +63,7 @@ Route::middleware(['auth'])->group(function () {
     // Monthly Reports (Laporan Bulanan Transaksi)
     Route::get('/reports/monthly', [Customer\MonthlyReportController::class, 'index'])->name('customer.reports.monthly');
     Route::get('/reports/monthly/export', [Customer\MonthlyReportController::class, 'exportCsv'])->name('customer.reports.monthly.export');
+    Route::get('/reports/monthly/pdf', [Customer\MonthlyReportController::class, 'exportPdf'])->name('customer.reports.monthly.pdf');
 
     // Saldo & Penarikan Dana (Settlements)
     Route::get('/settlements', [Customer\SettlementController::class, 'index'])->name('customer.settlements.index');
@@ -123,7 +124,12 @@ Route::middleware(['auth', EnsureAdmin::class])->prefix('admin')->name('admin.')
     Route::put('/plans/{plan}', [Admin\PlanController::class, 'update'])->name('plans.update');
     Route::delete('/plans/{plan}', [Admin\PlanController::class, 'destroy'])->name('plans.destroy');
 
-    // Transaction Management
+    // Transaksi Subs (Subscription Transactions via DOKU QRIS)
+    Route::get('/subscriptions/transactions', [Admin\SubscriptionTransactionController::class, 'index'])->name('subscriptions.transactions');
+    Route::get('/subscriptions/transactions/{transaction}', [Admin\SubscriptionTransactionController::class, 'show'])->name('subscriptions.transactions.show');
+    Route::match(['get', 'post'], '/subscriptions/transactions/{transaction}/sync', [Admin\SubscriptionTransactionController::class, 'syncStatus'])->name('subscriptions.transactions.sync');
+
+    // Transaction Management (Master Transaksi)
     Route::get('/transactions', [Admin\TransactionController::class, 'index'])->name('transactions.index');
     Route::get('/transactions/{transaction}', [Admin\TransactionController::class, 'show'])->name('transactions.show');
     Route::match(['get', 'post'], '/transactions/{transaction}/sync', [Admin\TransactionController::class, 'syncStatus'])->name('transactions.sync');
@@ -133,6 +139,7 @@ Route::middleware(['auth', EnsureAdmin::class])->prefix('admin')->name('admin.')
     // Monthly Reports (Laporan Bulanan Platform)
     Route::get('/reports/monthly', [Admin\MonthlyReportController::class, 'index'])->name('reports.monthly');
     Route::get('/reports/monthly/export', [Admin\MonthlyReportController::class, 'exportCsv'])->name('reports.monthly.export');
+    Route::get('/reports/monthly/pdf', [Admin\MonthlyReportController::class, 'exportPdf'])->name('reports.monthly.pdf');
 
 
     // Webhook Deliveries Management
