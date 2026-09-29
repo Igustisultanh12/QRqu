@@ -1,22 +1,27 @@
 <template>
-    <div class="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 antialiased">
-        <div class="max-w-md w-full bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl space-y-6">
+    <div class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex items-center justify-center p-4 antialiased transition-colors duration-200 relative">
+        <!-- Floating Theme Switcher -->
+        <div class="absolute top-6 right-6">
+            <ThemeToggle />
+        </div>
+
+        <div class="max-w-md w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 rounded-3xl shadow-xl space-y-6 transition-colors duration-200">
             <div class="text-center">
                 <Link :href="route('home')" class="inline-flex items-center space-x-2 mb-4">
                     <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
                         <span class="font-black text-2xl text-slate-950">Q</span>
                     </div>
-                    <span class="font-extrabold text-2xl tracking-tight bg-gradient-to-r from-emerald-400 to-teal-200 bg-clip-text text-transparent">QRqu</span>
+                    <span class="font-extrabold text-2xl tracking-tight bg-gradient-to-r from-emerald-500 to-teal-400 dark:from-emerald-400 dark:to-teal-200 bg-clip-text text-transparent">QRqu</span>
                 </Link>
-                <h1 class="text-xl font-bold text-white">Masuk ke Portal Gateway</h1>
-                <p class="text-xs text-slate-400 mt-1">Akses dashboard merchant atau panel administrator</p>
+                <h1 class="text-xl font-bold text-slate-900 dark:text-white">Masuk ke Portal Gateway</h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Akses dashboard merchant atau panel administrator</p>
             </div>
 
-            <div v-if="status" class="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-xs">
+            <div v-if="status" class="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-600 dark:text-emerald-400 text-xs">
                 {{ status }}
             </div>
 
-            <div v-if="Object.keys(form.errors).length > 0" class="p-4 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-rose-300 text-xs">
+            <div v-if="Object.keys(form.errors).length > 0" class="p-4 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-rose-600 dark:text-rose-300 text-xs">
                 <ul class="list-disc list-inside space-y-1">
                     <li v-for="(err, f) in form.errors" :key="f">{{ err }}</li>
                 </ul>
@@ -24,21 +29,21 @@
 
             <form @submit.prevent="submit" class="space-y-4 text-xs">
                 <div>
-                    <label class="block font-semibold text-slate-300 mb-1">Email</label>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Email</label>
                     <input
                         v-model="form.email"
                         type="email"
                         required
                         autofocus
                         placeholder="admin@qrqu.id atau merchant@tokoku.com"
-                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500"
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                     />
                 </div>
 
                 <div>
                     <div class="flex items-center justify-between mb-1">
-                        <label class="block font-semibold text-slate-300">Password</label>
-                        <Link v-if="canResetPassword" :href="route('password.request')" class="text-[11px] text-emerald-400 hover:underline">
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300">Password</label>
+                        <Link v-if="canResetPassword" :href="route('password.request')" class="text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline">
                             Lupa password?
                         </Link>
                     </div>
@@ -46,7 +51,7 @@
                         v-model="form.password"
                         type="password"
                         required
-                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500"
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                     />
                 </div>
 
@@ -55,9 +60,9 @@
                         <input
                             v-model="form.remember"
                             type="checkbox"
-                            class="w-4 h-4 rounded text-emerald-500 bg-slate-950 border-slate-700 focus:ring-emerald-500"
+                            class="w-4 h-4 rounded text-emerald-500 bg-slate-50 dark:bg-slate-950 border-slate-300 dark:border-slate-700 focus:ring-emerald-500"
                         />
-                        <span class="text-xs text-slate-400">Ingat sesi saya</span>
+                        <span class="text-xs text-slate-600 dark:text-slate-400">Ingat sesi saya</span>
                     </label>
                 </div>
 
@@ -70,9 +75,9 @@
                 </button>
             </form>
 
-            <div class="text-center text-xs text-slate-400 pt-2 border-t border-slate-800">
+            <div class="text-center text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800">
                 Belum memiliki akun merchant?
-                <Link :href="route('register')" class="text-emerald-400 hover:underline font-semibold ml-1">
+                <Link :href="route('register')" class="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold ml-1">
                     Daftar di sini
                 </Link>
             </div>
@@ -82,6 +87,7 @@
 
 <script setup>
 import { useForm, Link } from '@inertiajs/vue3';
+import ThemeToggle from '@/Components/ThemeToggle.vue';
 
 defineProps({
     canResetPassword: {
