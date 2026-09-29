@@ -240,9 +240,9 @@ class SettingController extends Controller
             );
         }
 
-        $amount = (float) $request->input('amount', 1000);
-        if ($amount < 1000) {
-            $amount = 1000;
+        $amount = (float) $request->input('amount', 1);
+        if ($amount < 1) {
+            $amount = 1;
         }
 
         $invoiceId = 'INV-QRQU-' . date('YmdHis') . '-' . strtoupper(Str::random(4));

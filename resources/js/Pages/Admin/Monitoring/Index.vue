@@ -93,9 +93,9 @@
                                 v-model.number="txAmount"
                                 type="number"
                                 required
-                                min="1000"
-                                step="100"
-                                placeholder="Contoh: 1000"
+                                min="1"
+                                step="1"
+                                placeholder="Mulai dari Rp 1"
                                 class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold px-3.5 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 font-mono"
                             />
                         </div>
@@ -103,7 +103,7 @@
                         <!-- Preset Quick Buttons -->
                         <div class="flex flex-wrap gap-2">
                             <button
-                                v-for="amt in [1000, 2000, 5000, 10000]"
+                                v-for="amt in [1, 1000, 2000, 5000, 10000]"
                                 :key="amt"
                                 type="button"
                                 @click="txAmount = amt"

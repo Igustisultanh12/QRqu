@@ -128,6 +128,30 @@ class InvoiceAndTransactionTest extends TestCase
         ]);
     }
 
+    public function test_create_invoice_with_one_rupiah_amount(): void
+    {
+        $response = $this->sendSignedApiRequest('POST', '/api/v1/invoices', [
+            'external_id' => 'INV-ROMEI-TEST-1',
+            'amount' => 1,
+            'description' => 'Uji Coba Transaksi Rp 1',
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'external_id' => 'INV-ROMEI-TEST-1',
+                    'amount' => 1,
+                    'status' => 'PENDING',
+                ],
+            ]);
+
+        $this->assertDatabaseHas('invoices', [
+            'external_id' => 'INV-ROMEI-TEST-1',
+            'amount' => 1,
+        ]);
+    }
+
     public function test_idempotency_key_returns_identical_cached_response(): void
     {
         $idempotencyKey = (string) Str::uuid();

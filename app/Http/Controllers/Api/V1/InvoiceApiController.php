@@ -27,7 +27,7 @@ class InvoiceApiController extends Controller
 
         $validator = Validator::make($request->all(), [
             'external_id' => 'required|string|max:100',
-            'amount' => 'required|numeric|min:1000|max:100000000',
+            'amount' => 'required|numeric|min:1|max:100000000',
             'description' => 'nullable|string|max:255',
             'customer' => 'nullable|array',
             'customer.name' => 'nullable|string|max:100',

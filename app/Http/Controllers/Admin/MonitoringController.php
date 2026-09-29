@@ -70,8 +70,8 @@ class MonitoringController extends Controller
         try {
             $invoiceId = 'INV-QRQU-' . now()->format('YmdHis') . '-' . strtoupper(Str::random(4));
             $amount = (int) $request->amount;
-            if ($amount < 1000) {
-                $amount = 1000;
+            if ($amount < 1) {
+                $amount = 1;
             }
 
             // Dapatkan user aktif dari session atau fallback ke admin user pertama
