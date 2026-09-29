@@ -38,6 +38,22 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
+        // Otomatis pertahankan nomor port pada root URL jika diakses via port kustom (misal port 1398 di aaPanel)
+        try {
+            $serverPort = (int) (request()->server('SERVER_PORT') ?: request()->getPort());
+            $isLocalOrIp = filter_var(request()->getHost(), FILTER_VALIDATE_IP) || in_array(request()->getHost(), ['localhost', '127.0.0.1']);
+
+            if ($isLocalOrIp && $serverPort && !in_array($serverPort, [80, 443])) {
+                $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || request()->isSecure() ? 'https' : 'http';
+                $host = request()->getHost();
+                URL::forceRootUrl("{$scheme}://{$host}:{$serverPort}");
+            } elseif (!empty(config('app.url')) && config('app.url') !== 'http://localhost') {
+                URL::forceRootUrl(config('app.url'));
+            }
+        } catch (\Throwable $e) {
+            // Abaikan saat console CLI / artisan tanpa request context
+        }
+
         // DYNAMIC MAIL GATEWAY CONFIGURATION LOADER
         // Menginjeksi konfigurasi SMTP dari database SystemSetting secara real-time
         try {
