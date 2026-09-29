@@ -17,24 +17,17 @@ class CheckoutController extends Controller
     /**
      * Display QRIS Checkout Page
      */
-    public function show(Request $request, string $invoiceId): Response|\Illuminate\Http\RedirectResponse
+    public function show(Request $request, string $invoiceId): Response
     {
         $invoice = Invoice::with(['customer', 'latestTransaction.dokuTransaction'])
             ->where('id', $invoiceId)
             ->orWhere('external_id', $invoiceId)
             ->firstOrFail();
 
-        // 1. Jika invoice memiliki URL pembayaran eksternal DOKU (Hosted Checkout):
-        // Dan pengunjung tidak meminta secara eksplisit view internal (?view=internal):
-        // LANGSUNG REDIRECT ("TERLEMPAR") KE HALAMAN CHECKOUT DOKU RESMI!
         $dokuUrl = $invoice->qr_url ?: $invoice->latestTransaction?->dokuTransaction?->doku_url;
         $hasExternalDokuUrl = !empty($dokuUrl)
             && !str_contains($dokuUrl, '/checkout/' . $invoice->id)
             && filter_var($dokuUrl, FILTER_VALIDATE_URL);
-
-        if ($hasExternalDokuUrl && $request->query('view') !== 'internal') {
-            return redirect()->away($dokuUrl);
-        }
 
         return Inertia::render('Checkout/Show', [
             'invoice' => [
