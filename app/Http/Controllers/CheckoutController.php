@@ -56,7 +56,20 @@ class CheckoutController extends Controller
 
         $invoice = Invoice::find($invoiceId);
         if (!$invoice) {
+            $invoice = Invoice::where('external_id', $invoiceId)->first();
+        }
+        if (!$invoice) {
             return response()->json(['status' => 'NOT_FOUND'], 404);
+        }
+
+        if ($invoice->external_id) {
+            $cachedStatusExternal = Cache::get('payment_status_' . $invoice->external_id);
+            if ($cachedStatusExternal) {
+                return response()->json([
+                    'status' => $cachedStatusExternal,
+                    'is_paid' => $cachedStatusExternal === 'PAID',
+                ]);
+            }
         }
 
         // Check expiration

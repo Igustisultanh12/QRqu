@@ -106,6 +106,9 @@ class DokuWebhookController extends Controller
 
                 // Polling Cache untuk modal frontend
                 Cache::put('payment_status_' . $invoice->id, 'PAID', 300);
+                if ($invoice->external_id) {
+                    Cache::put('payment_status_' . $invoice->external_id, 'PAID', 300);
+                }
 
                 // Queue Customer Outgoing Webhook
                 $this->customerWebhookService->dispatchPaymentEvent($transaction->fresh(), 'payment.paid');

@@ -26,11 +26,20 @@ class CustomerWebhookService
 
         if ($customer) {
             $configuredWebhook = $customer->webhooks()->where('is_active', true)->first();
-            if ($configuredWebhook) {
+            if ($configuredWebhook && !empty($configuredWebhook->secret)) {
                 if (empty($targetUrl)) {
                     $targetUrl = $configuredWebhook->url;
                 }
                 $secret = $configuredWebhook->secret;
+            } else {
+                if ($configuredWebhook && !empty($configuredWebhook->url) && empty($targetUrl)) {
+                    $targetUrl = $configuredWebhook->url;
+                }
+                // Fallback to customer's active API secret if no dedicated webhook secret is configured
+                $activeCredential = $customer->apiCredentials()->where('status', 'ACTIVE')->first();
+                if ($activeCredential) {
+                    $secret = $activeCredential->getDecryptedSecret() ?: $secret;
+                }
             }
         }
 
