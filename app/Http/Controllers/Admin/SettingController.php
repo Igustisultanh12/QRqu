@@ -4,12 +4,18 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
+use App\Models\Customer;
+use App\Models\Invoice;
 use App\Models\Plan;
 use App\Models\SystemSetting;
+use App\Models\Transaction;
 use App\Services\Payment\Doku\DokuService;
+use App\Services\Webhook\CustomerWebhookService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -213,5 +219,143 @@ class SettingController extends Controller
         }
 
         return redirect()->back()->with('success', 'Koneksi API DOKU Berhasil! Status: ' . ($result['status'] ?? 'CONNECTED'));
+    }
+
+    public function createTestPayment(Request $request, DokuService $dokuService): JsonResponse
+    {
+        $user = $request->user();
+        $customer = $user->customer;
+
+        if (!$customer) {
+            $customer = Customer::firstOrCreate(
+                ['email' => $user->email],
+                [
+                    'user_id' => $user->id,
+                    'name' => $user->name ?: 'Master Administrator',
+                    'company_name' => 'QRqu Gateway Internal Test',
+                    'phone' => '081234567890',
+                    'whatsapp' => '081234567890',
+                    'status' => 'active',
+                ]
+            );
+        }
+
+        $amount = (float) $request->input('amount', 1000);
+        if ($amount < 1000) {
+            $amount = 1000;
+        }
+
+        $invoiceId = Invoice::generateId();
+        $externalId = 'TEST-' . strtoupper(Str::random(8));
+
+        $invoice = Invoice::create([
+            'id' => $invoiceId,
+            'customer_id' => $customer->id,
+            'external_id' => $externalId,
+            'amount' => $amount,
+            'description' => 'Uji Coba Pembayaran QRIS DOKU (Romei Protocol Test)',
+            'customer_name' => $request->input('customer_name', 'Admin Tester'),
+            'customer_email' => $request->input('customer_email', $user->email),
+            'customer_phone' => '081234567890',
+            'status' => 'PENDING',
+            'expired_at' => now()->addMinutes(60),
+            'callback_url' => url('/admin/settings?tab=doku&test_paid=' . $invoiceId),
+        ]);
+
+        $transaction = Transaction::create([
+            'id' => Transaction::generateId(),
+            'customer_id' => $customer->id,
+            'invoice_id' => $invoice->id,
+            'external_id' => $externalId,
+            'amount' => $amount,
+            'status' => 'PENDING',
+        ]);
+
+        // Generate QRIS via DOKU
+        $dokuResult = $dokuService->generateQris($transaction, $invoice);
+
+        if ($dokuResult && (!empty($dokuResult['qr_string']) || !empty($dokuResult['payment_url']))) {
+            $invoice->update([
+                'qr_string' => $dokuResult['qr_string'] ?? null,
+                'qr_url' => $dokuResult['payment_url'] ?? null,
+            ]);
+
+            AuditLog::record('TEST_PAYMENT_CREATED', $user, null, [
+                'invoice_id' => $invoice->id,
+                'amount' => $amount,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'invoice_id' => $invoice->id,
+                'external_id' => $invoice->external_id,
+                'amount' => $amount,
+                'amount_formatted' => 'Rp ' . number_format($amount, 0, ',', '.'),
+                'qr_string' => $invoice->qr_string,
+                'qr_url' => $invoice->qr_url,
+                'checkout_url' => url('/checkout/' . $invoice->id),
+                'expired_at' => $invoice->expired_at->toIso8601String(),
+                'status' => $invoice->status,
+                'raw_response' => $dokuResult['raw_response'] ?? null,
+            ]);
+        }
+
+        $errorMsg = 'Gagal membuat QRIS di DOKU. Periksa kredensial Merchant ID, Secret Key, dan status akun merchant Anda.';
+        if (isset($dokuResult['raw_response'])) {
+            $errorMsg .= ' DOKU Response: ' . json_encode($dokuResult['raw_response']);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => $errorMsg,
+            'raw_response' => $dokuResult['raw_response'] ?? null,
+        ], 422);
+    }
+
+    public function checkTestPaymentStatus(string $invoiceId, DokuService $dokuService): JsonResponse
+    {
+        $invoice = Invoice::find($invoiceId);
+        if (!$invoice) {
+            return response()->json(['success' => false, 'message' => 'Invoice tidak ditemukan'], 404);
+        }
+
+        if ($invoice->status === 'PENDING') {
+            $dokuStatus = $dokuService->verifyPayment($invoice->id);
+            if (isset($dokuStatus['transaction']['status']) && strtoupper($dokuStatus['transaction']['status']) === 'SUCCESS') {
+                $transaction = $invoice->latestTransaction;
+                if ($transaction) {
+                    $transaction->transitionTo('PAID', 'doku_status_check', 'Payment verified via DOKU API');
+                } else {
+                    $invoice->update(['status' => 'PAID', 'paid_at' => now()]);
+                }
+                $invoice->refresh();
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'status' => $invoice->status,
+            'is_paid' => $invoice->status === 'PAID',
+            'paid_at' => $invoice->paid_at?->format('d M Y H:i:s'),
+        ]);
+    }
+
+    public function simulateTestPayment(string $invoiceId, CustomerWebhookService $webhookService): JsonResponse
+    {
+        $invoice = Invoice::findOrFail($invoiceId);
+        $transaction = $invoice->latestTransaction ?? Transaction::where('invoice_id', $invoice->id)->first();
+
+        if ($transaction && $transaction->status !== 'PAID') {
+            $transaction->transitionTo('PAID', 'admin_test_simulator', 'Simulasi pembayaran test dari Admin Settings');
+            $webhookService->dispatchPaymentEvent($transaction->fresh(), 'payment.paid');
+        } else {
+            $invoice->update(['status' => 'PAID', 'paid_at' => now()]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'status' => 'PAID',
+            'message' => 'Pembayaran uji coba berhasil disimulasikan sebagai LUNAS!',
+        ]);
     }
 }

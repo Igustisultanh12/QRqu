@@ -300,4 +300,54 @@ class MonthlyReportAndSettingsTest extends TestCase
         $csvResponse->assertStatus(200);
         $csvResponse->assertHeader('content-type', 'text/csv; charset=UTF-8');
     }
+
+    public function test_admin_can_create_and_simulate_doku_test_payment(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->postJson('/admin/settings/test-payment', [
+                'amount' => 1000,
+                'customer_name' => 'Tester Sultan',
+            ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'amount' => 1000,
+            'status' => 'PENDING',
+        ]);
+
+        $invoiceId = $response->json('invoice_id');
+        $this->assertNotNull($invoiceId);
+
+        // Check Status
+        $statusResponse = $this->actingAs($this->adminUser)
+            ->getJson("/admin/settings/test-payment/{$invoiceId}/status");
+
+        $statusResponse->assertStatus(200);
+        $statusResponse->assertJson([
+            'success' => true,
+            'status' => 'PENDING',
+            'is_paid' => false,
+        ]);
+
+        // Simulate Payment
+        $simulateResponse = $this->actingAs($this->adminUser)
+            ->postJson("/admin/settings/test-payment/{$invoiceId}/simulate");
+
+        $simulateResponse->assertStatus(200);
+        $simulateResponse->assertJson([
+            'success' => true,
+            'status' => 'PAID',
+        ]);
+
+        // Re-check Status
+        $finalStatus = $this->actingAs($this->adminUser)
+            ->getJson("/admin/settings/test-payment/{$invoiceId}/status");
+
+        $finalStatus->assertJson([
+            'success' => true,
+            'status' => 'PAID',
+            'is_paid' => true,
+        ]);
+    }
 }

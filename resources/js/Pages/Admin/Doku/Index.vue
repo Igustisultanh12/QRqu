@@ -25,14 +25,23 @@
                         <p class="text-xs text-slate-400">Parameter sinkronisasi protokol Mas Sultan / romei 1 untuk generate QRIS Live</p>
                     </div>
 
-                    <button
-                        @click="testConnection"
-                        type="button"
-                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2 shrink-0 shadow-md"
-                    >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                        <span>Test Connection</span>
-                    </button>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button
+                            @click="testConnection"
+                            type="button"
+                            class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2 shadow-sm"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            <span>Test Connection</span>
+                        </button>
+                        <Link
+                            :href="route('admin.settings.index')"
+                            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center space-x-2 shadow-md shadow-indigo-600/20"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                            <span>Test Pembayaran QRIS</span>
+                        </Link>
+                    </div>
                 </div>
 
                 <form @submit.prevent="submitConfig" class="space-y-4">
@@ -114,7 +123,7 @@
 </template>
 
 <script setup>
-import { useForm, router } from '@inertiajs/vue3';
+import { useForm, router, Link } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 
 const props = defineProps({

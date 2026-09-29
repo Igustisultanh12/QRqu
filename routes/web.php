@@ -106,10 +106,6 @@ Route::middleware(['auth', EnsureAdmin::class])->prefix('admin')->name('admin.')
     Route::get('/reports/monthly', [Admin\MonthlyReportController::class, 'index'])->name('reports.monthly');
     Route::get('/reports/monthly/export', [Admin\MonthlyReportController::class, 'exportCsv'])->name('reports.monthly.export');
 
-    // DOKU Gateway Management
-    Route::get('/doku', [Admin\DokuController::class, 'index'])->name('doku.index');
-    Route::post('/doku', [Admin\DokuController::class, 'update'])->name('doku.update');
-    Route::post('/doku/test-connection', [Admin\DokuController::class, 'testConnection'])->name('doku.test-connection');
 
     // Webhook Deliveries Management
     Route::get('/webhooks', [Admin\WebhookController::class, 'index'])->name('webhooks.index');
@@ -120,6 +116,17 @@ Route::middleware(['auth', EnsureAdmin::class])->prefix('admin')->name('admin.')
     Route::post('/settings', [Admin\SettingController::class, 'update'])->name('settings.update');
     Route::post('/settings/test-mail', [Admin\SettingController::class, 'testMail'])->name('settings.test-mail');
     Route::post('/settings/test-doku', [Admin\SettingController::class, 'testDoku'])->name('settings.test-doku');
+    Route::post('/settings/test-payment', [Admin\SettingController::class, 'createTestPayment'])->name('settings.test-payment');
+    Route::get('/settings/test-payment/{invoice}/status', [Admin\SettingController::class, 'checkTestPaymentStatus'])->name('settings.test-payment.status');
+    Route::post('/settings/test-payment/{invoice}/simulate', [Admin\SettingController::class, 'simulateTestPayment'])->name('settings.test-payment.simulate');
+
+    // DOKU Gateway Management
+    Route::get('/doku', [Admin\DokuController::class, 'index'])->name('doku.index');
+    Route::post('/doku', [Admin\DokuController::class, 'update'])->name('doku.update');
+    Route::post('/doku/test-connection', [Admin\DokuController::class, 'testConnection'])->name('doku.test-connection');
+    Route::post('/doku/test-payment', [Admin\SettingController::class, 'createTestPayment'])->name('doku.test-payment');
+    Route::get('/doku/test-payment/{invoice}/status', [Admin\SettingController::class, 'checkTestPaymentStatus'])->name('doku.test-payment.status');
+    Route::post('/doku/test-payment/{invoice}/simulate', [Admin\SettingController::class, 'simulateTestPayment'])->name('doku.test-payment.simulate');
 
     // Audit & Security Logs
     Route::get('/audit-logs', [Admin\AuditLogController::class, 'index'])->name('audit-logs.index');
