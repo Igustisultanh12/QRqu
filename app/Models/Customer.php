@@ -70,6 +70,39 @@ class Customer extends Model
         return $this->hasMany(ApiUsage::class);
     }
 
+    public function settlements()
+    {
+        return $this->hasMany(Settlement::class);
+    }
+
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class);
+    }
+
+    public function getBalanceAttribute(): float
+    {
+        $revenue = (float) $this->transactions()->where('status', 'PAID')->sum('amount');
+        $withdrawn = (float) $this->settlements()->where('status', 'selesai')->sum('amount');
+        $pending = (float) $this->settlements()->whereIn('status', ['verifikasi', 'proses'])->sum('amount');
+        return max(0.0, $revenue - ($withdrawn + $pending));
+    }
+
+    public function getTotalRevenueAttribute(): float
+    {
+        return (float) $this->transactions()->where('status', 'PAID')->sum('amount');
+    }
+
+    public function getTotalWithdrawnAttribute(): float
+    {
+        return (float) $this->settlements()->where('status', 'selesai')->sum('amount');
+    }
+
+    public function getPendingWithdrawnAttribute(): float
+    {
+        return (float) $this->settlements()->whereIn('status', ['verifikasi', 'proses'])->sum('amount');
+    }
+
     public function hasActiveSubscription(): bool
     {
         // Check if customer status is active

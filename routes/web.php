@@ -54,6 +54,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/monthly', [Customer\MonthlyReportController::class, 'index'])->name('customer.reports.monthly');
     Route::get('/reports/monthly/export', [Customer\MonthlyReportController::class, 'exportCsv'])->name('customer.reports.monthly.export');
 
+    // Saldo & Penarikan Dana (Settlements)
+    Route::get('/settlements', [Customer\SettlementController::class, 'index'])->name('customer.settlements.index');
+    Route::post('/settlements', [Customer\SettlementController::class, 'store'])->name('customer.settlements.store');
+
+    // Tiket Bantuan & Pengaduan
+    Route::get('/tickets', [Customer\TicketController::class, 'index'])->name('customer.tickets.index');
+    Route::post('/tickets', [Customer\TicketController::class, 'store'])->name('customer.tickets.store');
+    Route::get('/tickets/{ticket}', [Customer\TicketController::class, 'show'])->name('customer.tickets.show');
+    Route::post('/tickets/{ticket}/reply', [Customer\TicketController::class, 'reply'])->name('customer.tickets.reply');
+    Route::post('/tickets/{ticket}/close', [Customer\TicketController::class, 'close'])->name('customer.tickets.close');
+
     // Documentation
     Route::get('/docs', [Customer\DocumentationController::class, 'index'])->name('customer.docs.index');
 
@@ -134,6 +145,14 @@ Route::middleware(['auth', EnsureAdmin::class])->prefix('admin')->name('admin.')
     Route::post('/doku/test-payment', [Admin\SettingController::class, 'createTestPayment'])->name('doku.test-payment');
     Route::get('/doku/test-payment/{invoice}/status', [Admin\SettingController::class, 'checkTestPaymentStatus'])->name('doku.test-payment.status');
     Route::post('/doku/test-payment/{invoice}/simulate', [Admin\SettingController::class, 'simulateTestPayment'])->name('doku.test-payment.simulate');
+
+    // Penarikan Saldo Pelanggan (Settlements)
+    Route::get('/settlements', [Admin\SettlementController::class, 'index'])->name('settlements.index');
+    Route::post('/settlements/{settlement}/status', [Admin\SettlementController::class, 'updateStatus'])->name('settlements.status');
+
+    // Tiket Pengaduan & Layanan Bantuan
+    Route::get('/tickets', [Admin\TicketController::class, 'index'])->name('tickets.index');
+    Route::post('/tickets/{ticket}/reply', [Admin\TicketController::class, 'reply'])->name('tickets.reply');
 
     // Audit & Security Logs
     Route::get('/audit-logs', [Admin\AuditLogController::class, 'index'])->name('audit-logs.index');

@@ -120,6 +120,34 @@
                         </Link>
 
                         <Link
+                            :href="route('admin.settlements.index')"
+                            @click="mobileNavOpen = false"
+                            :class="[
+                                'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                                route().current('admin.settlements.*')
+                                    ? 'bg-indigo-500/10 text-indigo-400 font-semibold border border-indigo-500/20'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                            ]"
+                        >
+                            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                            Penarikan Saldo
+                        </Link>
+
+                        <Link
+                            :href="route('admin.tickets.index')"
+                            @click="mobileNavOpen = false"
+                            :class="[
+                                'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                                route().current('admin.tickets.*')
+                                    ? 'bg-indigo-500/10 text-indigo-400 font-semibold border border-indigo-500/20'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                            ]"
+                        >
+                            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                            Tiket Bantuan
+                        </Link>
+
+                        <Link
                             :href="route('admin.doku.index')"
                             @click="mobileNavOpen = false"
                             :class="[
@@ -235,6 +263,19 @@
                     </Link>
 
                     <Link
+                        :href="route('admin.settlements.index')"
+                        :class="[
+                            'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                            route().current('admin.settlements.*')
+                                ? 'bg-indigo-500/10 text-indigo-400 font-semibold border border-indigo-500/20'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                        ]"
+                    >
+                        <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                        Penarikan Saldo
+                    </Link>
+
+                    <Link
                         :href="route('admin.reports.monthly')"
                         :class="[
                             'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
@@ -271,6 +312,19 @@
                     >
                         <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                         Webhook Monitoring
+                    </Link>
+
+                    <Link
+                        :href="route('admin.tickets.index')"
+                        :class="[
+                            'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                            route().current('admin.tickets.*')
+                                ? 'bg-indigo-500/10 text-indigo-400 font-semibold border border-indigo-500/20'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                        ]"
+                    >
+                        <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                        Tiket Bantuan
                     </Link>
 
                     <Link
