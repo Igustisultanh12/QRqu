@@ -47,6 +47,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/transactions', [Customer\TransactionController::class, 'index'])->name('customer.transactions.index');
     Route::get('/transactions/export', [Customer\TransactionController::class, 'export'])->name('customer.transactions.export');
     Route::get('/transactions/{transaction}', [Customer\TransactionController::class, 'show'])->name('customer.transactions.show');
+    Route::post('/transactions/{transaction}/simulate', [Customer\TransactionController::class, 'simulate'])->name('customer.transactions.simulate');
 
     // Monthly Reports (Laporan Bulanan Transaksi)
     Route::get('/reports/monthly', [Customer\MonthlyReportController::class, 'index'])->name('customer.reports.monthly');
@@ -104,6 +105,7 @@ Route::middleware(['auth', EnsureAdmin::class])->prefix('admin')->name('admin.')
     Route::get('/transactions', [Admin\TransactionController::class, 'index'])->name('transactions.index');
     Route::get('/transactions/{transaction}', [Admin\TransactionController::class, 'show'])->name('transactions.show');
     Route::post('/transactions/{transaction}/cancel', [Admin\TransactionController::class, 'cancel'])->name('transactions.cancel');
+    Route::post('/transactions/{transaction}/simulate', [Admin\TransactionController::class, 'simulate'])->name('transactions.simulate');
 
     // Monthly Reports (Laporan Bulanan Platform)
     Route::get('/reports/monthly', [Admin\MonthlyReportController::class, 'index'])->name('reports.monthly');

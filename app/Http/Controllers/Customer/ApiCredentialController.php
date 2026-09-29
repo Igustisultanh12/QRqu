@@ -17,10 +17,14 @@ class ApiCredentialController extends Controller
 {
     public function index(Request $request): Response
     {
-        $customer = $request->user()->customer;
-        $credentials = ApiCredential::where('customer_id', $customer->id)
+        $user = $request->user();
+        if ($user->isAdmin() && !$user->customer) {
+            $user->ensureCustomerProfile();
+        }
+        $customer = $user->fresh()->customer;
+        $credentials = $customer ? ApiCredential::where('customer_id', $customer->id)
             ->latest()
-            ->get();
+            ->get() : collect();
 
         return Inertia::render('Customer/ApiCredentials/Index', [
             'credentials' => $credentials,

@@ -17,12 +17,16 @@ class WebhookController extends Controller
 {
     public function index(Request $request): Response
     {
-        $customer = $request->user()->customer;
-        $webhook = Webhook::where('customer_id', $customer->id)->first();
+        $user = $request->user();
+        if ($user->isAdmin() && !$user->customer) {
+            $user->ensureCustomerProfile();
+        }
+        $customer = $user->fresh()->customer;
+        $webhook = $customer ? Webhook::where('customer_id', $customer->id)->first() : null;
 
-        $deliveries = WebhookDelivery::where('customer_id', $customer->id)
+        $deliveries = $customer ? WebhookDelivery::where('customer_id', $customer->id)
             ->latest()
-            ->paginate(15);
+            ->paginate(15) : null;
 
         return Inertia::render('Customer/Webhooks/Index', [
             'webhook' => $webhook,

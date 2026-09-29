@@ -16,6 +16,16 @@
 
                 <!-- Navigation Links -->
                 <nav class="p-4 space-y-1.5 text-sm font-medium">
+                    <!-- Quick Switch to Admin Portal if user is Admin -->
+                    <Link
+                        v-if="$page.props.auth.user?.is_admin"
+                        :href="route('admin.dashboard')"
+                        class="flex items-center px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-500/30 hover:bg-indigo-100 dark:hover:bg-indigo-500/25 transition-colors text-xs mb-3 shadow-sm"
+                    >
+                        <svg class="w-4 h-4 mr-2.5 shrink-0 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        <span>Masuk Panel Admin</span>
+                    </Link>
+
                     <Link
                         :href="route('customer.dashboard')"
                         :class="[
@@ -231,6 +241,14 @@
                         <span class="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400"></span>
                         <span>Belum Berlangganan</span>
                     </div>
+
+                    <Link
+                        v-if="$page.props.auth.user?.is_admin"
+                        :href="route('admin.dashboard')"
+                        class="inline-flex items-center text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/20 hover:bg-indigo-100 dark:hover:bg-indigo-500/30 px-3 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-500/40 transition-colors shadow-sm"
+                    >
+                        <span>👑 Panel Admin</span>
+                    </Link>
 
                     <a :href="route('checkout.show', 'INV-20260929-DEMO001')" target="_blank" class="hidden md:inline-flex items-center text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
                         <span>Lihat Demo QRIS</span>

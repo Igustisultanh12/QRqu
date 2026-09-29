@@ -29,6 +29,20 @@
 
                     <button
                         v-if="['CREATED', 'PENDING'].includes(transaction.status)"
+                        @click="simulatePayment"
+                        :disabled="isSimulating"
+                        class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm"
+                    >
+                        <svg v-if="isSimulating" class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                        </svg>
+                        <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        <span>{{ isSimulating ? 'Memproses...' : '⚡ Simulasi Lunas & Kirim Webhook' }}</span>
+                    </button>
+
+                    <button
+                        v-if="['CREATED', 'PENDING'].includes(transaction.status)"
                         @click="cancelTrx"
                         class="px-4 py-2 bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/20 dark:hover:bg-rose-500/30 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30 rounded-xl text-xs font-semibold transition"
                     >
@@ -103,6 +117,7 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 
@@ -110,9 +125,20 @@ const props = defineProps({
     transaction: Object,
 });
 
+const isSimulating = ref(false);
+
 const cancelTrx = () => {
     if (confirm('Batalkan transaksi ini? Invoice dan QRIS tidak akan dapat dibayar lagi.')) {
         router.post(route('admin.transactions.cancel', props.transaction.id));
     }
+};
+
+const simulatePayment = () => {
+    isSimulating.value = true;
+    router.post(route('admin.transactions.simulate', props.transaction.id), {}, {
+        onFinish: () => {
+            isSimulating.value = false;
+        }
+    });
 };
 </script>

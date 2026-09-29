@@ -95,4 +95,39 @@ class User extends Authenticatable implements MustVerifyEmail
             $query->where('name', $permissionName);
         })->exists();
     }
+
+    public function ensureCustomerProfile(): Customer
+    {
+        if ($this->customer) {
+            return $this->customer;
+        }
+
+        $customer = Customer::firstOrCreate(
+            ['user_id' => $this->id],
+            [
+                'name' => $this->name,
+                'company_name' => $this->isAdmin() ? 'QRqu Administrator HQ' : ($this->name . ' Store'),
+                'email' => $this->email,
+                'phone' => $this->phone ?? $this->whatsapp_number ?? '081234567890',
+                'whatsapp' => $this->whatsapp_number ?? $this->phone ?? '081234567890',
+                'status' => 'active',
+            ]
+        );
+
+        if ($this->isAdmin() && !$customer->hasActiveSubscription()) {
+            $plan = Plan::where('slug', 'semiannual-180d')->first() ?? Plan::first();
+            if ($plan) {
+                Subscription::create([
+                    'customer_id' => $customer->id,
+                    'plan_id' => $plan->id,
+                    'starts_at' => now(),
+                    'expires_at' => now()->addYears(5),
+                    'status' => 'active',
+                    'auto_renew' => true,
+                ]);
+            }
+        }
+
+        return $customer;
+    }
 }

@@ -14,7 +14,10 @@ class DashboardController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $customer = $user->customer;
+        if ($user->isAdmin() && !$user->customer) {
+            $user->ensureCustomerProfile();
+        }
+        $customer = $user->fresh()->customer;
 
         if (!$customer) {
             return Inertia::render('Customer/SetupProfile', ['user' => $user]);

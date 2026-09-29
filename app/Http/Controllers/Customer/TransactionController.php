@@ -13,9 +13,13 @@ class TransactionController extends Controller
 {
     public function index(Request $request): Response
     {
-        $customer = $request->user()->customer;
+        $user = $request->user();
+        if ($user->isAdmin() && !$user->customer) {
+            $user->ensureCustomerProfile();
+        }
+        $customer = $user->fresh()->customer;
 
-        $query = Transaction::where('customer_id', $customer->id)
+        $query = Transaction::where('customer_id', $customer?->id)
             ->with(['invoice', 'statusHistories'])
             ->latest();
 
@@ -51,8 +55,9 @@ class TransactionController extends Controller
 
     public function show(Request $request, Transaction $transaction): Response
     {
-        $customer = $request->user()->customer;
-        if ($transaction->customer_id !== $customer->id) {
+        $user = $request->user();
+        $customer = $user->customer;
+        if (!$user->isAdmin() && (!$customer || $transaction->customer_id !== $customer->id)) {
             abort(403);
         }
 
@@ -61,6 +66,49 @@ class TransactionController extends Controller
         return Inertia::render('Customer/Transactions/Show', [
             'transaction' => $transaction,
         ]);
+    }
+
+    public function simulate(Request $request, Transaction $transaction, \App\Services\Webhook\CustomerWebhookService $webhookService): RedirectResponse
+    {
+        $user = $request->user();
+        $customer = $user->customer;
+        if (!$user->isAdmin() && (!$customer || $transaction->customer_id !== $customer->id)) {
+            abort(403);
+        }
+
+        if (in_array(strtoupper($transaction->status), ['PAID', 'SUCCESS'])) {
+            return redirect()->back()->with('error', 'Transaksi ini sudah lunas sebelumnya.');
+        }
+
+        $invoice = $transaction->invoice;
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($transaction, $invoice) {
+            $transaction->lockForUpdate();
+            if ($invoice) {
+                $invoice->lockForUpdate();
+                $invoice->update([
+                    'status' => 'PAID',
+                    'paid_at' => now(),
+                ]);
+            }
+
+            $mockRef = 'DOKU-SIM-' . time();
+            $transaction->update([
+                'doku_reference' => $mockRef,
+                'payment_gateway_ref' => $mockRef,
+            ]);
+
+            $transaction->transitionTo('PAID', 'simulation', 'Simulasi pembayaran lunas oleh merchant di dashboard QRqu');
+        });
+
+        if ($invoice) {
+            \Illuminate\Support\Facades\Cache::put('payment_status_' . $invoice->id, 'PAID', 300);
+        }
+
+        // Tembak webhook otomatis ke endpoint Romei
+        $webhookService->dispatchPaymentEvent($transaction->fresh(), 'payment.paid');
+
+        return redirect()->back()->with('success', "Simulasi pembayaran BERHASIL! Transaksi #{$transaction->id} kini berstatus LUNAS dan webhook telah dikirim ke Romei.");
     }
 
     public function export(Request $request): StreamedResponse

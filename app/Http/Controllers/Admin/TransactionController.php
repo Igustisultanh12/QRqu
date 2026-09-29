@@ -74,4 +74,43 @@ class TransactionController extends Controller
 
         return redirect()->back()->with('success', "Transaksi {$transaction->id} berhasil dibatalkan.");
     }
+
+    public function simulate(Request $request, Transaction $transaction, \App\Services\Webhook\CustomerWebhookService $webhookService): RedirectResponse
+    {
+        if (in_array(strtoupper($transaction->status), ['PAID', 'SUCCESS'])) {
+            return redirect()->back()->with('error', 'Transaksi ini sudah lunas sebelumnya.');
+        }
+
+        $invoice = $transaction->invoice;
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($transaction, $invoice) {
+            $transaction->lockForUpdate();
+            if ($invoice) {
+                $invoice->lockForUpdate();
+                $invoice->update([
+                    'status' => 'PAID',
+                    'paid_at' => now(),
+                ]);
+            }
+
+            $mockRef = 'DOKU-SIM-' . time();
+            $transaction->update([
+                'doku_reference' => $mockRef,
+                'payment_gateway_ref' => $mockRef,
+            ]);
+
+            $transaction->transitionTo('PAID', 'admin_simulation', 'Simulasi pelunasan transaksi oleh Master Admin');
+        });
+
+        if ($invoice) {
+            \Illuminate\Support\Facades\Cache::put('payment_status_' . $invoice->id, 'PAID', 300);
+        }
+
+        // Tembak webhook otomatis ke endpoint merchant/Romei
+        $webhookService->dispatchPaymentEvent($transaction->fresh(), 'payment.paid');
+
+        AuditLog::record('ADMIN_SIMULATE_PAYMENT', $transaction, ['status' => 'PENDING'], ['status' => 'PAID']);
+
+        return redirect()->back()->with('success', "Transaksi #{$transaction->id} berhasil ditandai LUNAS dan webhook telah dikirim ke merchant.");
+    }
 }
