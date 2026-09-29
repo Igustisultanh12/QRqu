@@ -16,7 +16,7 @@
                 <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
                     <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Gross Transaction Value (GTV)</span>
                     <div class="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-2">{{ metrics.gross_transaction_value_formatted }}</div>
-                    <span class="text-xs text-slate-500 dark:text-slate-400 mt-2 block">Total perputaran uang merchant DOKU</span>
+                    <span class="text-xs text-slate-500 dark:text-slate-400 mt-2 block">Total perputaran transaksi gateway</span>
                 </div>
 
                 <!-- Total Customers -->
@@ -63,7 +63,7 @@
             <div class="bg-white dark:bg-slate-950 p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all">
                 <div class="mb-6">
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white">Tren Transaksi Platform (14 Hari Terakhir)</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Total volume dan jumlah invoice QRIS yang diproses DOKU</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Total volume dan jumlah invoice QRIS yang diproses sistem</p>
                 </div>
 
                 <div class="h-48 flex items-end justify-between gap-2 pt-6 border-b border-slate-200 dark:border-slate-800">
@@ -100,7 +100,7 @@
                                 <th class="p-4">Customer / Tenant</th>
                                 <th class="p-4">Nominal</th>
                                 <th class="p-4">Status</th>
-                                <th class="p-4">DOKU Ref</th>
+                                <th class="p-4">Ref Transaksi</th>
                                 <th class="p-4">Waktu</th>
                             </tr>
                         </thead>

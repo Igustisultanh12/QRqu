@@ -221,7 +221,7 @@
                                 <th class="py-3 px-4 font-semibold">Pelanggan</th>
                                 <th class="py-3 px-4 font-semibold text-right">Nominal</th>
                                 <th class="py-3 px-4 font-semibold text-center">Status</th>
-                                <th class="py-3 px-4 font-semibold">Ref DOKU</th>
+                                <th class="py-3 px-4 font-semibold">Ref Gateway</th>
                                 <th class="py-3 px-4 font-semibold text-right">Aksi</th>
                             </tr>
                         </thead>

@@ -24,24 +24,24 @@
                         {{ transaction.status }}
                     </span>
 
-                    <!-- Tombol Sinkron Status Langsung ke Server DOKU -->
+                    <!-- Tombol Sinkron Status Langsung ke Server Gateway -->
                     <button
                         v-if="transaction.status === 'PENDING'"
                         @click="syncDokuStatus"
                         :disabled="isSyncing"
                         type="button"
                         class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition flex items-center justify-center space-x-1.5 shadow-sm"
-                        title="Cek langsung status pembayaran ke server resmi DOKU"
+                        title="Cek langsung status pembayaran ke server gateway"
                     >
                         <svg v-if="isSyncing" class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                         </svg>
                         <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                        <span>{{ isSyncing ? 'Mengecek DOKU...' : '🔄 Sinkron Status DOKU' }}</span>
+                        <span>{{ isSyncing ? 'Mengecek...' : '🔄 Sinkron Status Gateway' }}</span>
                     </button>
 
-                    <!-- Prioritas Utama: Buka Halaman DOKU Resmi jika URL DOKU tersedia -->
+                    <!-- Prioritas Utama: Buka Halaman Resmi jika URL tersedia -->
                     <a
                         v-if="dokuCheckoutUrl"
                         :href="dokuCheckoutUrl"
@@ -49,7 +49,7 @@
                         class="px-4 py-2.5 bg-rose-600 hover:bg-rose-500 active:scale-95 text-white text-xs font-bold rounded-xl transition flex items-center justify-center space-x-1.5 shadow-sm"
                     >
                         <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                        <span>🔴 Buka Portal DOKU ↗</span>
+                        <span>🔴 Buka Portal Pembayaran ↗</span>
                     </a>
 
                     <button
@@ -86,7 +86,7 @@
                     <div>
                         <span class="font-bold text-amber-800 dark:text-amber-300">Status Transaksi Menunggu Pembayaran (PENDING):</span>
                         <p class="text-[11px] text-amber-700 dark:text-amber-300/90 mt-0.5 leading-relaxed">
-                            Pelanggan belum scan atau mentransfer dana QRIS. Jika Anda sudah bayar di DOKU tapi belum update, klik <strong>"Cek Status DOKU"</strong>. Untuk keperluan simulasi testing, klik <strong>"⚡ Lunaskan"</strong>.
+                            Pelanggan belum scan atau mentransfer dana QRIS. Jika Anda sudah melakukan pembayaran tapi status belum update, klik <strong>"Cek Status Gateway"</strong>. Untuk keperluan simulasi testing, klik <strong>"⚡ Lunaskan"</strong>.
                         </p>
                     </div>
                 </div>
@@ -102,7 +102,7 @@
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                         </svg>
                         <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                        <span>{{ isSyncing ? 'Mengecek...' : 'Cek Status DOKU' }}</span>
+                        <span>{{ isSyncing ? 'Mengecek...' : 'Cek Status Gateway' }}</span>
                     </button>
                     <button
                         @click="simulatePayment"
@@ -119,14 +119,14 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Transaction Info -->
                 <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4 transition-colors duration-200">
-                    <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Informasi DOKU & Gateway</h3>
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Informasi Gateway & Transaksi</h3>
                     <div class="space-y-2.5 text-xs">
                         <div class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800/80">
                             <span class="text-slate-500 dark:text-slate-400">Metode Pembayaran</span>
                             <span class="text-slate-900 dark:text-white font-semibold">QRIS Realtime</span>
                         </div>
                         <div class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800/80">
-                            <span class="text-slate-500 dark:text-slate-400">DOKU Reference</span>
+                            <span class="text-slate-500 dark:text-slate-400">Gateway Reference</span>
                             <span class="font-mono font-semibold">
                                 <template v-if="transaction.doku_reference">
                                     <span class="text-emerald-600 dark:text-emerald-400">{{ transaction.doku_reference }}</span>
@@ -142,7 +142,7 @@
                             </span>
                         </div>
                         <div class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800/80">
-                            <span class="text-slate-500 dark:text-slate-400">DOKU Request ID</span>
+                            <span class="text-slate-500 dark:text-slate-400">Gateway Request ID</span>
                             <span class="text-slate-700 dark:text-slate-300 font-mono truncate max-w-[200px]">{{ transaction.doku_request_id || '-' }}</span>
                         </div>
                         <div class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800/80">

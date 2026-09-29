@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { Link, Head, router } from '@inertiajs/vue3';
 import ThemeToggle from '@/Components/ThemeToggle.vue';
+import BankLogo from '@/Components/BankLogo.vue';
 
 const quickEmail = ref('');
 
@@ -19,7 +20,7 @@ const bankPartners = [
     { name: 'BRI', code: 'bri' },
     { name: 'BNI', code: 'bni' },
     { name: 'BSI', code: 'bsi' },
-    { name: 'DOKU', code: 'doku' },
+    { name: 'QRIS', code: 'qris' },
     { name: 'GoPay', code: 'gopay' },
     { name: 'OVO', code: 'ovo' },
     { name: 'DANA', code: 'dana' },
@@ -96,196 +97,107 @@ const bankPartners = [
                     </div>
                 </header>
 
-                <!-- 2. Hero Section: Playful Geometric Typography & Visual Mockup -->
-                <section class="px-6 sm:px-12 lg:px-16 pt-12 pb-16 lg:pt-16 lg:pb-24">
-                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-                        
-                        <!-- Left Column: Geometric Hero Copy -->
-                        <div class="lg:col-span-7 space-y-6">
-                            <!-- Pill Tag -->
-                            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 text-[11px] font-bold text-slate-700 dark:text-slate-300 tracking-wide font-mono uppercase">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                <span>DOKU QRIS ENGINE • LIVE MULTI-TENANT</span>
-                            </div>
+                <!-- 2. Hero Section: Playful Geometric Typography (Centered Bauhaus Style) -->
+                <section class="px-6 sm:px-12 lg:px-16 pt-12 pb-16 lg:pt-20 lg:pb-24 text-center">
+                    <div class="max-w-4xl mx-auto space-y-8">
+                        <!-- Pill Tag -->
+                        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 text-[11px] font-bold text-slate-700 dark:text-slate-300 tracking-wide font-mono uppercase shadow-sm">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span>QRIS PAYMENT GATEWAY ENGINE • LIVE MULTI-TENANT</span>
+                        </div>
 
-                            <!-- Big Playful Geometric Headline -->
-                            <h1 class="text-4xl sm:text-6xl xl:text-7xl font-black text-slate-950 dark:text-white tracking-tight leading-[1.08]">
-                                <span class="inline-flex items-center flex-wrap gap-2">
-                                    <span class="inline-flex items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-orange-500 text-white shadow-lg shadow-orange-500/30">
-                                        <svg class="w-5 h-5 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                                    </span>
-                                    <span>build</span>
-                                    <span class="inline-flex items-center justify-center w-8 h-8 sm:w-11 sm:h-11 rounded-2xl bg-teal-500 text-slate-950 font-mono text-sm sm:text-lg">↗</span>
-                                    <span class="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-blue-500"></span>
-                                    <span class="text-slate-400 font-mono text-xl sm:text-2xl">×</span>
-                                    <span class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-400"></span>
+                        <!-- Big Playful Geometric Headline -->
+                        <h1 class="text-4xl sm:text-6xl md:text-7xl font-black text-slate-950 dark:text-white tracking-tight leading-[1.1]">
+                            <span class="inline-flex items-center justify-center flex-wrap gap-2 sm:gap-3">
+                                <span class="inline-flex items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-orange-500 text-white shadow-lg shadow-orange-500/30">
+                                    <svg class="w-5 h-5 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                                 </span>
-                                <br />
-                                <span>beautiful</span>
-                                <span class="inline-flex items-center ml-2 px-3 py-1 rounded-full bg-amber-400/90 text-slate-950 text-xs sm:text-sm font-mono align-middle">
-                                    ● ── o
-                                </span>
-                                <br />
-                                <span class="inline-flex items-center flex-wrap gap-2">
-                                    <span class="w-8 h-8 sm:w-11 sm:h-11 rounded-t-full bg-purple-500 inline-block -rotate-90"></span>
-                                    <span class="w-8 h-8 sm:w-11 sm:h-11 rounded-t-full bg-emerald-500 inline-block -rotate-90"></span>
-                                    <span>payments</span>
-                                </span>
-                                <br />
-                                <span class="underline decoration-slate-950 dark:decoration-white decoration-4 underline-offset-8">faster.</span>
-                                <span class="text-orange-500 font-mono text-2xl sm:text-4xl ml-1">✱</span>
-                            </h1>
+                                <span>build</span>
+                                <span class="inline-flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-2xl bg-teal-500 text-slate-950 font-mono text-sm sm:text-xl font-black">↗</span>
+                                <span class="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-blue-500"></span>
+                                <span class="text-slate-400 font-mono text-xl sm:text-2xl">×</span>
+                                <span class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-400"></span>
+                            </span>
+                            <br />
+                            <span>beautiful</span>
+                            <span class="inline-flex items-center ml-2 px-3.5 py-1 rounded-full bg-amber-400 text-slate-950 text-xs sm:text-sm font-mono align-middle font-bold">
+                                ● ── o
+                            </span>
+                            <br />
+                            <span class="inline-flex items-center justify-center flex-wrap gap-2 sm:gap-3">
+                                <span class="w-8 h-8 sm:w-11 sm:h-11 rounded-t-full bg-purple-500 inline-block -rotate-90"></span>
+                                <span class="w-8 h-8 sm:w-11 sm:h-11 rounded-t-full bg-emerald-500 inline-block -rotate-90"></span>
+                                <span>payments</span>
+                            </span>
+                            <br />
+                            <span class="underline decoration-slate-950 dark:decoration-white decoration-4 underline-offset-8">faster.</span>
+                            <span class="text-orange-500 font-mono text-2xl sm:text-4xl ml-1">✱</span>
+                        </h1>
 
-                            <!-- Micro-label and Descriptive Paragraph -->
-                            <div class="space-y-3 max-w-xl">
-                                <p class="text-xs font-mono text-slate-400 uppercase tracking-widest">
-                                    [ DOKU CERTIFIED PAYMENT MIDDLEWARE ]
-                                </p>
-                                <p class="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-                                    QRqu adalah gateway pembayaran QRIS siap pakai. Dapatkan API Key, buat tagihan instan secara otomatis, dan terima webhook pembayaran real-time langsung ke aplikasi Anda.
-                                </p>
-                            </div>
+                        <!-- Micro-label and Descriptive Paragraph -->
+                        <div class="space-y-3 max-w-2xl mx-auto">
+                            <p class="text-xs font-mono text-slate-400 uppercase tracking-widest font-semibold">
+                                [ ENTERPRISE QRIS PAYMENT PLATFORM ]
+                            </p>
+                            <p class="text-sm sm:text-base md:text-lg text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+                                QRqu adalah gateway pembayaran QRIS siap pakai. Dapatkan API Key, buat tagihan instan secara otomatis, dan terima webhook pembayaran real-time langsung ke sistem Anda.
+                            </p>
+                        </div>
 
-                            <!-- Interactive Pill Action Bar (Input + Button) -->
-                            <form @submit.prevent="handleQuickStart" class="pt-2 max-w-md">
-                                <div class="relative flex items-center bg-slate-100 dark:bg-slate-800/90 rounded-full p-1.5 border border-slate-200 dark:border-slate-700/80 shadow-inner">
-                                    <input
-                                        v-model="quickEmail"
-                                        type="email"
-                                        placeholder="Masukkan email merchant Anda..."
-                                        class="w-full bg-transparent border-none focus:outline-none focus:ring-0 text-xs sm:text-sm px-4 text-slate-900 dark:text-white placeholder-slate-400"
-                                    />
-                                    <button
-                                        type="submit"
-                                        class="px-5 py-2.5 rounded-full bg-slate-950 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 text-white dark:text-slate-950 font-bold text-xs tracking-tight shrink-0 transition shadow-md active:scale-95 flex items-center gap-1.5"
-                                    >
-                                        <span>Daftar Gratis</span>
-                                        <span>➔</span>
-                                    </button>
-                                </div>
-                            </form>
-
-                            <!-- Secondary Action Link -->
-                            <div class="flex items-center gap-4 text-xs font-bold pt-1">
-                                <a
-                                    :href="route('checkout.show', 'INV-20260929-DEMO001')"
-                                    target="_blank"
-                                    class="inline-flex items-center gap-2 text-slate-900 dark:text-white hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
+                        <!-- Interactive Pill Action Bar (Input + Button) -->
+                        <form @submit.prevent="handleQuickStart" class="pt-2 max-w-lg mx-auto w-full">
+                            <div class="relative flex items-center bg-slate-100 dark:bg-slate-800/90 rounded-full p-2 border border-slate-200 dark:border-slate-700/80 shadow-inner">
+                                <input
+                                    v-model="quickEmail"
+                                    type="email"
+                                    placeholder="Masukkan email merchant Anda..."
+                                    class="w-full bg-transparent border-none focus:outline-none focus:ring-0 text-xs sm:text-sm px-4 text-slate-900 dark:text-white placeholder-slate-400 font-medium"
+                                />
+                                <button
+                                    type="submit"
+                                    class="px-6 py-3 rounded-full bg-slate-950 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 text-white dark:text-slate-950 font-bold text-xs tracking-tight shrink-0 transition shadow-md active:scale-95 flex items-center gap-2"
                                 >
-                                    <span class="w-6 h-6 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold">⚡</span>
-                                    <span>Coba Demo Scan QRIS</span>
-                                    <span class="font-mono">→</span>
-                                </a>
-                                <span class="text-slate-300 dark:text-slate-700">•</span>
-                                <a href="#arsitektur" class="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
-                                    Lihat Panduan Integrasi
-                                </a>
+                                    <span>Daftar Gratis</span>
+                                    <span>➔</span>
+                                </button>
                             </div>
+                        </form>
+
+                        <!-- Secondary Action Link -->
+                        <div class="flex flex-wrap items-center justify-center gap-4 text-xs font-bold pt-1">
+                            <a
+                                :href="route('checkout.show', 'INV-20260929-DEMO001')"
+                                target="_blank"
+                                class="inline-flex items-center gap-2 text-slate-900 dark:text-white hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
+                            >
+                                <span class="w-6 h-6 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold">⚡</span>
+                                <span>Coba Demo Scan QRIS</span>
+                                <span class="font-mono">→</span>
+                            </a>
+                            <span class="text-slate-300 dark:text-slate-700">•</span>
+                            <a href="#fitur" class="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
+                                Jelajahi Fitur Unggulan
+                            </a>
+                            <span class="text-slate-300 dark:text-slate-700">•</span>
+                            <a href="#arsitektur" class="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
+                                Panduan Integrasi API
+                            </a>
                         </div>
-
-                        <!-- Right Column: Tactile Geometric Interactive Visual Card -->
-                        <div class="lg:col-span-5 relative">
-                            <!-- Background Geometric Shapes -->
-                            <div class="absolute -top-10 -right-6 w-56 h-56 rounded-full bg-gradient-to-tr from-orange-400 to-amber-300 opacity-80 -z-0"></div>
-                            <div class="absolute -bottom-8 -left-8 w-48 h-48 rounded-full bg-emerald-400/70 -z-0"></div>
-                            <div class="absolute top-1/2 -right-12 w-28 h-56 rounded-l-full bg-purple-500/60 -z-0"></div>
-
-                            <!-- Main Floating Canvas Card -->
-                            <div class="relative z-10 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-2xl shadow-slate-300/40 dark:shadow-black/70 space-y-5">
-                                
-                                <!-- Card Header: Connection Status Pill -->
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center space-x-2">
-                                        <div class="w-3 h-3 rounded-full bg-emerald-500 animate-ping"></div>
-                                        <span class="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">DOKU Gateway Live</span>
-                                    </div>
-                                    <span class="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold font-mono">
-                                        99.99% Uptime
-                                    </span>
-                                </div>
-
-                                <!-- Node 1: Request Node -->
-                                <div class="bg-slate-50 dark:bg-slate-900/90 p-3.5 rounded-2xl border border-slate-200/70 dark:border-slate-800 text-xs space-y-1">
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-[10px] font-mono text-slate-400 uppercase font-bold">1. API Invoice Request</span>
-                                        <span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-mono font-bold">POST /api/v1/invoices</span>
-                                    </div>
-                                    <div class="font-mono text-[11px] text-slate-700 dark:text-slate-300 truncate">
-                                        { "amount": 75000, "customer": "User #881" }
-                                    </div>
-                                </div>
-
-                                <!-- Animated Wire Connector -->
-                                <div class="flex items-center justify-center space-x-2 text-slate-300 dark:text-slate-700">
-                                    <span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-                                    <span class="h-0.5 w-12 border-t-2 border-dashed border-slate-300 dark:border-slate-700"></span>
-                                    <span class="text-[10px] font-mono font-bold text-orange-500">Instant Gen</span>
-                                    <span class="h-0.5 w-12 border-t-2 border-dashed border-slate-300 dark:border-slate-700"></span>
-                                    <span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-                                </div>
-
-                                <!-- Node 2: QRIS Dynamic Card Simulator -->
-                                <div class="p-4 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 text-white shadow-lg space-y-3">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center space-x-2">
-                                            <span class="text-xs font-black tracking-wider uppercase text-emerald-400 font-mono">QRIS Standar BI</span>
-                                        </div>
-                                        <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-full">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                                            STATUS: PAID
-                                        </span>
-                                    </div>
-
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <p class="text-[10px] text-slate-400 uppercase font-mono">Nominal Tagihan</p>
-                                            <p class="text-xl font-black text-white font-mono">Rp 75.000</p>
-                                        </div>
-                                        <div class="w-14 h-14 rounded-xl bg-white p-1 shadow flex items-center justify-center">
-                                            <!-- Geometric Mini QR Icon -->
-                                            <div class="w-full h-full border-2 border-slate-950 rounded flex flex-col justify-between p-1">
-                                                <div class="flex justify-between">
-                                                    <span class="w-2.5 h-2.5 bg-slate-950 rounded-sm"></span>
-                                                    <span class="w-2.5 h-2.5 bg-slate-950 rounded-sm"></span>
-                                                </div>
-                                                <div class="flex justify-between">
-                                                    <span class="w-2.5 h-2.5 bg-slate-950 rounded-sm"></span>
-                                                    <span class="w-1 h-1 bg-emerald-500 rounded-full"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Node 3: Webhook Delivered -->
-                                <div class="bg-emerald-50/60 dark:bg-emerald-500/10 p-3 rounded-2xl border border-emerald-200 dark:border-emerald-500/20 flex items-center justify-between text-xs">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="w-6 h-6 rounded-lg bg-emerald-500 text-slate-950 flex items-center justify-center font-bold text-[11px]">🔔</span>
-                                        <div>
-                                            <p class="font-bold text-emerald-950 dark:text-emerald-300 text-[11px]">Webhook Callback Terkirim</p>
-                                            <p class="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono">HTTP 200 OK • Signature Verified</p>
-                                        </div>
-                                    </div>
-                                    <span class="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400">0.8s</span>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
                 </section>
 
-                <!-- 3. Geometric Partner Ecosystem Strip -->
-                <section class="border-t border-b border-slate-100 dark:border-slate-800/80 py-8 px-6 sm:px-10 bg-slate-50/60 dark:bg-slate-950/40">
+                <!-- 3. Geometric Partner Ecosystem Strip (Brand Logos) -->
+                <section class="border-t border-b border-slate-100 dark:border-slate-800/80 py-8 px-6 sm:px-10 bg-slate-50/50 dark:bg-slate-950/40">
                     <p class="text-center text-[11px] font-bold uppercase tracking-widest text-slate-400 font-mono mb-6">
                         Kompatibel Penuh Dengan Seluruh Bank & Dompet Digital Nasional
                     </p>
-                    <div class="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
+                    <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-5xl mx-auto">
                         <div
                             v-for="bank in bankPartners"
                             :key="bank.code"
-                            class="px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm text-xs font-black tracking-tight text-slate-700 dark:text-slate-300 font-mono"
+                            class="p-2 sm:px-4 sm:py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition flex items-center justify-center"
                         >
-                            {{ bank.name }}
+                            <BankLogo :name="bank.code" />
                         </div>
                     </div>
                 </section>
@@ -332,7 +244,7 @@ const bankPartners = [
                             </div>
                             <h3 class="text-lg font-black text-slate-900 dark:text-white tracking-tight">QRIS Dinamis Otomatis</h3>
                             <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                                Pembuatan string QRIS resmi DOKU secara otomatis dengan nominal presisi. Pelanggan cukup scan melalui aplikasi bank atau e-wallet apa pun di Indonesia.
+                                Pembuatan string QRIS resmi secara otomatis dengan nominal presisi. Pelanggan cukup scan melalui aplikasi bank atau e-wallet apa pun di Indonesia.
                             </p>
                             <div class="pt-2 text-xs font-mono font-bold text-emerald-500">
                                 ➔ Deteksi Lunas Seketika
@@ -384,7 +296,7 @@ const bankPartners = [
                             <span class="w-8 h-8 rounded-full bg-orange-500 text-white font-black text-xs font-mono flex items-center justify-center">02</span>
                             <h3 class="text-base font-bold text-slate-900 dark:text-white">Generate QRIS</h3>
                             <p class="text-xs text-slate-500 leading-relaxed">
-                                QRqu memproses request ke core DOKU Live dan mengembalikan QR string & halaman checkout responsif dalam milidetik.
+                                QRqu memproses request ke core payment engine dan mengembalikan QR string & halaman checkout responsif dalam milidetik.
                             </p>
                         </div>
 
@@ -392,7 +304,7 @@ const bankPartners = [
                             <span class="w-8 h-8 rounded-full bg-teal-500 text-slate-950 font-black text-xs font-mono flex items-center justify-center">03</span>
                             <h3 class="text-base font-bold text-slate-900 dark:text-white">Customer Scan</h3>
                             <p class="text-xs text-slate-500 leading-relaxed">
-                                Pelanggan memindai QRIS melalui BCA, Mandiri, OVO, GoPay, atau bank apa pun. DOKU memverifikasi transaksi secara real-time.
+                                Pelanggan memindai QRIS melalui BCA, Mandiri, OVO, GoPay, atau bank apa pun dengan verifikasi instan real-time.
                             </p>
                         </div>
 
@@ -414,7 +326,7 @@ const bankPartners = [
                             Investasi Tepat untuk Skala Bisnis Anda
                         </h2>
                         <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                            Tanpa potongan biaya tersembunyi. Dapatkan akses penuh ke fitur API dan DOKU live integration.
+                            Tanpa potongan biaya tersembunyi. Dapatkan akses penuh ke fitur API dan integrasi live instan.
                         </p>
                     </div>
 
@@ -527,7 +439,7 @@ const bankPartners = [
                 <footer class="border-t border-slate-100 dark:border-slate-800 px-6 sm:px-10 py-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
                     <div class="flex items-center space-x-2">
                         <span class="font-black text-sm text-slate-900 dark:text-white">QRqu.</span>
-                        <span>© {{ new Date().getFullYear() }} Didukung oleh DOKU Payment Processor.</span>
+                        <span>© {{ new Date().getFullYear() }} Didukung oleh Standar QRIS Nasional & Bank Indonesia.</span>
                     </div>
 
                     <div class="flex items-center space-x-6 text-[11px] font-mono">

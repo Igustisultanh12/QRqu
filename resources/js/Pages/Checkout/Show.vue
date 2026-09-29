@@ -103,7 +103,7 @@
                             class="w-full py-3 px-4 rounded-full bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-bold text-xs transition shadow-md shadow-rose-600/20 flex items-center justify-center space-x-2"
                         >
                             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                            <span>Bayar via Portal Resmi DOKU ↗</span>
+                            <span>Bayar via Portal Resmi ↗</span>
                         </a>
 
                         <button
@@ -135,7 +135,7 @@
             <!-- Footer -->
             <div class="px-6 py-4 bg-slate-50 dark:bg-slate-950/80 border-t border-slate-200 dark:border-slate-800/60 text-center">
                 <p class="text-[11px] text-slate-500 dark:text-slate-400">
-                    Aman & Terenkripsi • Didukung oleh DOKU Payment Gateway
+                    Aman & Terenkripsi • Standar QRIS Nasional Bank Indonesia
                 </p>
             </div>
         </div>

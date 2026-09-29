@@ -1,7 +1,7 @@
 <template>
-    <div class="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col md:flex-row antialiased transition-colors duration-200">
+    <div class="min-h-screen bg-[#FAF8F5] dark:bg-[#0B0F19] text-slate-800 dark:text-slate-100 flex flex-col md:flex-row antialiased transition-colors duration-200">
         <!-- Mobile Top Bar (< md) -->
-        <div class="md:hidden h-14 bg-white/95 dark:bg-slate-950/95 backdrop-blur border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 sticky top-0 z-40 transition-colors duration-200 w-full shrink-0">
+        <div class="md:hidden h-14 bg-white/85 dark:bg-[#111625]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between px-4 sticky top-0 z-40 transition-colors duration-200 w-full shrink-0">
             <div class="flex items-center space-x-3">
                 <button
                     @click="mobileNavOpen = true"
@@ -250,16 +250,16 @@
         </div>
 
         <!-- Sidebar Navigation (Desktop md+) -->
-        <aside class="hidden md:flex md:w-64 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex-col justify-between shrink-0 transition-colors duration-200">
+        <aside class="hidden md:flex md:w-64 bg-white/80 dark:bg-[#111625]/90 backdrop-blur-md border-r border-slate-200/80 dark:border-slate-800/80 flex-col justify-between shrink-0 transition-colors duration-200">
             <div>
                 <!-- Brand Logo -->
-                <div class="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-800 space-x-3">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                        <span class="font-black text-xl text-slate-950">Q</span>
+                <div class="h-16 flex items-center px-6 border-b border-slate-200/80 dark:border-slate-800/80 space-x-3">
+                    <div class="w-9 h-9 rounded-2xl bg-slate-950 dark:bg-white flex items-center justify-center shadow-md">
+                        <span class="font-black text-lg text-white dark:text-slate-950 font-mono">Q</span>
                     </div>
                     <div>
-                        <span class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-emerald-500 to-teal-500 dark:from-emerald-400 dark:to-teal-200 bg-clip-text text-transparent">QRqu Gateway</span>
-                        <span class="block text-[10px] text-emerald-600 dark:text-emerald-400/80 font-mono tracking-wider uppercase font-semibold">Merchant Portal</span>
+                        <span class="font-black text-lg tracking-tight text-slate-950 dark:text-white">QRqu</span>
+                        <span class="block text-[10px] text-emerald-600 dark:text-emerald-400 font-mono tracking-wider uppercase font-semibold">Merchant Portal</span>
                     </div>
                 </div>
 
@@ -504,7 +504,7 @@
         <!-- Main Content Area -->
         <div class="flex-1 flex flex-col min-w-0">
             <!-- Top Navigation Header -->
-            <header class="h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 sticky top-0 z-10 transition-colors duration-200">
+            <header class="h-16 bg-white/70 dark:bg-[#111625]/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between px-6 sticky top-0 z-10 transition-colors duration-200">
                 <div class="flex items-center space-x-3">
                     <h1 class="text-lg font-bold text-slate-900 dark:text-slate-100">
                         <slot name="header">Portal Merchant</slot>

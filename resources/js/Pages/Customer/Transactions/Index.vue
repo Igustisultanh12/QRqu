@@ -5,7 +5,7 @@
                 <span>Riwayat Transaksi & Tagihan</span>
                 <span v-if="hasPendingTransactions" class="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-3 py-1 rounded-full border border-amber-200 dark:border-amber-500/30">
                     <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                    <span>Live Monitoring DOKU (Auto-Sync)</span>
+                    <span>Live Monitoring Gateway (Auto-Sync)</span>
                 </span>
             </div>
         </template>
@@ -47,14 +47,14 @@
                         @click="syncAll"
                         :disabled="isSyncingAll"
                         class="px-4 py-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30 font-semibold text-xs transition flex items-center justify-center space-x-1.5"
-                        title="Periksa status transaksi PENDING ke server DOKU sekarang"
+                        title="Periksa status transaksi PENDING ke server gateway sekarang"
                     >
                         <svg v-if="isSyncingAll" class="animate-spin h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                         </svg>
                         <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                        <span>{{ isSyncingAll ? 'Mengecek...' : '🔄 Sinkron DOKU' }}</span>
+                        <span>{{ isSyncingAll ? 'Mengecek...' : '🔄 Sinkron Gateway' }}</span>
                     </button>
 
                     <a
@@ -78,7 +78,7 @@
                                 <th class="p-4">Nominal</th>
                                 <th class="p-4">Metode</th>
                                 <th class="p-4">Status</th>
-                                <th class="p-4">DOKU Ref</th>
+                                <th class="p-4">Ref Transaksi</th>
                                 <th class="p-4">Waktu Dibuat</th>
                                 <th class="p-4 text-right">Aksi</th>
                             </tr>

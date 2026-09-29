@@ -1,7 +1,7 @@
 <template>
-    <div class="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col md:flex-row antialiased transition-colors duration-200">
+    <div class="min-h-screen bg-[#FAF8F5] dark:bg-[#0B0F19] text-slate-800 dark:text-slate-100 flex flex-col md:flex-row antialiased transition-colors duration-200">
         <!-- Mobile Top Bar (< md) -->
-        <div class="md:hidden h-14 bg-white/95 dark:bg-slate-950/95 backdrop-blur border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 sticky top-0 z-40 transition-colors duration-200 w-full shrink-0">
+        <div class="md:hidden h-14 bg-white/85 dark:bg-[#111625]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between px-4 sticky top-0 z-40 transition-colors duration-200 w-full shrink-0">
             <div class="flex items-center space-x-3">
                 <button
                     @click="mobileNavOpen = true"
@@ -158,7 +158,7 @@
                             ]"
                         >
                             <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                            Integrasi DOKU
+                            Konfigurasi Gateway
                         </Link>
                     </nav>
                 </div>
@@ -186,16 +186,16 @@
         </div>
 
         <!-- Sidebar Navigation (Desktop md+) -->
-        <aside class="hidden md:flex md:w-64 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex-col justify-between shrink-0 transition-colors duration-200">
+        <aside class="hidden md:flex md:w-64 bg-white/80 dark:bg-[#111625]/90 backdrop-blur-md border-r border-slate-200/80 dark:border-slate-800/80 flex-col justify-between shrink-0 transition-colors duration-200">
             <div>
                 <!-- Brand Logo -->
-                <div class="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-800 space-x-3">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-violet-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                        <span class="font-black text-xl text-slate-950">Q</span>
+                <div class="h-16 flex items-center px-6 border-b border-slate-200/80 dark:border-slate-800/80 space-x-3">
+                    <div class="w-9 h-9 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md">
+                        <span class="font-black text-lg font-mono">Q</span>
                     </div>
                     <div>
-                        <span class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-indigo-500 to-violet-500 dark:from-indigo-400 dark:to-violet-200 bg-clip-text text-transparent">QRqu Core</span>
-                        <span class="block text-[10px] text-indigo-500 dark:text-indigo-400/80 font-mono tracking-wider uppercase font-semibold">Master Admin</span>
+                        <span class="font-black text-lg tracking-tight text-slate-950 dark:text-white">QRqu Core</span>
+                        <span class="block text-[10px] text-indigo-500 dark:text-indigo-400 font-mono tracking-wider uppercase font-semibold">Master Admin</span>
                     </div>
                 </div>
 
@@ -298,7 +298,7 @@
                         ]"
                     >
                         <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-                        DOKU Management
+                        Konfigurasi Gateway
                     </Link>
 
                     <Link
@@ -412,7 +412,7 @@
         <!-- Main Content Area -->
         <div class="flex-1 flex flex-col min-w-0">
             <!-- Top Navigation Header -->
-            <header class="h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 sticky top-0 z-10 transition-colors duration-200">
+            <header class="h-16 bg-white/70 dark:bg-[#111625]/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between px-6 sticky top-0 z-10 transition-colors duration-200">
                 <div class="flex items-center space-x-3">
                     <h1 class="text-lg font-bold text-slate-900 dark:text-slate-100">
                         <slot name="header">Admin Command Center</slot>
