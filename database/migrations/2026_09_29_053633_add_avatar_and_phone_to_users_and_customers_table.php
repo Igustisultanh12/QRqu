@@ -1,0 +1,50 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            if (!Schema::hasColumn('users', 'avatar')) {
+                $table->string('avatar')->nullable()->after('whatsapp_number');
+            }
+            if (!Schema::hasColumn('users', 'phone')) {
+                $table->string('phone')->nullable()->after('avatar');
+            }
+        });
+
+        Schema::table('customers', function (Blueprint $table) {
+            if (!Schema::hasColumn('customers', 'avatar')) {
+                $table->string('avatar')->nullable()->after('address');
+            }
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            if (Schema::hasColumn('users', 'avatar')) {
+                $table->dropColumn('avatar');
+            }
+            if (Schema::hasColumn('users', 'phone')) {
+                $table->dropColumn('phone');
+            }
+        });
+
+        Schema::table('customers', function (Blueprint $table) {
+            if (Schema::hasColumn('customers', 'avatar')) {
+                $table->dropColumn('avatar');
+            }
+        });
+    }
+};

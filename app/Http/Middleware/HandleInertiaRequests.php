@@ -27,6 +27,11 @@ class HandleInertiaRequests extends Middleware
                     'name' => $user->name,
                     'email' => $user->email,
                     'role' => $user->role,
+                    'phone' => $user->phone ?? $user->whatsapp_number ?? ($user->customer->phone ?? null),
+                    'whatsapp_number' => $user->whatsapp_number ?? ($user->customer->whatsapp ?? null),
+                    'avatar' => $user->avatar,
+                    'avatar_url' => $user->avatar_url,
+                    'created_at' => $user->created_at,
                     'is_admin' => $user->isAdmin(),
                     'is_customer' => $user->isCustomer(),
                     'customer' => $user->customer ? [

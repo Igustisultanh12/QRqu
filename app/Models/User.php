@@ -17,12 +17,24 @@ class User extends Authenticatable
         'role',
         'status',
         'whatsapp_number',
+        'phone',
+        'avatar',
         'password',
         'two_factor_secret',
         'two_factor_recovery_codes',
         'two_factor_confirmed_at',
         'email_verified_at',
     ];
+
+    protected $appends = ['avatar_url'];
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if ($this->avatar) {
+            return asset('storage/' . $this->avatar);
+        }
+        return null;
+    }
 
     protected $hidden = [
         'password',

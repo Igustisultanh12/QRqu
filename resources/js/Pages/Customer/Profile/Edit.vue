@@ -1,5 +1,5 @@
 <template>
-    <CustomerLayout>
+    <component :is="currentLayout">
         <template #header>Manajemen Pusat Akun</template>
 
         <div class="space-y-6 max-w-5xl">
@@ -7,7 +7,7 @@
             <div>
                 <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Manajemen Pusat Akun</h1>
                 <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    Kelola data informasi personal, enkripsi keamanan sandi, dan utilitas notifikasi gateway Anda.
+                    Kelola data informasi personal, foto profil, enkripsi keamanan sandi, dan utilitas notifikasi gateway Anda.
                 </p>
             </div>
 
@@ -71,16 +71,31 @@
                 <div class="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-sm transition-all">
                     <!-- Top Avatar & Name Header -->
                     <div class="flex items-center space-x-5 pb-8 border-b border-slate-100 dark:border-slate-800/80">
-                        <div class="w-16 h-16 rounded-full bg-slate-950 dark:bg-indigo-600 text-white flex items-center justify-center font-bold text-2xl shadow-md shrink-0">
-                            {{ (user.name || 'U').charAt(0).toUpperCase() }}
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-950 dark:bg-indigo-600 text-white flex items-center justify-center font-bold text-2xl sm:text-3xl shadow-md shrink-0 overflow-hidden ring-4 ring-slate-100 dark:ring-slate-800">
+                            <img
+                                v-if="user.avatar_url"
+                                :src="user.avatar_url"
+                                alt="Foto Profil"
+                                class="w-full h-full object-cover"
+                            />
+                            <span v-else>{{ (user.name || 'U').charAt(0).toUpperCase() }}</span>
                         </div>
                         <div>
-                            <h2 class="text-xl font-bold text-slate-900 dark:text-white">{{ user.name }}</h2>
-                            <div class="mt-1 flex items-center space-x-2">
-                                <span class="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-200/60 dark:border-indigo-500/20">
+                            <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">{{ user.name }}</h2>
+                            <div class="mt-1.5 flex flex-wrap items-center gap-2">
+                                <span class="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-2.5 py-0.5 rounded-md border border-indigo-200/60 dark:border-indigo-500/20">
                                     ID Pengguna: #{{ String(user.id).padStart(4, '0') }}
                                 </span>
-                                <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30">
+                                <span
+                                    v-if="user.role === 'admin'"
+                                    class="text-xs font-semibold px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30"
+                                >
+                                    Master Administrator
+                                </span>
+                                <span
+                                    v-else
+                                    class="text-xs font-semibold px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30"
+                                >
                                     {{ customer?.status === 'active' ? 'Aktif Terverifikasi' : 'Status: ' + (customer?.status || 'Aktif') }}
                                 </span>
                             </div>
@@ -100,16 +115,16 @@
                         </div>
 
                         <div class="py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                            <span class="text-slate-500 dark:text-slate-400 font-medium sm:w-1/3">No. WhatsApp</span>
-                            <span class="text-slate-900 dark:text-white font-semibold sm:w-2/3">{{ customer?.whatsapp || customer?.phone || '-' }}</span>
+                            <span class="text-slate-500 dark:text-slate-400 font-medium sm:w-1/3">No. WhatsApp / HP</span>
+                            <span class="text-slate-900 dark:text-white font-semibold sm:w-2/3">{{ user.whatsapp_number || user.phone || customer?.whatsapp || customer?.phone || '-' }}</span>
                         </div>
 
-                        <div class="py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                        <div v-if="user.role !== 'admin'" class="py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                             <span class="text-slate-500 dark:text-slate-400 font-medium sm:w-1/3">Nama Perusahaan / Bisnis</span>
                             <span class="text-slate-900 dark:text-white font-semibold sm:w-2/3">{{ customer?.company_name || '-' }}</span>
                         </div>
 
-                        <div class="py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                        <div v-if="user.role !== 'admin'" class="py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                             <span class="text-slate-500 dark:text-slate-400 font-medium sm:w-1/3">Alamat Kantor / Usaha</span>
                             <span class="text-slate-900 dark:text-white font-semibold sm:w-2/3">{{ customer?.address || '-' }}</span>
                         </div>
@@ -125,10 +140,10 @@
                         <button
                             type="button"
                             @click="isEditing = !isEditing"
-                            class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-xs transition border border-slate-200 dark:border-slate-700 flex items-center space-x-2"
+                            class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-xs transition border border-slate-200 dark:border-slate-700 flex items-center space-x-2 shadow-sm"
                         >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                            <span>{{ isEditing ? 'Tutup Formulir Edit' : 'Edit Informasi Profil' }}</span>
+                            <span>{{ isEditing ? 'Tutup Formulir Edit' : 'Edit Informasi Profil & Foto' }}</span>
                         </button>
                     </div>
                 </div>
@@ -137,61 +152,123 @@
                 <div v-if="isEditing" class="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-sm transition-all space-y-6">
                     <div>
                         <h3 class="text-lg font-bold text-slate-900 dark:text-white">Perbarui Data Profil</h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Sesuaikan informasi kontak dan perusahaan resmi Anda.</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Sesuaikan foto profil, informasi kontak, dan data identitas Anda.</p>
                     </div>
 
-                    <form @submit.prevent="saveProfile" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nama Lengkap</label>
-                            <input
-                                v-model="profileForm.name"
-                                type="text"
-                                required
-                                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                            />
+                    <form @submit.prevent="saveProfile" class="space-y-6">
+                        <!-- Foto Profil Uploader -->
+                        <div class="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-5">
+                            <div class="relative shrink-0">
+                                <div class="w-20 h-20 rounded-full bg-slate-900 dark:bg-indigo-600 text-white flex items-center justify-center font-bold text-2xl shadow-md overflow-hidden ring-4 ring-white dark:ring-slate-800">
+                                    <img
+                                        v-if="avatarPreview || (!profileForm.remove_avatar && user.avatar_url)"
+                                        :src="avatarPreview || user.avatar_url"
+                                        alt="Foto Profil"
+                                        class="w-full h-full object-cover"
+                                    />
+                                    <span v-else>{{ (profileForm.name || user.name || 'U').charAt(0).toUpperCase() }}</span>
+                                </div>
+                            </div>
+
+                            <div class="flex-1 text-center sm:text-left space-y-2">
+                                <div>
+                                    <h4 class="text-xs font-bold text-slate-900 dark:text-white">Foto Profil</h4>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400">Format yang didukung: JPG, PNG, atau WEBP. Maksimal ukuran 2MB.</p>
+                                </div>
+
+                                <input
+                                    ref="fileInput"
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    @change="onAvatarChange"
+                                    class="hidden"
+                                />
+
+                                <div class="flex items-center justify-center sm:justify-start space-x-2">
+                                    <button
+                                        type="button"
+                                        @click="triggerFileInput"
+                                        class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition flex items-center space-x-1.5 shadow-sm"
+                                    >
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                        <span>Pilih Foto Baru</span>
+                                    </button>
+
+                                    <button
+                                        v-if="avatarPreview || (!profileForm.remove_avatar && user.avatar_url)"
+                                        type="button"
+                                        @click="removeAvatar"
+                                        class="px-3.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-semibold text-xs transition border border-rose-200/60 dark:border-rose-500/30"
+                                    >
+                                        Hapus Foto
+                                    </button>
+                                </div>
+                                <div v-if="profileForm.errors.avatar" class="text-xs text-rose-500">
+                                    {{ profileForm.errors.avatar }}
+                                </div>
+                            </div>
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nama Perusahaan / Bisnis</label>
-                            <input
-                                v-model="profileForm.company_name"
-                                type="text"
-                                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                            />
+                        <!-- Input Fields Grid -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nama Lengkap</label>
+                                <input
+                                    v-model="profileForm.name"
+                                    type="text"
+                                    required
+                                    class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                                />
+                                <div v-if="profileForm.errors.name" class="text-xs text-rose-500 mt-1">{{ profileForm.errors.name }}</div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Alamat Email</label>
+                                <input
+                                    v-model="profileForm.email"
+                                    type="email"
+                                    required
+                                    class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                                />
+                                <div v-if="profileForm.errors.email" class="text-xs text-rose-500 mt-1">{{ profileForm.errors.email }}</div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">No. WhatsApp / HP</label>
+                                <input
+                                    v-model="profileForm.whatsapp"
+                                    type="text"
+                                    placeholder="Contoh: 083897371521"
+                                    class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                                />
+                                <div v-if="profileForm.errors.whatsapp" class="text-xs text-rose-500 mt-1">{{ profileForm.errors.whatsapp }}</div>
+                            </div>
+
+                            <div v-if="user.role !== 'admin'">
+                                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nama Perusahaan / Bisnis</label>
+                                <input
+                                    v-model="profileForm.company_name"
+                                    type="text"
+                                    placeholder="Nama Usaha atau Brand Anda"
+                                    class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                                />
+                            </div>
+
+                            <div v-if="user.role !== 'admin'" class="sm:col-span-2">
+                                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Alamat Kantor / Domisili Usaha</label>
+                                <textarea
+                                    v-model="profileForm.address"
+                                    rows="2"
+                                    placeholder="Alamat lengkap operasional usaha"
+                                    class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                                ></textarea>
+                            </div>
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Email Akun</label>
-                            <input
-                                v-model="profileForm.email"
-                                type="email"
-                                required
-                                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                            />
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">No. WhatsApp / HP</label>
-                            <input
-                                v-model="profileForm.whatsapp"
-                                type="text"
-                                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                            />
-                        </div>
-
-                        <div class="sm:col-span-2">
-                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Alamat Kantor / Domisili Usaha</label>
-                            <textarea
-                                v-model="profileForm.address"
-                                rows="2"
-                                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                            ></textarea>
-                        </div>
-
-                        <div class="sm:col-span-2 pt-2 flex items-center justify-end space-x-3">
+                        <div class="pt-2 flex items-center justify-end space-x-3">
                             <button
                                 type="button"
-                                @click="isEditing = false"
+                                @click="cancelEdit"
                                 class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs transition"
                             >
                                 Batal
@@ -199,9 +276,10 @@
                             <button
                                 type="submit"
                                 :disabled="profileForm.processing"
-                                class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition shadow-md shadow-indigo-600/20"
+                                class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition shadow-md shadow-indigo-600/20 flex items-center space-x-2"
                             >
-                                {{ profileForm.processing ? 'Menyimpan...' : 'Simpan Perubahan' }}
+                                <svg v-if="profileForm.processing" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                <span>{{ profileForm.processing ? 'Menyimpan...' : 'Simpan Perubahan' }}</span>
                             </button>
                         </div>
                     </form>
@@ -225,6 +303,7 @@
                                 required
                                 class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
                             />
+                            <div v-if="passwordForm.errors.current_password" class="text-xs text-rose-500 mt-1">{{ passwordForm.errors.current_password }}</div>
                         </div>
 
                         <div>
@@ -235,6 +314,7 @@
                                 required
                                 class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
                             />
+                            <div v-if="passwordForm.errors.password" class="text-xs text-rose-500 mt-1">{{ passwordForm.errors.password }}</div>
                         </div>
 
                         <div>
@@ -266,7 +346,7 @@
                 <div class="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-sm transition-all space-y-4">
                     <div>
                         <h3 class="text-lg font-bold text-slate-900 dark:text-white">Riwayat Sesi Login & Akses Gateway</h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Catatan aktivitas autentikasi terbaru yang masuk ke akun merchant Anda.</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Catatan aktivitas autentikasi terbaru yang masuk ke akun Anda.</p>
                     </div>
 
                     <div class="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs">
@@ -287,13 +367,14 @@
                 </div>
             </div>
         </div>
-    </CustomerLayout>
+    </component>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import CustomerLayout from '@/Layouts/CustomerLayout.vue';
+import AdminLayout from '@/Layouts/AdminLayout.vue';
 
 const props = defineProps({
     user: Object,
@@ -304,16 +385,25 @@ const props = defineProps({
     },
 });
 
+const currentLayout = computed(() => {
+    return props.user?.role === 'admin' ? AdminLayout : CustomerLayout;
+});
+
 const activeTab = ref('profile');
 const isEditing = ref(false);
+const fileInput = ref(null);
+const avatarPreview = ref(null);
 
 const profileForm = useForm({
+    _method: 'patch',
     name: props.user.name,
     company_name: props.customer?.company_name || '',
     email: props.user.email,
-    phone: props.customer?.phone || '',
-    whatsapp: props.customer?.whatsapp || '',
+    phone: props.user.phone || props.customer?.phone || '',
+    whatsapp: props.user.whatsapp_number || props.customer?.whatsapp || '',
     address: props.customer?.address || '',
+    avatar: null,
+    remove_avatar: false,
 });
 
 const passwordForm = useForm({
@@ -335,10 +425,40 @@ const formattedRegistrationDate = computed(() => {
     });
 });
 
+const triggerFileInput = () => {
+    fileInput.value?.click();
+};
+
+const onAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    profileForm.avatar = file;
+    profileForm.remove_avatar = false;
+    avatarPreview.value = URL.createObjectURL(file);
+};
+
+const removeAvatar = () => {
+    profileForm.avatar = null;
+    profileForm.remove_avatar = true;
+    avatarPreview.value = null;
+    if (fileInput.value) {
+        fileInput.value.value = '';
+    }
+};
+
+const cancelEdit = () => {
+    isEditing.value = false;
+    avatarPreview.value = null;
+    profileForm.reset();
+};
+
 const saveProfile = () => {
-    profileForm.patch(route('profile.update'), {
+    profileForm.post(route('profile.update'), {
+        forceFormData: true,
+        preserveScroll: true,
         onSuccess: () => {
             isEditing.value = false;
+            avatarPreview.value = null;
         }
     });
 };

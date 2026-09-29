@@ -155,16 +155,31 @@
 
             <!-- Customer User & Logout (Romei Style) -->
             <div class="p-4 border-t border-slate-200 dark:border-slate-800 transition-colors duration-200">
-                <!-- User Pill -->
-                <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-2.5 flex items-center space-x-3">
-                    <div class="w-9 h-9 rounded-full bg-slate-950 dark:bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
-                        {{ ($page.props.auth.user?.name || 'U').slice(0, 2).toUpperCase() }}
+                <!-- User Pill (Clickable -> Profile) -->
+                <Link
+                    :href="route('profile.edit')"
+                    class="block bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800/80 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-500/50 rounded-2xl p-2.5 transition-all duration-200 group cursor-pointer shadow-sm hover:shadow"
+                    title="Buka & Edit Profil Akun"
+                >
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-full bg-slate-950 dark:bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm overflow-hidden ring-2 ring-transparent group-hover:ring-emerald-500/30 transition-all">
+                            <img
+                                v-if="$page.props.auth.user?.avatar_url"
+                                :src="$page.props.auth.user.avatar_url"
+                                alt="Foto Profil"
+                                class="w-full h-full object-cover"
+                            />
+                            <span v-else>{{ ($page.props.auth.user?.name || 'U').slice(0, 2).toUpperCase() }}</span>
+                        </div>
+                        <div class="truncate flex-1">
+                            <p class="text-xs font-bold text-slate-900 dark:text-white truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{{ $page.props.auth.user?.name }}</p>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">{{ $page.props.auth.user?.customer?.company_name || $page.props.auth.user?.email }}</p>
+                        </div>
+                        <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 shrink-0 transition-all group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
                     </div>
-                    <div class="truncate">
-                        <p class="text-xs font-bold text-slate-900 dark:text-white truncate">{{ $page.props.auth.user?.name }}</p>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">{{ $page.props.auth.user?.customer?.company_name || $page.props.auth.user?.email }}</p>
-                    </div>
-                </div>
+                </Link>
 
                 <!-- Keluar Aplikasi Button -->
                 <Link

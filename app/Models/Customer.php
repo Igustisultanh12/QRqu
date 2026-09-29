@@ -17,6 +17,7 @@ class Customer extends Model
         'phone',
         'whatsapp',
         'address',
+        'avatar',
         'country',
         'status',
     ];

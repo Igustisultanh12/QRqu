@@ -12,6 +12,8 @@ use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
 
+use Illuminate\Support\Facades\Storage;
+
 class ProfileController extends Controller
 {
     public function edit(Request $request): Response
@@ -26,7 +28,11 @@ class ProfileController extends Controller
             ->get();
 
         return Inertia::render('Customer/Profile/Edit', [
-            'user' => $user,
+            'user' => array_merge($user->toArray(), [
+                'avatar_url' => $user->avatar_url,
+                'phone' => $user->phone ?? $user->whatsapp_number ?? ($customer->phone ?? null),
+                'whatsapp_number' => $user->whatsapp_number ?? ($customer->whatsapp ?? null),
+            ]),
             'customer' => $customer,
             'recent_logins' => $recentLogins,
         ]);
@@ -43,12 +49,29 @@ class ProfileController extends Controller
             'phone' => ['nullable', 'string', 'max:25'],
             'whatsapp' => ['nullable', 'string', 'max:25'],
             'address' => ['nullable', 'string', 'max:500'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
+            'remove_avatar' => ['nullable', 'boolean'],
         ]);
 
         $user->fill([
             'name' => $request->input('name'),
             'email' => $request->input('email'),
+            'phone' => $request->input('phone') ?? $request->input('whatsapp'),
+            'whatsapp_number' => $request->input('whatsapp') ?? $request->input('phone'),
         ]);
+
+        if ($request->boolean('remove_avatar') && $user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
+            $user->avatar = null;
+        }
+
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = $path;
+        }
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
@@ -61,9 +84,10 @@ class ProfileController extends Controller
                 'name' => $request->input('name'),
                 'company_name' => $request->input('company_name'),
                 'email' => $request->input('email'),
-                'phone' => $request->input('phone'),
-                'whatsapp' => $request->input('whatsapp'),
+                'phone' => $request->input('phone') ?? $request->input('whatsapp'),
+                'whatsapp' => $request->input('whatsapp') ?? $request->input('phone'),
                 'address' => $request->input('address'),
+                'avatar' => $user->avatar,
             ]);
         }
 

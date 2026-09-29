@@ -96,4 +96,59 @@ class ProfileTest extends TestCase
 
         $this->assertNotNull($user->fresh());
     }
+
+    public function test_user_can_update_phone_and_whatsapp(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => 'Updated User',
+                'email' => $user->email,
+                'phone' => '083897371521',
+                'whatsapp' => '083897371521',
+            ]);
+
+        $response->assertSessionHasNoErrors()->assertRedirect('/profile');
+
+        $user->refresh();
+        $this->assertSame('083897371521', $user->phone);
+        $this->assertSame('083897371521', $user->whatsapp_number);
+    }
+
+    public function test_user_can_upload_and_delete_avatar(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $user = User::factory()->create();
+        $file = \Illuminate\Http\UploadedFile::fake()->create('profile.jpg', 100, 'image/jpeg');
+
+        $response = $this
+            ->actingAs($user)
+            ->post('/profile', [
+                'name' => 'Avatar User',
+                'email' => $user->email,
+                'avatar' => $file,
+            ]);
+
+        $response->assertSessionHasNoErrors()->assertRedirect('/profile');
+
+        $user->refresh();
+        $this->assertNotNull($user->avatar);
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($user->avatar);
+
+        // Delete avatar
+        $deleteResponse = $this
+            ->actingAs($user)
+            ->post('/profile', [
+                'name' => 'Avatar User',
+                'email' => $user->email,
+                'remove_avatar' => true,
+            ]);
+
+        $deleteResponse->assertSessionHasNoErrors()->assertRedirect('/profile');
+        $user->refresh();
+        $this->assertNull($user->avatar);
+    }
 }
