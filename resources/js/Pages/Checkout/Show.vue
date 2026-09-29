@@ -1,6 +1,11 @@
 <template>
-    <div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-4 sm:p-6 antialiased">
-        <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden">
+    <div class="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col items-center justify-center p-4 sm:p-6 antialiased transition-colors duration-200 relative">
+        <!-- Floating Theme Toggle in Checkout -->
+        <div class="absolute top-4 right-4 z-50">
+            <ThemeToggle />
+        </div>
+
+        <div class="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl dark:shadow-2xl overflow-hidden transition-colors duration-200">
             <!-- Header -->
             <div class="bg-gradient-to-r from-emerald-600 to-teal-500 p-6 text-center relative overflow-hidden">
                 <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
@@ -12,10 +17,10 @@
             </div>
 
             <!-- Invoice Details -->
-            <div class="p-6 text-center border-b border-slate-800">
-                <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-1">Total Pembayaran</div>
-                <div class="text-3xl font-black text-white tracking-tight">{{ invoice.amount_formatted }}</div>
-                <div class="inline-flex items-center space-x-2 text-xs text-slate-400 mt-2 bg-slate-800/80 px-3 py-1 rounded-full border border-slate-700/50">
+            <div class="p-6 text-center border-b border-slate-200 dark:border-slate-800">
+                <div class="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold mb-1">Total Pembayaran</div>
+                <div class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{{ invoice.amount_formatted }}</div>
+                <div class="inline-flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 mt-2 bg-slate-100 dark:bg-slate-800/80 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700/50">
                     <span class="font-mono">#{{ invoice.id }}</span>
                     <span>•</span>
                     <span class="truncate max-w-[140px]">{{ invoice.external_id }}</span>
@@ -55,18 +60,18 @@
                 <!-- State: PENDING (QR Code display) -->
                 <div v-else class="space-y-6">
                     <!-- Countdown & Status -->
-                    <div class="flex items-center justify-between bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                    <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-950 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800">
                         <div class="flex items-center space-x-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
-                            <span class="text-xs font-semibold text-slate-300">Menunggu Pembayaran</span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span>
+                            <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Menunggu Pembayaran</span>
                         </div>
-                        <div class="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">
+                        <div class="text-xs font-mono font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-500/20">
                             ⏱ {{ countdownDisplay }}
                         </div>
                     </div>
 
                     <!-- QR Code Display Box -->
-                    <div class="bg-white p-6 rounded-2xl flex flex-col items-center justify-center shadow-inner relative group">
+                    <div class="bg-white p-6 rounded-2xl flex flex-col items-center justify-center border border-slate-200 dark:border-transparent shadow-inner relative group">
                         <div class="w-56 h-56 flex items-center justify-center bg-white">
                             <!-- Dynamic QR generator image or QR string QR code -->
                             <img
@@ -82,7 +87,7 @@
                         </div>
                     </div>
 
-                    <p class="text-xs text-slate-400 text-center leading-relaxed">
+                    <p class="text-xs text-slate-500 dark:text-slate-400 text-center leading-relaxed">
                         Scan QR menggunakan aplikasi e-wallet (GoPay, OVO, Dana, ShopeePay) atau mobile banking BCA, Mandiri, BRI, BNI.
                     </p>
 
@@ -92,19 +97,19 @@
                             v-if="invoice.qr_string"
                             @click="copyQrString"
                             type="button"
-                            class="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition border border-slate-700 flex items-center justify-center space-x-2"
+                            class="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold text-xs transition border border-slate-300 dark:border-slate-700 flex items-center justify-center space-x-2"
                         >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
                             <span>{{ copied ? 'Tersalin ke Clipboard!' : 'Salin Kode QRIS' }}</span>
                         </button>
 
                         <!-- Sandbox Simulator Button (For Test Mode) -->
-                        <div v-if="invoice.is_sandbox" class="pt-2 border-t border-slate-800/80">
+                        <div v-if="invoice.is_sandbox" class="pt-2 border-t border-slate-200 dark:border-slate-800/80">
                             <button
                                 @click="simulateSandboxPayment"
                                 :disabled="simulating"
                                 type="button"
-                                class="w-full py-2.5 px-4 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 font-semibold text-xs transition border border-indigo-500/40 flex items-center justify-center space-x-2"
+                                class="w-full py-2.5 px-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-600/30 dark:hover:bg-indigo-600/50 text-indigo-700 dark:text-indigo-300 font-semibold text-xs transition border border-indigo-200 dark:border-indigo-500/40 flex items-center justify-center space-x-2"
                             >
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                                 <span>{{ simulating ? 'Memproses Simulasi...' : '⚡ Simulasi Pembayaran Sukses (Sandbox)' }}</span>
@@ -115,8 +120,8 @@
             </div>
 
             <!-- Footer -->
-            <div class="px-6 py-4 bg-slate-950/80 border-t border-slate-800/60 text-center">
-                <p class="text-[11px] text-slate-500">
+            <div class="px-6 py-4 bg-slate-50 dark:bg-slate-950/80 border-t border-slate-200 dark:border-slate-800/60 text-center">
+                <p class="text-[11px] text-slate-500 dark:text-slate-400">
                     Aman & Terenkripsi • Didukung oleh DOKU Payment Gateway
                 </p>
             </div>
@@ -127,6 +132,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
+import ThemeToggle from '@/Components/ThemeToggle.vue';
 
 const props = defineProps({
     invoice: {

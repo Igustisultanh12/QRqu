@@ -4,81 +4,81 @@
 
         <div class="space-y-8 max-w-5xl">
             <!-- Intro & Overview -->
-            <div class="bg-slate-950 p-6 rounded-3xl border border-slate-800 space-y-3">
-                <h2 class="text-xl font-bold text-white">Panduan Integrasi Pengembang</h2>
-                <p class="text-xs text-slate-400 leading-relaxed">
-                    QRqu menyediakan REST API dengan standar keamanan kelas perbankan menggunakan enkripsi <strong class="text-white">HMAC-SHA256 Signature</strong>, perlindungan serangan <strong class="text-white">Replay Attack</strong> melalui Nonce dan Timestamp Tolerance, serta dukungan penuh <strong class="text-white">Idempotency-Key</strong> untuk mencegah terjadinya transaksi ganda.
+            <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3 transition-colors duration-200">
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white">Panduan Integrasi Pengembang</h2>
+                <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    QRqu menyediakan REST API dengan standar keamanan kelas perbankan menggunakan enkripsi <strong class="text-slate-900 dark:text-white">HMAC-SHA256 Signature</strong>, perlindungan serangan <strong class="text-slate-900 dark:text-white">Replay Attack</strong> melalui Nonce dan Timestamp Tolerance, serta dukungan penuh <strong class="text-slate-900 dark:text-white">Idempotency-Key</strong> untuk mencegah terjadinya transaksi ganda.
                 </p>
                 <div class="pt-2 flex items-center space-x-2 text-xs font-mono">
-                    <span class="text-slate-400">Base API URL:</span>
-                    <span class="bg-slate-900 px-3 py-1 rounded-lg border border-slate-800 text-emerald-400 font-bold select-all">{{ base_api_url }}</span>
+                    <span class="text-slate-500 dark:text-slate-400">Base API URL:</span>
+                    <span class="bg-slate-100 dark:bg-slate-900 px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-800 text-emerald-600 dark:text-emerald-400 font-bold select-all">{{ base_api_url }}</span>
                 </div>
             </div>
 
             <!-- Authentication Protocol -->
-            <div class="bg-slate-950 p-6 rounded-3xl border border-slate-800 space-y-4">
-                <h3 class="text-base font-bold text-white">1. Autentikasi & Header Permintaan</h3>
-                <p class="text-xs text-slate-400">Setiap request ke endpoint QRqu wajib menyertakan 4 header autentikasi berikut:</p>
+            <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4 transition-colors duration-200">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">1. Autentikasi & Header Permintaan</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Setiap request ke endpoint QRqu wajib menyertakan 4 header autentikasi berikut:</p>
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs">
-                        <thead class="bg-slate-900 text-slate-400 font-semibold border-b border-slate-800">
+                        <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-800">
                             <tr>
                                 <th class="p-3">Nama Header</th>
                                 <th class="p-3">Tipe</th>
                                 <th class="p-3">Keterangan</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-800/60 font-mono text-slate-300">
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono text-slate-700 dark:text-slate-300">
                             <tr>
-                                <td class="p-3 text-emerald-400 font-bold">X-QRQU-Key</td>
-                                <td class="p-3 text-slate-400">String</td>
-                                <td class="p-3 font-sans">API Key Anda (contoh: <code class="text-slate-200">qrqu_live_...</code>)</td>
+                                <td class="p-3 text-emerald-600 dark:text-emerald-400 font-bold">X-QRQU-Key</td>
+                                <td class="p-3 text-slate-500 dark:text-slate-400">String</td>
+                                <td class="p-3 font-sans">API Key Anda (contoh: <code class="text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-900 px-1 py-0.5 rounded">qrqu_live_...</code>)</td>
                             </tr>
                             <tr>
-                                <td class="p-3 text-emerald-400 font-bold">X-QRQU-Timestamp</td>
-                                <td class="p-3 text-slate-400">Integer</td>
+                                <td class="p-3 text-emerald-600 dark:text-emerald-400 font-bold">X-QRQU-Timestamp</td>
+                                <td class="p-3 text-slate-500 dark:text-slate-400">Integer</td>
                                 <td class="p-3 font-sans">UNIX timestamp detik saat ini (Toleransi: {{ tolerance_seconds }} detik)</td>
                             </tr>
                             <tr>
-                                <td class="p-3 text-emerald-400 font-bold">X-QRQU-Nonce</td>
-                                <td class="p-3 text-slate-400">String</td>
+                                <td class="p-3 text-emerald-600 dark:text-emerald-400 font-bold">X-QRQU-Nonce</td>
+                                <td class="p-3 text-slate-500 dark:text-slate-400">String</td>
                                 <td class="p-3 font-sans">String unik / UUID acak per request untuk mencegah replay attack</td>
                             </tr>
                             <tr>
-                                <td class="p-3 text-emerald-400 font-bold">X-QRQU-Signature</td>
-                                <td class="p-3 text-slate-400">String</td>
+                                <td class="p-3 text-emerald-600 dark:text-emerald-400 font-bold">X-QRQU-Signature</td>
+                                <td class="p-3 text-slate-500 dark:text-slate-400">String</td>
                                 <td class="p-3 font-sans">HMAC-SHA256 hex string dari gabungan payload</td>
                             </tr>
                             <tr>
-                                <td class="p-3 text-teal-400 font-bold">Idempotency-Key</td>
-                                <td class="p-3 text-slate-400">String (Opsional)</td>
+                                <td class="p-3 text-teal-600 dark:text-teal-400 font-bold">Idempotency-Key</td>
+                                <td class="p-3 text-slate-500 dark:text-slate-400">String (Opsional)</td>
                                 <td class="p-3 font-sans">UUID unik pesanan untuk mencegah duplicate invoice jika terjadi retry/timeout</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <div class="mt-4 bg-slate-900 p-4 rounded-2xl border border-slate-800 text-xs font-mono">
+                <div class="mt-4 bg-slate-900 p-4 rounded-2xl border border-slate-800 text-xs font-mono text-emerald-400">
                     <div class="text-[11px] text-slate-400 mb-1 font-sans font-semibold">Rumus Signature HMAC-SHA256:</div>
-                    <code class="text-emerald-400 font-bold">
+                    <code class="font-bold">
                         signature = hash_hmac('sha256', api_key + timestamp + nonce + raw_request_body, api_secret)
                     </code>
                 </div>
             </div>
 
             <!-- Code Examples Tabs -->
-            <div class="bg-slate-950 p-6 rounded-3xl border border-slate-800 space-y-4">
+            <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4 transition-colors duration-200">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-base font-bold text-white">2. Contoh Kode Pembuatan Invoice (Create Invoice)</h3>
-                    <div class="flex space-x-1 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs font-semibold">
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white">2. Contoh Kode Pembuatan Invoice (Create Invoice)</h3>
+                    <div class="flex space-x-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold">
                         <button
                             v-for="lang in ['PHP', 'NodeJS', 'Python', 'cURL']"
                             :key="lang"
                             @click="activeLang = lang"
                             :class="[
                                 'px-3 py-1 rounded-lg transition',
-                                activeLang === lang ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+                                activeLang === lang ? 'bg-emerald-600 text-white font-bold shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                             ]"
                         >
                             {{ lang }}
@@ -223,16 +223,16 @@ print(res.json())
             </div>
 
             <!-- Webhook Verification Guide -->
-            <div class="bg-slate-950 p-6 rounded-3xl border border-slate-800 space-y-3">
-                <h3 class="text-base font-bold text-white">3. Menangani Webhook Notifikasi Pembayaran</h3>
-                <p class="text-xs text-slate-400 leading-relaxed">
-                    Ketika pelanggan melunasi tagihan QRIS, QRqu akan mengirim HTTP POST ke URL Webhook Anda. Header permintaan menyertakan <code class="text-emerald-400">X-QRQU-Signature</code> yang dihitung dari:
+            <div class="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3 transition-colors duration-200">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">3. Menangani Webhook Notifikasi Pembayaran</h3>
+                <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Ketika pelanggan melunasi tagihan QRIS, QRqu akan mengirim HTTP POST ke URL Webhook Anda. Header permintaan menyertakan <code class="text-emerald-600 dark:text-emerald-400 bg-slate-100 dark:bg-slate-900 px-1 py-0.5 rounded">X-QRQU-Signature</code> yang dihitung dari:
                 </p>
                 <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400">
                     hash_hmac('sha256', raw_payload_json, webhook_secret)
                 </div>
-                <p class="text-xs text-slate-400 leading-relaxed">
-                    Pastikan endpoint webhook Anda mengembalikan HTTP response <code class="text-white font-bold">200 OK</code> untuk menandakan penerimaan sukses. Jika gagal atau timeout, QRqu akan melakukan retry otomatis secara bertahap (30s, 1m, 5m, 15m).
+                <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Pastikan endpoint webhook Anda mengembalikan HTTP response <code class="text-slate-900 dark:text-white font-bold bg-slate-100 dark:bg-slate-900 px-1 py-0.5 rounded">200 OK</code> untuk menandakan penerimaan sukses. Jika gagal atau timeout, QRqu akan melakukan retry otomatis secara bertahap (30s, 1m, 5m, 15m).
                 </p>
             </div>
         </div>
