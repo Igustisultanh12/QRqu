@@ -54,6 +54,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/transactions/export', [Customer\TransactionController::class, 'export'])->name('customer.transactions.export');
     Route::get('/transactions/{transaction}', [Customer\TransactionController::class, 'show'])->name('customer.transactions.show');
 
+    // Monthly Reports (Laporan Bulanan Transaksi)
+    Route::get('/reports/monthly', [Customer\MonthlyReportController::class, 'index'])->name('customer.reports.monthly');
+    Route::get('/reports/monthly/export', [Customer\MonthlyReportController::class, 'exportCsv'])->name('customer.reports.monthly.export');
+
     // Webhooks
     Route::get('/webhooks', [Customer\WebhookController::class, 'index'])->name('customer.webhooks.index');
     Route::post('/webhooks', [Customer\WebhookController::class, 'store'])->name('customer.webhooks.store');
@@ -97,6 +101,10 @@ Route::middleware(['auth', EnsureAdmin::class])->prefix('admin')->name('admin.')
     Route::get('/transactions', [Admin\TransactionController::class, 'index'])->name('transactions.index');
     Route::get('/transactions/{transaction}', [Admin\TransactionController::class, 'show'])->name('transactions.show');
     Route::post('/transactions/{transaction}/cancel', [Admin\TransactionController::class, 'cancel'])->name('transactions.cancel');
+
+    // Monthly Reports (Laporan Bulanan Platform)
+    Route::get('/reports/monthly', [Admin\MonthlyReportController::class, 'index'])->name('reports.monthly');
+    Route::get('/reports/monthly/export', [Admin\MonthlyReportController::class, 'exportCsv'])->name('reports.monthly.export');
 
     // DOKU Gateway Management
     Route::get('/doku', [Admin\DokuController::class, 'index'])->name('doku.index');

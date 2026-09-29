@@ -15,7 +15,7 @@
   <img src="https://img.shields.io/badge/Vue.js-3.x-green.svg" alt="Vue 3">
   <img src="https://img.shields.io/badge/Inertia.js-v2-purple.svg" alt="Inertia.js">
   <img src="https://img.shields.io/badge/TailwindCSS-3.x-38bdf8.svg" alt="Tailwind CSS">
-  <img src="https://img.shields.io/badge/Tests-46%20Passed-success.svg" alt="Tests Passed">
+  <img src="https://img.shields.io/badge/Tests-50%20Passed-success.svg" alt="Tests Passed">
   <img src="https://img.shields.io/badge/License-Proprietary-darkred.svg" alt="License">
 </p>
 
@@ -116,6 +116,13 @@ Website / Aplikasi Merchant (Update Status Transaksi Otomatis)
 
 ### 6. Control Panel Administrator
 - Manajemen seluruh merchant, aktivasi paket manual, audit log sistem, monitoring performa gateway, dan pengawasan log DOKU.
+
+### 7. Laporan Bulanan & Pengaturan Kuota Admin
+- Laporan Bulanan komprehensif untuk Merchant (`/reports/monthly`) dan Admin (`/admin/reports/monthly`).
+- Rekapitulasi transaksi berhasil vs gagal vs kedaluwarsa beserta **nama transaksi** (deskripsi order).
+- Pemantauan sisa kuota bulanan terpakai (% kuota, limit, sisa) secara visual.
+- Ekspor laporan bulanan ke format CSV dan dukungan cetak ramah printer (Print/PDF).
+- Konfigurasi langsung oleh Administrator di menu Pengaturan (`/admin/settings`) untuk **Harga Paket Bulanan** dan **Batas Kuota Transaksi Bulanan**.
 
 ---
 
@@ -352,9 +359,10 @@ php artisan test
    PASS  Tests\Feature\DokuIntegrationAndWebhookTest
    PASS  Tests\Feature\TenantIsolationTest
    PASS  Tests\Feature\SchedulerExpirationTest
+   PASS  Tests\Feature\MonthlyReportAndSettingsTest
 
-  Tests:    46 passed (127 assertions)
-  Duration: 3.66s
+  Tests:    50 passed (193 assertions)
+  Duration: 3.31s
 ```
 
 ---
