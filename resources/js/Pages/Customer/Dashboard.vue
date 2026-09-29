@@ -1,0 +1,178 @@
+<template>
+    <CustomerLayout>
+        <template #header>Dashboard Ringkasan Merchant</template>
+
+        <div class="space-y-6">
+            <!-- Active Subscription Alert Card -->
+            <div v-if="subscription" class="bg-gradient-to-r from-emerald-950/80 to-slate-900 border border-emerald-500/30 p-6 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            {{ subscription.status }}
+                        </span>
+                        <h2 class="text-xl font-bold text-white">{{ subscription.plan_name }}</h2>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">
+                        Berlaku sampai: <strong class="text-slate-200">{{ subscription.expires_at }}</strong> (Sisa <span class="text-emerald-400 font-semibold">{{ subscription.remaining_days }} hari</span>) • Kuota Transaksi: {{ subscription.transaction_limit }} • Limit Kecepatan: {{ subscription.rate_limit_rpm }} RPM
+                    </p>
+                </div>
+                <Link :href="route('customer.subscription.index')" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition shadow-md shrink-0">
+                    Perpanjang / Upgrade Paket
+                </Link>
+            </div>
+
+            <div v-else class="bg-amber-950/40 border border-amber-500/40 p-6 rounded-3xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-amber-200">Belum Ada Subscription Aktif</h2>
+                    <p class="text-xs text-amber-300/80 mt-1">Pilih paket langganan untuk mulai menerima transaksi QRIS dan menggunakan API QRqu.</p>
+                </div>
+                <Link :href="route('customer.subscription.index')" class="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs transition">
+                    Pilih Paket Langganan
+                </Link>
+            </div>
+
+            <!-- KPI Metric Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Total Volume -->
+                <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-sm">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Volume Transaksi Lunas</span>
+                    <div class="text-2xl font-black text-white mt-1">{{ kpi.total_volume_formatted }}</div>
+                    <span class="text-[11px] text-emerald-400 mt-2 block font-medium">✓ Berhasil diselesaikan</span>
+                </div>
+
+                <!-- Total Transaksi -->
+                <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-sm">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Transaksi</span>
+                    <div class="text-2xl font-black text-white mt-1">{{ kpi.total_transactions }}</div>
+                    <div class="flex items-center space-x-2 text-[11px] text-slate-400 mt-2">
+                        <span class="text-emerald-400 font-semibold">{{ kpi.successful_transactions }} Sukses</span>
+                        <span>•</span>
+                        <span class="text-amber-400 font-semibold">{{ kpi.pending_transactions }} Pending</span>
+                    </div>
+                </div>
+
+                <!-- API Today -->
+                <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-sm">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">API Request Hari Ini</span>
+                    <div class="text-2xl font-black text-teal-300 mt-1">{{ kpi.api_today }}</div>
+                    <span class="text-[11px] text-slate-400 mt-2 block">Bulan ini: {{ kpi.api_month }} hits</span>
+                </div>
+
+                <!-- Failed / Expired -->
+                <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-sm">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Gagal / Expired</span>
+                    <div class="text-2xl font-black text-rose-400 mt-1">{{ kpi.failed_transactions }}</div>
+                    <span class="text-[11px] text-slate-500 mt-2 block">Invoice batal atau kedaluwarsa</span>
+                </div>
+            </div>
+
+            <!-- Chart & Visual Summary -->
+            <div class="bg-slate-950 p-6 rounded-3xl border border-slate-800">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-base font-bold text-white">Aktivitas Transaksi (7 Hari Terakhir)</h3>
+                        <p class="text-xs text-slate-400">Tren volume dan frekuensi transaksi harian merchant</p>
+                    </div>
+                </div>
+
+                <!-- CSS / SVG Bar Chart -->
+                <div class="h-48 flex items-end justify-between gap-2 pt-6 border-b border-slate-800">
+                    <div v-for="(item, idx) in chart_data" :key="idx" class="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
+                        <div class="text-[10px] font-mono text-emerald-400 opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
+                            {{ item.count }} trx
+                        </div>
+                        <div
+                            class="w-full bg-emerald-500/30 group-hover:bg-emerald-400 rounded-t-lg transition-all"
+                            :style="{ height: Math.max(12, (item.count / maxChartCount) * 100) + '%' }"
+                        ></div>
+                        <span class="text-[11px] text-slate-400 font-medium whitespace-nowrap">{{ item.date }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions Table -->
+            <div class="bg-slate-950 rounded-3xl border border-slate-800 overflow-hidden">
+                <div class="p-6 border-b border-slate-800 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-bold text-white">Transaksi Terkini</h3>
+                        <p class="text-xs text-slate-400">5 Transaksi terakhir yang masuk ke akun Anda</p>
+                    </div>
+                    <Link :href="route('customer.transactions.index')" class="text-xs font-semibold text-emerald-400 hover:text-emerald-300">
+                        Lihat Semua Transaksi →
+                    </Link>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-900/60 text-slate-400 font-semibold border-b border-slate-800">
+                            <tr>
+                                <th class="p-4">Transaction ID</th>
+                                <th class="p-4">Invoice / External ID</th>
+                                <th class="p-4">Nominal</th>
+                                <th class="p-4">Status</th>
+                                <th class="p-4">Waktu</th>
+                                <th class="p-4 text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                            <tr v-if="recent_transactions.length === 0">
+                                <td colspan="6" class="p-8 text-center text-slate-500">
+                                    Belum ada transaksi yang tercatat. Gunakan API untuk membuat tagihan pertama Anda!
+                                </td>
+                            </tr>
+                            <tr v-for="trx in recent_transactions" :key="trx.id" class="hover:bg-slate-900/40 transition">
+                                <td class="p-4 font-mono font-bold text-slate-200">{{ trx.id }}</td>
+                                <td class="p-4">
+                                    <div class="font-mono text-slate-300">{{ trx.invoice_id }}</div>
+                                    <div class="text-[11px] text-slate-500">{{ trx.external_id }}</div>
+                                </td>
+                                <td class="p-4 font-bold text-white">
+                                    Rp {{ Number(trx.amount).toLocaleString('id-ID') }}
+                                </td>
+                                <td class="p-4">
+                                    <span
+                                        :class="[
+                                            'px-2.5 py-1 rounded-full text-[10px] font-bold uppercase',
+                                            trx.status === 'PAID' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
+                                            trx.status === 'PENDING' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
+                                            'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                                        ]"
+                                    >
+                                        {{ trx.status }}
+                                    </span>
+                                </td>
+                                <td class="p-4 text-slate-400 font-mono text-[11px]">
+                                    {{ new Date(trx.created_at).toLocaleString('id-ID') }}
+                                </td>
+                                <td class="p-4 text-right">
+                                    <Link :href="route('customer.transactions.show', trx.id)" class="text-emerald-400 hover:underline font-semibold">
+                                        Detail
+                                    </Link>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </CustomerLayout>
+</template>
+
+<script setup>
+import { computed } from 'vue';
+import { Link } from '@inertiajs/vue3';
+import CustomerLayout from '@/Layouts/CustomerLayout.vue';
+
+const props = defineProps({
+    customer: Object,
+    subscription: Object,
+    kpi: Object,
+    recent_transactions: Array,
+    chart_data: Array,
+});
+
+const maxChartCount = computed(() => {
+    const counts = props.chart_data?.map(i => i.count) || [1];
+    return Math.max(...counts, 1);
+});
+</script>

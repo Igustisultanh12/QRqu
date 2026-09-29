@@ -1,0 +1,220 @@
+<template>
+    <div class="min-h-screen bg-slate-900 text-slate-100 flex flex-col md:flex-row antialiased">
+        <!-- Sidebar Navigation -->
+        <aside class="w-full md:w-64 bg-slate-950 border-r border-slate-800 flex flex-col justify-between shrink-0">
+            <div>
+                <!-- Brand Logo -->
+                <div class="h-16 flex items-center px-6 border-b border-slate-800 space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                        <span class="font-black text-xl text-slate-950">Q</span>
+                    </div>
+                    <div>
+                        <span class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-emerald-400 to-teal-200 bg-clip-text text-transparent">QRqu Gateway</span>
+                        <span class="block text-[10px] text-emerald-400/80 font-mono tracking-wider uppercase font-semibold">Merchant Portal</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="p-4 space-y-1.5 text-sm font-medium">
+                    <Link
+                        :href="route('customer.dashboard')"
+                        :class="[
+                            'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                            route().current('customer.dashboard')
+                                ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                        ]"
+                    >
+                        <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                        Dashboard
+                    </Link>
+
+                    <Link
+                        :href="route('customer.transactions.index')"
+                        :class="[
+                            'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                            route().current('customer.transactions.*')
+                                ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                        ]"
+                    >
+                        <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z"/>
+                        </svg>
+                        Transaksi & Invoice
+                    </Link>
+
+                    <Link
+                        :href="route('customer.subscription.index')"
+                        :class="[
+                            'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                            route().current('customer.subscription.*')
+                                ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                        ]"
+                    >
+                        <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                        </svg>
+                        Paket Langganan
+                    </Link>
+
+                    <Link
+                        :href="route('customer.credentials.index')"
+                        :class="[
+                            'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                            route().current('customer.credentials.*')
+                                ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                        ]"
+                    >
+                        <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                        </svg>
+                        API Credentials
+                    </Link>
+
+                    <Link
+                        :href="route('customer.webhooks.index')"
+                        :class="[
+                            'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                            route().current('customer.webhooks.*')
+                                ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                        ]"
+                    >
+                        <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        Webhooks
+                    </Link>
+
+                    <Link
+                        :href="route('customer.api-usage.index')"
+                        :class="[
+                            'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                            route().current('customer.api-usage.*')
+                                ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                        ]"
+                    >
+                        <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        API Usage & Logs
+                    </Link>
+
+                    <Link
+                        :href="route('customer.docs.index')"
+                        :class="[
+                            'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                            route().current('customer.docs.*')
+                                ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                        ]"
+                    >
+                        <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                        Dokumentasi API
+                    </Link>
+
+                    <Link
+                        :href="route('profile.edit')"
+                        :class="[
+                            'flex items-center px-3.5 py-2.5 rounded-lg transition-colors',
+                            route().current('profile.edit')
+                                ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                        ]"
+                    >
+                        <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        Profil & Keamanan
+                    </Link>
+                </nav>
+            </div>
+
+            <!-- User Info & Logout -->
+            <div class="p-4 border-t border-slate-800">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3 overflow-hidden">
+                        <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs text-emerald-400">
+                            {{ $page.props.auth.user?.name?.charAt(0) || 'U' }}
+                        </div>
+                        <div class="truncate">
+                            <p class="text-xs font-semibold text-slate-200 truncate">{{ $page.props.auth.user?.name }}</p>
+                            <p class="text-[11px] text-slate-400 truncate">{{ $page.props.auth.user?.customer?.company_name || $page.props.auth.user?.email }}</p>
+                        </div>
+                    </div>
+                    <Link
+                        :href="route('logout')"
+                        method="post"
+                        as="button"
+                        class="p-2 text-slate-400 hover:text-rose-400 transition-colors"
+                        title="Keluar"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                    </Link>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col min-w-0">
+            <!-- Top Navigation Header -->
+            <header class="h-16 bg-slate-900/80 backdrop-blur border-b border-slate-800 flex items-center justify-between px-6 sticky top-0 z-10">
+                <div class="flex items-center space-x-3">
+                    <h1 class="text-lg font-bold text-slate-100">
+                        <slot name="header">Portal Merchant</slot>
+                    </h1>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div v-if="$page.props.auth.user?.customer?.has_active_subscription" class="flex items-center space-x-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-xs font-semibold text-emerald-400">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span>Subscription Aktif</span>
+                    </div>
+                    <div v-else class="flex items-center space-x-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full text-xs font-semibold text-amber-400">
+                        <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                        <span>Belum Berlangganan</span>
+                    </div>
+
+                    <a :href="route('checkout.show', 'INV-20260929-DEMO001')" target="_blank" class="hidden sm:inline-flex items-center text-xs font-medium text-slate-400 hover:text-emerald-400 transition-colors">
+                        <span>Lihat Demo QRIS</span>
+                        <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    </a>
+                </div>
+            </header>
+
+            <!-- Flash Message Banner -->
+            <div v-if="$page.props.flash.success" class="m-6 mb-0 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-300 text-sm flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>{{ $page.props.flash.success }}</span>
+                </div>
+            </div>
+
+            <div v-if="$page.props.flash.error" class="m-6 mb-0 p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-sm flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <svg class="w-5 h-5 text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <span>{{ $page.props.flash.error }}</span>
+                </div>
+            </div>
+
+            <!-- Page Body Content -->
+            <main class="flex-1 p-6">
+                <slot />
+            </main>
+        </div>
+    </div>
+</template>
+
+<script setup>
+import { Link } from '@inertiajs/vue3';
+</script>
