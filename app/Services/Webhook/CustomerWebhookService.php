@@ -71,24 +71,95 @@ class CustomerWebhookService
             'status' => 'PENDING',
         ]);
 
-        SendCustomerWebhookJob::dispatch($delivery->id);
+        // Attempt immediate synchronous delivery first for instant callback
+        $delivery = $this->executeDelivery($delivery);
+
+        // If initial sync attempt failed and retries remain, dispatch queue job for background retry
+        if ($delivery->status !== 'DELIVERED' && $delivery->attempt < $delivery->max_attempts) {
+            try {
+                SendCustomerWebhookJob::dispatch($delivery->id)->delay(now()->addSeconds(30));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("QRqu: Could not queue webhook retry: " . $e->getMessage());
+            }
+        }
 
         return $delivery;
     }
 
     /**
+     * Directly execute webhook delivery over HTTP (synchronously)
+     */
+    public function executeDelivery(WebhookDelivery $delivery): WebhookDelivery
+    {
+        $newAttempt = (int) $delivery->attempt + 1;
+        $delivery->update([
+            'attempt' => $newAttempt,
+            'status' => 'RETRYING',
+        ]);
+
+        $startTime = microtime(true);
+        $payloadJson = json_encode($delivery->payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'X-QRQU-Signature' => $delivery->signature,
+                'X-QRQU-Timestamp' => gmdate('Y-m-d\TH:i:s') . 'Z',
+                'X-QRQU-Event' => $delivery->event,
+                'X-QRQU-Event-ID' => $delivery->event_id,
+            ])
+                ->timeout(10)
+                ->withBody($payloadJson, 'application/json')
+                ->post($delivery->url);
+
+            $durationMs = (int) round((microtime(true) - $startTime) * 1000);
+
+            if ($response->successful()) {
+                $delivery->update([
+                    'status' => 'DELIVERED',
+                    'http_status' => $response->status(),
+                    'response_body' => substr($response->body(), 0, 5000),
+                    'duration_ms' => $durationMs,
+                    'next_retry_at' => null,
+                ]);
+
+                \Illuminate\Support\Facades\Log::info("QRqu: Customer webhook delivered successfully for event {$delivery->event_id} to {$delivery->url}");
+            } else {
+                $isFinal = $newAttempt >= $delivery->max_attempts;
+                $delivery->update([
+                    'status' => $isFinal ? 'FAILED' : 'RETRYING',
+                    'http_status' => $response->status(),
+                    'response_body' => substr($response->body(), 0, 5000),
+                    'duration_ms' => $durationMs,
+                    'next_retry_at' => !$isFinal ? now()->addSeconds(60) : null,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            $durationMs = (int) round((microtime(true) - $startTime) * 1000);
+            $isFinal = $newAttempt >= $delivery->max_attempts;
+
+            $delivery->update([
+                'status' => $isFinal ? 'FAILED' : 'RETRYING',
+                'http_status' => null,
+                'response_body' => substr($e->getMessage(), 0, 5000),
+                'duration_ms' => $durationMs,
+                'next_retry_at' => !$isFinal ? now()->addSeconds(60) : null,
+            ]);
+        }
+
+        return $delivery->fresh();
+    }
+
+    /**
      * Manually trigger re-delivery of a failed webhook
      */
-    public function retryDelivery(WebhookDelivery $delivery): bool
+    public function retryDelivery(WebhookDelivery $delivery): WebhookDelivery
     {
         $delivery->update([
             'status' => 'PENDING',
-            'attempt' => 0,
             'next_retry_at' => null,
         ]);
 
-        SendCustomerWebhookJob::dispatch($delivery->id);
-
-        return true;
+        return $this->executeDelivery($delivery);
     }
 }

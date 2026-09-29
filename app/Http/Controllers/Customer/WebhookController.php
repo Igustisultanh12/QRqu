@@ -87,9 +87,14 @@ class WebhookController extends Controller
             'status' => 'PENDING',
         ]);
 
-        \App\Jobs\SendCustomerWebhookJob::dispatch($delivery->id);
+        $delivery = $service->executeDelivery($delivery);
 
-        return redirect()->back()->with('success', 'Test Webhook berhasil dikirim ke antrean! Cek riwayat pengiriman di bawah dalam beberapa saat.');
+        if ($delivery->status === 'DELIVERED') {
+            return redirect()->back()->with('success', "Test Webhook berhasil terkirim! Respon HTTP {$delivery->http_status} ({$delivery->duration_ms}ms).");
+        } else {
+            $errDetail = $delivery->http_status ? "HTTP {$delivery->http_status}" : 'Koneksi gagal atau timeout';
+            return redirect()->back()->with('error', "Test Webhook gagal: {$errDetail}. Silakan cek riwayat pengiriman di bawah.");
+        }
     }
 
     public function retry(Request $request, WebhookDelivery $delivery, CustomerWebhookService $service): RedirectResponse
@@ -99,8 +104,13 @@ class WebhookController extends Controller
             abort(403);
         }
 
-        $service->retryDelivery($delivery);
+        $delivery = $service->retryDelivery($delivery);
 
-        return redirect()->back()->with('success', 'Webhook telah dijadwalkan untuk dikirim ulang segera.');
+        if ($delivery->status === 'DELIVERED') {
+            return redirect()->back()->with('success', "Webhook berhasil dikirim ulang! Respon HTTP {$delivery->http_status} ({$delivery->duration_ms}ms).");
+        } else {
+            $errDetail = $delivery->http_status ? "HTTP {$delivery->http_status}" : 'Koneksi gagal atau timeout';
+            return redirect()->back()->with('error', "Kirim ulang gagal: {$errDetail}.");
+        }
     }
 }
