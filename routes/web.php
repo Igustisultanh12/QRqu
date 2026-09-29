@@ -5,8 +5,11 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\Customer;
 use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\EnsureAdmin;
+use App\Models\Plan;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+use Illuminate\Support\Facades\Schema;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,7 +17,14 @@ use Inertia\Inertia;
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {
-    return Inertia::render('Welcome');
+    $plans = [];
+    if (Schema::hasTable('plans')) {
+        $plans = Plan::where('status', 'active')->orderBy('price')->get();
+    }
+
+    return Inertia::render('Welcome', [
+        'plans' => $plans,
+    ]);
 })->name('home');
 
 // Public QRIS Checkout Interface
