@@ -101,24 +101,28 @@ class CustomerWebhookService
         $payloadJson = json_encode($delivery->payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         try {
-            $response = \Illuminate\Support\Facades\Http::withHeaders([
-                'Content-Type' => 'application/json',
-                'X-QRQU-Signature' => $delivery->signature,
-                'X-QRQU-Timestamp' => gmdate('Y-m-d\TH:i:s') . 'Z',
-                'X-QRQU-Event' => $delivery->event,
-                'X-QRQU-Event-ID' => $delivery->event_id,
-            ])
-                ->timeout(10)
+            $response = \Illuminate\Support\Facades\Http::withoutVerifying()
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                    'X-QRQU-Signature' => $delivery->signature,
+                    'X-Signature' => $delivery->signature,
+                    'Signature' => $delivery->signature,
+                    'X-QRQU-Timestamp' => gmdate('Y-m-d\TH:i:s') . 'Z',
+                    'X-QRQU-Event' => $delivery->event,
+                    'X-QRQU-Event-ID' => $delivery->event_id,
+                ])
+                ->timeout(12)
                 ->withBody($payloadJson, 'application/json')
                 ->post($delivery->url);
 
             $durationMs = (int) round((microtime(true) - $startTime) * 1000);
+            $rawBody = trim((string) $response->body());
 
             if ($response->successful()) {
                 $delivery->update([
                     'status' => 'DELIVERED',
                     'http_status' => $response->status(),
-                    'response_body' => substr($response->body(), 0, 5000),
+                    'response_body' => $rawBody !== '' ? substr($rawBody, 0, 5000) : 'HTTP ' . $response->status() . ' OK',
                     'duration_ms' => $durationMs,
                     'next_retry_at' => null,
                 ]);
@@ -129,10 +133,12 @@ class CustomerWebhookService
                 $delivery->update([
                     'status' => $isFinal ? 'FAILED' : 'RETRYING',
                     'http_status' => $response->status(),
-                    'response_body' => substr($response->body(), 0, 5000),
+                    'response_body' => $rawBody !== '' ? substr($rawBody, 0, 5000) : ('HTTP ' . $response->status() . ' ' . ($response->reason() ?: 'Error')),
                     'duration_ms' => $durationMs,
                     'next_retry_at' => !$isFinal ? now()->addSeconds(60) : null,
                 ]);
+
+                \Illuminate\Support\Facades\Log::warning("QRqu: Customer webhook delivery failed (HTTP {$response->status()}) for event {$delivery->event_id}: {$rawBody}");
             }
         } catch (\Throwable $e) {
             $durationMs = (int) round((microtime(true) - $startTime) * 1000);
@@ -141,10 +147,12 @@ class CustomerWebhookService
             $delivery->update([
                 'status' => $isFinal ? 'FAILED' : 'RETRYING',
                 'http_status' => null,
-                'response_body' => substr($e->getMessage(), 0, 5000),
+                'response_body' => 'Gagal Terhubung: ' . substr($e->getMessage(), 0, 5000),
                 'duration_ms' => $durationMs,
                 'next_retry_at' => !$isFinal ? now()->addSeconds(60) : null,
             ]);
+
+            \Illuminate\Support\Facades\Log::error("QRqu: Customer webhook connection exception for event {$delivery->event_id}: " . $e->getMessage());
         }
 
         return $delivery->fresh();

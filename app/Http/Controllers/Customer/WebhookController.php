@@ -92,8 +92,9 @@ class WebhookController extends Controller
         if ($delivery->status === 'DELIVERED') {
             return redirect()->back()->with('success', "Test Webhook berhasil terkirim! Respon HTTP {$delivery->http_status} ({$delivery->duration_ms}ms).");
         } else {
-            $errDetail = $delivery->http_status ? "HTTP {$delivery->http_status}" : 'Koneksi gagal atau timeout';
-            return redirect()->back()->with('error', "Test Webhook gagal: {$errDetail}. Silakan cek riwayat pengiriman di bawah.");
+            $errDetail = $delivery->http_status ? "HTTP {$delivery->http_status}" : 'Koneksi gagal';
+            $snippet = $delivery->response_body ? ": " . Str::limit(strip_tags($delivery->response_body), 120) : '';
+            return redirect()->back()->with('error', "Test Webhook gagal ({$errDetail}){$snippet}. Cek detail log di bawah.");
         }
     }
 
@@ -109,8 +110,9 @@ class WebhookController extends Controller
         if ($delivery->status === 'DELIVERED') {
             return redirect()->back()->with('success', "Webhook berhasil dikirim ulang! Respon HTTP {$delivery->http_status} ({$delivery->duration_ms}ms).");
         } else {
-            $errDetail = $delivery->http_status ? "HTTP {$delivery->http_status}" : 'Koneksi gagal atau timeout';
-            return redirect()->back()->with('error', "Kirim ulang gagal: {$errDetail}.");
+            $errDetail = $delivery->http_status ? "HTTP {$delivery->http_status}" : 'Koneksi gagal';
+            $snippet = $delivery->response_body ? ": " . Str::limit(strip_tags($delivery->response_body), 120) : '';
+            return redirect()->back()->with('error', "Kirim ulang gagal ({$errDetail}){$snippet}.");
         }
     }
 }
