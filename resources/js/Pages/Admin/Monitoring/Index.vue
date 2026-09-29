@@ -2,12 +2,33 @@
     <AdminLayout>
         <template #header>Monitoring Gateway & Live Testing</template>
 
-        <div class="space-y-6 max-w-5xl">
-            <!-- Heading (Romei Style) -->
+        <div class="space-y-6 max-w-5xl relative">
+            <!-- Toast Notification (Romei Style) -->
+            <div
+                v-if="toastNotification"
+                class="fixed top-6 right-6 z-50 max-w-sm w-full border rounded-2xl shadow-2xl p-4 transition-all duration-300 backdrop-blur-md"
+                :class="[
+                    toastNotification.status === 'success' ? 'bg-emerald-600 border-emerald-500 text-white' : '',
+                    toastNotification.status === 'error' ? 'bg-rose-600 border-rose-500 text-white' : '',
+                    toastNotification.status === 'info' ? 'bg-indigo-600 border-indigo-500 text-white' : ''
+                ]"
+            >
+                <div class="flex items-start gap-3">
+                    <svg v-if="toastNotification.status === 'success'" class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <svg v-else-if="toastNotification.status === 'error'" class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    <svg v-else class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <div class="space-y-0.5">
+                        <h4 class="text-xs font-black uppercase tracking-wider">{{ toastNotification.title }}</h4>
+                        <p class="text-[11px] font-medium opacity-95 leading-relaxed font-mono text-left">{{ toastNotification.message }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Heading -->
             <div>
                 <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Monitoring & Uji Coba Gateway</h1>
                 <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    Pantau kestabilan koneksi DOKU, status worker webhook, dan lakukan uji transaksi QRIS secara langsung.
+                    Pantau status koneksi DOKU, antrean worker webhook, dan uji coba pembayaran QRIS secara live produksi.
                 </p>
             </div>
 
@@ -23,7 +44,7 @@
                     <span class="text-[11px] text-slate-500 mt-0.5 block">Koneksi SQL aktif normal</span>
                 </div>
 
-                <!-- Cache & Redis -->
+                <!-- Cache & Memory -->
                 <div class="bg-white dark:bg-slate-950 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cache & Memory</span>
@@ -36,11 +57,11 @@
                 <!-- DOKU Payment API -->
                 <div class="bg-white dark:bg-slate-950 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">DOKU Payment Gateway</span>
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">DOKU Gateway</span>
                         <span class="w-2.5 h-2.5 rounded-full" :class="health.doku_api ? 'bg-emerald-500' : 'bg-amber-500'"></span>
                     </div>
                     <div class="text-lg font-bold text-slate-900 dark:text-white mt-2">{{ health.doku_api ? 'Connected' : 'Simulation Mode' }}</div>
-                    <span class="text-[11px] text-slate-500 mt-0.5 block">API endpoint & signature live</span>
+                    <span class="text-[11px] text-slate-500 mt-0.5 block">API endpoint & signature ready</span>
                 </div>
 
                 <!-- PHP Runtime -->
@@ -54,38 +75,28 @@
                 </div>
             </div>
 
-            <!-- DOKU QRIS GATEWAY LIVE TEST CARD (Exact Romei Background Card) -->
+            <!-- GATEWAY TEST & WEBHOOK MONITORING (Romei 1 Exact Grid) -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- QR Code Gateway Live Test (Uji Coba Transaksi) -->
+                <!-- Uji Coba Gate Transaksi DOKU (Production Page) -->
                 <div class="bg-white dark:bg-slate-950 p-6 sm:p-7 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-5 transition-colors">
-                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
-                            </div>
-                            <div>
-                                <h3 class="text-base font-bold text-slate-900 dark:text-white">QR Code Gateway Live Test</h3>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">Uji langsung generate QRIS DOKU real-time</p>
-                            </div>
-                        </div>
-                        <span class="px-2.5 py-1 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-semibold text-[11px] border border-emerald-200 dark:border-emerald-500/20">
-                            Protokol Romei
-                        </span>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">Uji Coba Gate Transaksi DOKU (Production Page)</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Tembak langsung request pembuatan invoice live ke server DOKU untuk memastikan keabsahan *Signature* komersial.</p>
                     </div>
 
-                    <form @submit.prevent="generateTestQris" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                Nominal Pembayaran (Rp)
+                    <form @submit.prevent="runPaymentSimulation" class="space-y-4">
+                        <div class="space-y-1">
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                                Nominal Transaksi Asli (IDR)
                             </label>
                             <input
-                                v-model.number="testAmount"
+                                v-model.number="txAmount"
                                 type="number"
                                 required
                                 min="1000"
                                 step="100"
                                 placeholder="Contoh: 1000"
-                                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-sm font-black font-mono text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                                class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold px-3.5 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 font-mono"
                             />
                         </div>
 
@@ -95,10 +106,10 @@
                                 v-for="amt in [1000, 2000, 5000, 10000]"
                                 :key="amt"
                                 type="button"
-                                @click="testAmount = amt"
+                                @click="txAmount = amt"
                                 :class="[
                                     'px-2.5 py-1 rounded-lg text-xs font-semibold transition border',
-                                    testAmount === amt
+                                    txAmount === amt
                                         ? 'bg-indigo-600 text-white border-indigo-600'
                                         : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                                 ]"
@@ -107,23 +118,44 @@
                             </button>
                         </div>
 
-                        <div v-if="testError" class="p-3 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 rounded-xl text-xs text-rose-700 dark:text-rose-300">
-                            {{ testError }}
+                        <!-- Metode Transaksi -->
+                        <div class="space-y-1">
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Metode Transaksi</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    @click="txPaymentMethod = 'qris'"
+                                    :class="txPaymentMethod === 'qris' ? 'border-indigo-500 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold' : 'border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-300'"
+                                    class="border rounded-xl p-3 text-center flex flex-col items-center gap-1.5 transition-all"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                                    <span class="text-[10px] uppercase">QRIS Live</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    @click="txPaymentMethod = 'shopeepay'"
+                                    :class="txPaymentMethod === 'shopeepay' ? 'border-orange-500 bg-orange-500/10 text-orange-500 font-bold' : 'border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-300'"
+                                    class="border rounded-xl p-3 text-center flex flex-col items-center gap-1.5 transition-all"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                                    <span class="text-[10px] uppercase">ShopeePay</span>
+                                </button>
+                            </div>
                         </div>
 
                         <button
                             type="submit"
-                            :disabled="generating"
-                            class="w-full py-3 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition shadow-md shadow-indigo-600/20 flex items-center justify-center space-x-2"
+                            :disabled="isSimulating"
+                            class="w-full py-3 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold text-xs transition shadow-md shadow-indigo-600/20 flex items-center justify-center space-x-2"
                         >
-                            <svg v-if="generating" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            <svg v-if="isSimulating" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                             <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                            <span>{{ generating ? 'Menghubungi DOKU...' : 'Test Pembayaran & Tampilkan QRIS' }}</span>
+                            <span>{{ isSimulating ? 'Membuka Jendela DOKU Live...' : 'Tembak Transaksi Produksi' }}</span>
                         </button>
                     </form>
                 </div>
 
-                <!-- Webhook Inbound Payload Card (Romei Style Right Card) -->
+                <!-- Webhook Inbound Status (Romei Style Right Card) -->
                 <div class="bg-white dark:bg-slate-950 p-6 sm:p-7 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4 transition-colors">
                     <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4">
                         <div>
@@ -173,18 +205,17 @@
             </div>
         </div>
 
-        <!-- Romei Exact QRIS Payment Modal Component -->
+        <!-- Romei Authentic DOKU Live Iframe Modal Component -->
         <QrisPaymentModal
-            :show="showModal"
-            :invoice-id="modalData.invoiceId"
-            :amount="modalData.amount"
-            :qr-string="modalData.qrString"
-            :qr-url="modalData.qrUrl"
-            :nmid="modalData.nmid"
-            :checkout-url="modalData.checkoutUrl"
-            :status="modalData.status"
-            @close="showModal = false"
+            :show="showDokuModal"
+            :invoice-id="currentInvoiceId"
+            :amount="txAmount"
+            :payment-url="activePaymentUrl"
+            :qr-url="activePaymentUrl"
+            :status="currentStatus"
+            @close="closeDokuModalManual"
             @status-updated="onStatusUpdated"
+            @paid="onPaid"
         />
     </AdminLayout>
 </template>
@@ -199,53 +230,71 @@ defineProps({
     health: Object,
 });
 
-const testAmount = ref(1000);
-const generating = ref(false);
-const testError = ref(null);
-const showModal = ref(false);
+const txAmount = ref(1000);
+const txPaymentMethod = ref('qris');
+const isSimulating = ref(false);
 
-const modalData = ref({
-    invoiceId: '',
-    amount: 1000,
-    qrString: '',
-    qrUrl: '',
-    nmid: 'ID1026478551298',
-    checkoutUrl: '',
-    status: 'PENDING',
-});
+const showDokuModal = ref(false);
+const activePaymentUrl = ref('');
+const currentInvoiceId = ref('');
+const currentStatus = ref('PENDING');
 
-const generateTestQris = async () => {
-    generating.value = true;
-    testError.value = null;
+const toastNotification = ref(null);
 
-    try {
-        const response = await axios.post(route('admin.settings.test-payment'), {
-            amount: testAmount.value,
-            customer_name: 'Admin Tester',
-        });
+const showToast = (status, title, message) => {
+    toastNotification.value = { status, title, message };
+    setTimeout(() => {
+        toastNotification.value = null;
+    }, 6000);
+};
 
-        if (response.data.success) {
-            modalData.value = {
-                invoiceId: response.data.invoice_id,
-                amount: response.data.amount,
-                qrString: response.data.qr_string,
-                qrUrl: response.data.qr_url,
-                nmid: response.data.nmid || 'ID1026478551298',
-                checkoutUrl: response.data.checkout_url,
-                status: response.data.status || 'PENDING',
-            };
-            showModal.value = true;
+const runPaymentSimulation = () => {
+    isSimulating.value = true;
+    toastNotification.value = null;
+
+    axios.post('/api/admin/monitoring/test-payment', {
+        amount: parseInt(txAmount.value),
+        payment_method: txPaymentMethod.value,
+    })
+    .then((response) => {
+        const paymentUrl = response.data.payment_url || response.data.qr_url;
+        if ((response.data.status === 'success' || response.data.success) && paymentUrl) {
+            currentInvoiceId.value = response.data.invoice_id;
+            activePaymentUrl.value = paymentUrl;
+            currentStatus.value = 'PENDING';
+            showDokuModal.value = true;
+
+            showToast('info', 'Portal Terbuka', 'Silakan lakukan scan / penyelesaian pembayaran pada popup internal.');
         } else {
-            testError.value = response.data.message || 'Gagal membuat QRIS di DOKU.';
+            showToast('error', 'Gateway Error', response.data.message || 'Gagal memuat URL halaman pembayaran dari respon DOKU.');
         }
-    } catch (err) {
-        testError.value = err.response?.data?.message || err.message || 'Gagal memanggil API DOKU.';
-    } finally {
-        generating.value = false;
-    }
+    })
+    .catch((error) => {
+        const errorMsg = error.response?.data?.message || 'DOKU Live Gateway menolak payload mas. Periksa parameter signature.';
+        showToast('error', 'Transaksi Ditolak', errorMsg);
+    })
+    .finally(() => {
+        isSimulating.value = false;
+    });
+};
+
+const closeDokuModalManual = () => {
+    showDokuModal.value = false;
+    activePaymentUrl.value = '';
+    showToast('info', 'Popup Ditutup', 'Pengujian portal pembayaran dihentikan oleh admin.');
 };
 
 const onStatusUpdated = (newStatus) => {
-    modalData.value.status = newStatus;
+    currentStatus.value = newStatus;
+};
+
+const onPaid = (invoiceId) => {
+    showDokuModal.value = false;
+    activePaymentUrl.value = '';
+    showToast(
+        'success',
+        'Pembayaran Berhasil',
+        `Transaksi ${invoiceId} telah sukses dibayar! Sistem otomatis memperbarui data invoice.`
+    );
 };
 </script>

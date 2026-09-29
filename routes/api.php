@@ -24,7 +24,19 @@ Route::get('/ready', [HealthController::class, 'ready'])->name('api.ready');
 */
 Route::post('/webhooks/doku', [DokuWebhookController::class, 'handleQrisCallback'])->name('api.webhook.doku');
 Route::post('/v1/webhook/doku/qris', [DokuWebhookController::class, 'handleQrisCallback'])->name('api.webhook.doku.qris');
+Route::post('/webhook/doku/qris', [DokuWebhookController::class, 'handleQrisCallback'])->name('api.webhook.doku.qris.direct');
 Route::post('/v1/callback/doku', [DokuWebhookController::class, 'handleQrisCallback'])->name('api.webhook.doku.callback');
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN MONITORING & GATEWAY LIVE TEST (Protokol Romei 1)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('admin/monitoring')->group(function () {
+    Route::post('/test-payment', [\App\Http\Controllers\Admin\MonitoringController::class, 'testPayment'])->name('api.admin.monitoring.test-payment');
+    Route::get('/check-status/{invoice_id}', [\App\Http\Controllers\Admin\MonitoringController::class, 'checkStatus'])->name('api.admin.monitoring.check-status');
+    Route::post('/simulate/{invoice_id}', [\App\Http\Controllers\Admin\MonitoringController::class, 'simulatePayment'])->name('api.admin.monitoring.simulate');
+});
 
 /*
 |--------------------------------------------------------------------------

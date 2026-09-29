@@ -350,4 +350,56 @@ class MonthlyReportAndSettingsTest extends TestCase
             'is_paid' => true,
         ]);
     }
+
+    public function test_admin_monitoring_romei_test_payment_and_polling(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->postJson('/api/admin/monitoring/test-payment', [
+                'amount' => 10000,
+                'payment_method' => 'qris',
+            ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'status' => 'success',
+            'success' => true,
+        ]);
+
+        $invoiceId = $response->json('invoice_id');
+        $paymentUrl = $response->json('payment_url');
+        $this->assertNotEmpty($invoiceId);
+        $this->assertNotEmpty($paymentUrl);
+
+        // Check Status (Romei format)
+        $statusRes = $this->actingAs($this->adminUser)
+            ->getJson("/api/admin/monitoring/check-status/{$invoiceId}");
+
+        $statusRes->assertStatus(200);
+        $statusRes->assertJson([
+            'status' => 'pending',
+            'payment_status' => 'PENDING',
+            'is_paid' => false,
+        ]);
+
+        // Simulate
+        $simRes = $this->actingAs($this->adminUser)
+            ->postJson("/api/admin/monitoring/simulate/{$invoiceId}");
+
+        $simRes->assertStatus(200);
+        $simRes->assertJson([
+            'status' => 'success',
+            'payment_status' => 'SUCCESS',
+        ]);
+
+        // Recheck
+        $finalRes = $this->actingAs($this->adminUser)
+            ->getJson("/api/admin/monitoring/check-status/{$invoiceId}");
+
+        $finalRes->assertStatus(200);
+        $finalRes->assertJson([
+            'status' => 'success',
+            'payment_status' => 'SUCCESS',
+            'is_paid' => true,
+        ]);
+    }
 }

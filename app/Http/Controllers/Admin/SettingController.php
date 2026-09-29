@@ -296,6 +296,7 @@ class SettingController extends Controller
                 'external_id' => $invoice->external_id,
                 'amount' => $amount,
                 'amount_formatted' => 'Rp ' . number_format($amount, 0, ',', '.'),
+                'payment_url' => $invoice->qr_url,
                 'qr_string' => $invoice->qr_string,
                 'qr_url' => $invoice->qr_url,
                 'nmid' => $nmid,

@@ -636,6 +636,7 @@
             :show="showPaymentModal"
             :invoice-id="testPaymentData?.invoice_id"
             :amount="testPaymentData?.amount"
+            :payment-url="testPaymentData?.payment_url || testPaymentData?.qr_url"
             :qr-string="testPaymentData?.qr_string"
             :qr-url="testPaymentData?.qr_url"
             :nmid="testPaymentData?.nmid"
