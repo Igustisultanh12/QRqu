@@ -26,8 +26,15 @@ class AppServiceProvider extends ServiceProvider
     {
         Vite::prefetch(concurrency: 3);
 
-        // KUNCI UTAMA: Paksa skema URL ke HTTPS jika terdeteksi request lewat proxy/tunnel Cloudflare
-        if (config('app.env') === 'production' || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')) {
+        // Paksa HTTPS HANYA jika request memang menggunakan SSL (HTTPS),
+        // di balik reverse proxy / Cloudflare tunnel (HTTP_X_FORWARDED_PROTO=https),
+        // atau jika APP_URL memakai https dan diakses via domain (bukan IP lokal / non-standar port tanpa SSL).
+        if (
+            (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
+            (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ||
+            request()->isSecure() ||
+            (str_starts_with((string) config('app.url'), 'https://') && !filter_var(request()->getHost(), FILTER_VALIDATE_IP) && !in_array(request()->getHost(), ['localhost', '127.0.0.1']))
+        ) {
             URL::forceScheme('https');
         }
 
