@@ -80,6 +80,7 @@ class MonthlyReportAndSettingsTest extends TestCase
         $response = $this->actingAs($this->adminUser)
             ->post('/admin/settings', [
                 'app_name' => 'QRqu Gateway Production',
+                'app_url' => 'https://qrqu.id',
                 'timezone' => 'Asia/Jakarta',
                 'currency' => 'IDR',
                 'maintenance_mode' => false,
@@ -88,6 +89,18 @@ class MonthlyReportAndSettingsTest extends TestCase
                 'webhook_max_retries' => 4,
                 'monthly_price' => 250000,
                 'monthly_quota' => 2000,
+                'doku_client_id' => 'MCH-DEMO-999',
+                'doku_secret_key' => 'sec_test_doku_key_123',
+                'doku_base_url' => 'https://api-sandbox.doku.com',
+                'doku_environment' => 'sandbox',
+                'mail_mailer' => 'log',
+                'mail_host' => 'smtp.mailtrap.io',
+                'mail_port' => 587,
+                'mail_username' => 'testuser',
+                'mail_password' => 'secret123',
+                'mail_encryption' => 'tls',
+                'mail_from_address' => 'no-reply@qrqu.id',
+                'mail_from_name' => 'QRqu Gateway',
             ]);
 
         $response->assertRedirect();
@@ -95,11 +108,37 @@ class MonthlyReportAndSettingsTest extends TestCase
 
         // Verifikasi SystemSetting
         $this->assertEquals(250000, (float) SystemSetting::get('monthly_price'));
-        $this->assertEquals(20000, (int) SystemSetting::get('monthly_quota') * 10);
+        $this->assertEquals(2000, (int) SystemSetting::get('monthly_quota'));
+        $this->assertEquals('MCH-DEMO-999', SystemSetting::get('doku_client_id'));
+        $this->assertEquals('smtp.mailtrap.io', SystemSetting::get('mail_host'));
 
         // Verifikasi Sinkronisasi ke Plan Bulanan
         $this->assertEquals(250000, (float) $this->plan->fresh()->price);
         $this->assertEquals(2000, (int) $this->plan->fresh()->transaction_limit);
+    }
+
+    public function test_admin_can_send_test_mail(): void
+    {
+        SystemSetting::set('mail_mailer', 'log');
+        SystemSetting::set('mail_from_address', 'no-reply@qrqu.id');
+        SystemSetting::set('mail_from_name', 'QRqu');
+
+        $response = $this->actingAs($this->adminUser)
+            ->post('/admin/settings/test-mail', [
+                'test_email' => 'admin@qrqu.id',
+            ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+    }
+
+    public function test_admin_can_test_doku_connection(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->post('/admin/settings/test-doku');
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
     }
 
     public function test_customer_can_view_monthly_report_with_quota_and_breakdown(): void

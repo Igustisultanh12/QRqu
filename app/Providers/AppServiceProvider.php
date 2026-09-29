@@ -15,7 +15,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(
             \App\Contracts\PaymentGatewayInterface::class, 
-            \App\Services\Payment\DokuService::class
+            \App\Services\Payment\Doku\DokuService::class
         );
     }
 
@@ -32,10 +32,10 @@ class AppServiceProvider extends ServiceProvider
         }
 
         // DYNAMIC MAIL GATEWAY CONFIGURATION LOADER
-        // Menginjeksi konfigurasi SMTP dari database Setting secara real-time
+        // Menginjeksi konfigurasi SMTP dari database SystemSetting secara real-time
         try {
-            if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
-                $settings = \App\Models\Setting::where('group', 'mail')->orWhere('key', 'like', 'mail_%')->pluck('value', 'key')->toArray();
+            if (\Illuminate\Support\Facades\Schema::hasTable('system_settings')) {
+                $settings = \App\Models\SystemSetting::where('group', 'mail')->orWhere('key', 'like', 'mail_%')->pluck('value', 'key')->toArray();
                 if (!empty($settings['mail_host'])) {
                     config([
                         'mail.default'                 => $settings['mail_mailer'] ?? config('mail.default'),

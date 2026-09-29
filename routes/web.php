@@ -115,9 +115,11 @@ Route::middleware(['auth', EnsureAdmin::class])->prefix('admin')->name('admin.')
     Route::get('/webhooks', [Admin\WebhookController::class, 'index'])->name('webhooks.index');
     Route::post('/webhooks/{delivery}/retry', [Admin\WebhookController::class, 'retry'])->name('webhooks.retry');
 
-    // System Settings
+    // System Settings (Semua API & Mail Gateway)
     Route::get('/settings', [Admin\SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings', [Admin\SettingController::class, 'update'])->name('settings.update');
+    Route::post('/settings/test-mail', [Admin\SettingController::class, 'testMail'])->name('settings.test-mail');
+    Route::post('/settings/test-doku', [Admin\SettingController::class, 'testDoku'])->name('settings.test-doku');
 
     // Audit & Security Logs
     Route::get('/audit-logs', [Admin\AuditLogController::class, 'index'])->name('audit-logs.index');
