@@ -15,8 +15,22 @@ use Inertia\Response;
 
 class TransactionController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, DokuService $dokuService, CustomerWebhookService $webhookService): Response
     {
+        // Auto-sync transaksi PENDING terbaru langsung ke DOKU (Otomatis seperti admin monitoring)
+        $pendingRecent = Transaction::where('status', 'PENDING')
+            ->where('created_at', '>=', now()->subHours(24))
+            ->limit(10)
+            ->get();
+
+        foreach ($pendingRecent as $pendingTrx) {
+            $throttleKey = 'doku_index_sync_' . $pendingTrx->id;
+            if (!\Illuminate\Support\Facades\Cache::has($throttleKey)) {
+                \Illuminate\Support\Facades\Cache::put($throttleKey, true, 2);
+                $dokuService->syncTransactionWithDoku($pendingTrx, $webhookService);
+            }
+        }
+
         $query = Transaction::with(['customer', 'invoice'])->latest();
 
         if ($request->filled('customer_id')) {

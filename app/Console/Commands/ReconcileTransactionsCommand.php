@@ -4,39 +4,42 @@ namespace App\Console\Commands;
 
 use App\Models\Transaction;
 use App\Services\Payment\Doku\DokuService;
+use App\Services\Webhook\CustomerWebhookService;
 use Illuminate\Console\Command;
 
 class ReconcileTransactionsCommand extends Command
 {
-    protected $signature = 'qrqu:reconcile {--date= : Specific date (YYYY-MM-DD) to reconcile}';
-    protected $description = 'Reconcile QRqu transactions with DOKU payment gateway status';
+    protected $signature = 'qrqu:sync-pending-doku {--limit=50 : Jumlah transaksi pending yang diperiksa} {--date= : Tanggal transaksi yang direkonsiliasi}';
+    protected $aliases = ['qrqu:reconcile'];
+    protected $description = 'Proactively sync pending QRqu transactions with DOKU payment gateway';
 
-    public function handle(DokuService $doku): int
+    public function handle(DokuService $doku, CustomerWebhookService $webhookService): int
     {
-        $date = $this->option('date') ?? now()->toDateString();
-        $this->info("Running transaction reconciliation for date: {$date}...");
+        $limit = (int) ($this->option('limit') ?? 50);
+        $this->info("Scanning pending transactions to sync with DOKU Live API (Limit: {$limit})...");
 
-        $transactions = Transaction::whereDate('created_at', $date)->get();
-        $matched = 0;
-        $mismatches = 0;
+        // Ambil transaksi PENDING yang dibuat dalam 48 jam terakhir
+        $pendingTransactions = Transaction::where('status', 'PENDING')
+            ->where('created_at', '>=', now()->subHours(48))
+            ->with(['invoice', 'customer'])
+            ->latest()
+            ->limit($limit)
+            ->get();
 
-        foreach ($transactions as $trx) {
-            if ($trx->status === 'PAID') {
-                $matched++;
-            } elseif ($trx->status === 'PENDING' && $trx->doku_reference) {
-                $check = $doku->verifyPayment($trx->doku_reference);
-                if (($check['status'] ?? null) === 'SUCCESS') {
-                    $trx->transitionTo('PAID', 'reconciliation', 'Reconciled via automated check');
-                    $mismatches++;
-                } else {
-                    $matched++;
-                }
+        $synced = 0;
+        $stillPending = 0;
+
+        foreach ($pendingTransactions as $trx) {
+            $result = $doku->syncTransactionWithDoku($trx, $webhookService);
+            if ($result['is_paid']) {
+                $this->info("[PAID] Transaksi #{$trx->id} (Invoice: {$trx->invoice_id}) telah diverifikasi DOKU: Ref {$result['doku_reference']}");
+                $synced++;
             } else {
-                $matched++;
+                $stillPending++;
             }
         }
 
-        $this->info("Reconciliation complete. Matched: {$matched}, Mismatches resolved: {$mismatches}");
+        $this->info("DOKU Sync complete. Total diperiksa: " . count($pendingTransactions) . ", Berhasil Lunas: {$synced}, Masih Pending: {$stillPending}");
         return self::SUCCESS;
     }
 }

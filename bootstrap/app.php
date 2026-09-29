@@ -29,12 +29,14 @@ return Application::configure(basePath: dirname(__DIR__))
         // 2. PERBAIKAN FATAL TUNNELING: Daftarkan Cloudflare/Reverse Proxy sebagai Trusted Proxy agar aset dibaca via HTTPS murni
         $middleware->trustProxies(at: '*');
 
-        // 3. SINKRONISASI CORES: Penyatuan Pengecualian Token CSRF untuk Seluruh Webhook Integrasi ROMEI
+        // 3. SINKRONISASI CORES: Penyatuan Pengecualian Token CSRF untuk Seluruh Webhook Integrasi ROMEI & DOKU
         $middleware->validateCsrfTokens(except: [
-            'api/webhook/doku/qris',            // Callback QRIS DOKU Live Payment Gateway
+            'api/webhook/doku*',                // Callback QRIS DOKU Live Payment Gateway
             'api/webhooks/doku*',               // Callback QRIS DOKU
             'api/v1/webhook/doku*',             // Callback QRIS DOKU v1
             'api/v1/callback/doku*',            // Callback QRIS DOKU IPN
+            'api/doku/*',                       // Callback DOKU direct
+            'doku/*',                           // Callback DOKU direct
             'api/admin/monitoring/*',           // Admin Monitoring Ajax
             'webhook/roamer-status',          // Webhook Sinkronisasi Log API CEIRKU Pusat
             'api/v1/webhook/whatsapp-v2',     // Webhook Callback Incoming Message WA Gateway Port 7777

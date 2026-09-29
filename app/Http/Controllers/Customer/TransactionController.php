@@ -14,13 +14,30 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TransactionController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, DokuService $dokuService, CustomerWebhookService $webhookService): Response
     {
         $user = $request->user();
         if ($user->isAdmin() && !$user->customer) {
             $user->ensureCustomerProfile();
         }
         $customer = $user->fresh()->customer;
+
+        // Auto-sync transaksi PENDING terbaru pelanggan ini langsung ke DOKU (Otomatis seperti admin monitoring)
+        if ($customer) {
+            $pendingRecent = Transaction::where('customer_id', $customer->id)
+                ->where('status', 'PENDING')
+                ->where('created_at', '>=', now()->subHours(24))
+                ->limit(10)
+                ->get();
+
+            foreach ($pendingRecent as $pendingTrx) {
+                $throttleKey = 'doku_index_sync_' . $pendingTrx->id;
+                if (!\Illuminate\Support\Facades\Cache::has($throttleKey)) {
+                    \Illuminate\Support\Facades\Cache::put($throttleKey, true, 2);
+                    $dokuService->syncTransactionWithDoku($pendingTrx, $webhookService);
+                }
+            }
+        }
 
         $query = Transaction::where('customer_id', $customer?->id)
             ->with(['invoice', 'statusHistories'])

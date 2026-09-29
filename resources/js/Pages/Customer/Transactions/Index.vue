@@ -1,6 +1,14 @@
 <template>
     <CustomerLayout>
-        <template #header>Riwayat Transaksi & Tagihan</template>
+        <template #header>
+            <div class="flex items-center justify-between w-full">
+                <span>Riwayat Transaksi & Tagihan</span>
+                <span v-if="hasPendingTransactions" class="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-3 py-1 rounded-full border border-amber-200 dark:border-amber-500/30">
+                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                    <span>Live Monitoring DOKU (Auto-Sync)</span>
+                </span>
+            </div>
+        </template>
 
         <div class="space-y-6">
             <!-- Filter Bar & Export -->
@@ -10,7 +18,7 @@
                         v-model="filterForm.search"
                         type="text"
                         placeholder="Cari TRX / Invoice / External ID..."
-                        class="px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 w-full sm:w-64"
+                        class="px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 w-full sm:w-64"
                     />
 
                     <select
@@ -33,13 +41,30 @@
                     </button>
                 </form>
 
-                <a
-                    :href="route('customer.transactions.export', filterForm)"
-                    class="px-4 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 font-semibold text-xs transition flex items-center justify-center space-x-1.5 shrink-0"
-                >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                    <span>Export CSV</span>
-                </a>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button
+                        type="button"
+                        @click="syncAll"
+                        :disabled="isSyncingAll"
+                        class="px-4 py-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30 font-semibold text-xs transition flex items-center justify-center space-x-1.5"
+                        title="Periksa status transaksi PENDING ke server DOKU sekarang"
+                    >
+                        <svg v-if="isSyncingAll" class="animate-spin h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                        </svg>
+                        <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        <span>{{ isSyncingAll ? 'Mengecek...' : '🔄 Sinkron DOKU' }}</span>
+                    </button>
+
+                    <a
+                        :href="route('customer.transactions.export', filterForm)"
+                        class="px-4 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 font-semibold text-xs transition flex items-center justify-center space-x-1.5"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        <span>Export CSV</span>
+                    </a>
+                </div>
             </div>
 
             <!-- Transactions Table -->
@@ -120,7 +145,7 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue';
+import { reactive, ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import CustomerLayout from '@/Layouts/CustomerLayout.vue';
 
@@ -134,6 +159,66 @@ const filterForm = reactive({
     status: props.filters?.status || '',
     date_from: props.filters?.date_from || '',
     date_to: props.filters?.date_to || '',
+});
+
+const isSyncingAll = ref(false);
+let pollTimer = null;
+
+const hasPendingTransactions = computed(() => {
+    return props.transactions?.data?.some(t => t.status === 'PENDING') ?? false;
+});
+
+const syncAll = () => {
+    isSyncingAll.value = true;
+    router.reload({
+        only: ['transactions'],
+        preserveScroll: true,
+        preserveState: true,
+        onFinish: () => {
+            isSyncingAll.value = false;
+        }
+    });
+};
+
+const startAutoPoll = () => {
+    if (pollTimer) clearInterval(pollTimer);
+    if (!hasPendingTransactions.value) return;
+
+    // Polling live setiap 4 detik saat ada transaksi PENDING di halaman
+    pollTimer = setInterval(() => {
+        if (!hasPendingTransactions.value) {
+            if (pollTimer) {
+                clearInterval(pollTimer);
+                pollTimer = null;
+            }
+            return;
+        }
+        router.reload({
+            only: ['transactions'],
+            preserveScroll: true,
+            preserveState: true,
+        });
+    }, 4000);
+};
+
+watch(hasPendingTransactions, (newVal) => {
+    if (newVal) {
+        startAutoPoll();
+    } else if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+    }
+});
+
+onMounted(() => {
+    startAutoPoll();
+});
+
+onUnmounted(() => {
+    if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+    }
 });
 
 const applyFilters = () => {

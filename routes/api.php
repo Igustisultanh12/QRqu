@@ -22,10 +22,14 @@ Route::get('/ready', [HealthController::class, 'ready'])->name('api.ready');
 | Inbound DOKU Payment Webhook Handlers (romei 1 compliant)
 |--------------------------------------------------------------------------
 */
-Route::post('/webhooks/doku', [DokuWebhookController::class, 'handleQrisCallback'])->name('api.webhook.doku');
-Route::post('/v1/webhook/doku/qris', [DokuWebhookController::class, 'handleQrisCallback'])->name('api.webhook.doku.qris');
-Route::post('/webhook/doku/qris', [DokuWebhookController::class, 'handleQrisCallback'])->name('api.webhook.doku.qris.direct');
-Route::post('/v1/callback/doku', [DokuWebhookController::class, 'handleQrisCallback'])->name('api.webhook.doku.callback');
+Route::match(['get', 'post'], '/webhooks/doku', [DokuWebhookController::class, 'handleQrisCallback'])->name('api.webhook.doku');
+Route::match(['get', 'post'], '/v1/webhook/doku/qris', [DokuWebhookController::class, 'handleQrisCallback'])->name('api.webhook.doku.qris');
+Route::match(['get', 'post'], '/webhook/doku/qris', [DokuWebhookController::class, 'handleQrisCallback'])->name('api.webhook.doku.qris.direct');
+Route::match(['get', 'post'], '/v1/callback/doku', [DokuWebhookController::class, 'handleQrisCallback'])->name('api.webhook.doku.callback');
+Route::match(['get', 'post'], '/doku/notification', [DokuWebhookController::class, 'handleQrisCallback']);
+Route::match(['get', 'post'], '/doku/callback', [DokuWebhookController::class, 'handleQrisCallback']);
+Route::match(['get', 'post'], '/doku/notify', [DokuWebhookController::class, 'handleQrisCallback']);
+Route::match(['get', 'post'], '/doku/qris', [DokuWebhookController::class, 'handleQrisCallback']);
 
 /*
 |--------------------------------------------------------------------------

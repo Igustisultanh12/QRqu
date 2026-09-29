@@ -31,4 +31,4 @@ Artisan::command('romei:api-check', function (DokuService $doku) {
 |--------------------------------------------------------------------------
 */
 Schedule::command(ExpireInvoicesCommand::class)->everyMinute()->withoutOverlapping();
-Schedule::command(ReconcileTransactionsCommand::class)->dailyAt('01:00');
+Schedule::command(ReconcileTransactionsCommand::class)->everyMinute()->withoutOverlapping();
