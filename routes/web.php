@@ -101,6 +101,9 @@ Route::middleware(['auth'])->group(function () {
         // Webhooks
         Route::get('/webhooks', [Customer\WebhookController::class, 'index'])->name('customer.webhooks.index');
         Route::post('/webhooks', [Customer\WebhookController::class, 'store'])->name('customer.webhooks.store');
+        Route::put('/webhooks/{webhook}', [Customer\WebhookController::class, 'update'])->name('customer.webhooks.update');
+        Route::delete('/webhooks/{webhook}', [Customer\WebhookController::class, 'destroy'])->name('customer.webhooks.destroy');
+        Route::post('/webhooks/{webhook}/toggle', [Customer\WebhookController::class, 'toggle'])->name('customer.webhooks.toggle');
         Route::post('/webhooks/test-ping', [Customer\WebhookController::class, 'testPing'])->name('customer.webhooks.test-ping');
         Route::post('/webhooks/{delivery}/retry', [Customer\WebhookController::class, 'retry'])->name('customer.webhooks.retry');
 

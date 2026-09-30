@@ -12,6 +12,9 @@ class Webhook extends Model
 
     protected $fillable = [
         'customer_id',
+        'store_id',
+        'name',
+        'description',
         'url',
         'secret',
         'events',
@@ -29,6 +32,11 @@ class Webhook extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
     }
 
     public function deliveries()

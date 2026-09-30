@@ -29,81 +29,97 @@ class CustomerWebhookService
             $customer = Customer::first();
         }
 
-        // Find customer webhook url (either specified in invoice or in customer's registered webhooks)
-        $targetUrl = $invoice?->webhook_url;
-        $secret = 'whsec_default_fallback';
+        $destinations = collect();
 
         if ($customer) {
-            $configuredWebhook = $customer->webhooks()->where('is_active', true)->first();
-            if ($configuredWebhook && !empty($configuredWebhook->secret)) {
-                if (empty($targetUrl)) {
-                    $targetUrl = $configuredWebhook->url;
-                }
-                $secret = $configuredWebhook->secret;
-            } else {
-                if ($configuredWebhook && !empty($configuredWebhook->url) && empty($targetUrl)) {
-                    $targetUrl = $configuredWebhook->url;
-                }
-                // Fallback to customer's active API secret if no dedicated webhook secret is configured
-                $activeCredential = $customer->apiCredentials()->where('status', 'ACTIVE')->first();
-                if ($activeCredential) {
-                    $secret = $activeCredential->getDecryptedSecret() ?: $secret;
+            $configuredWebhooks = $customer->webhooks()
+                ->where('is_active', true)
+                ->where(function ($q) use ($transaction) {
+                    $q->whereNull('store_id');
+                    if ($transaction->store_id) {
+                        $q->orWhere('store_id', $transaction->store_id);
+                    }
+                })
+                ->get();
+
+            foreach ($configuredWebhooks as $wh) {
+                if (!empty($wh->url)) {
+                    $destinations->push([
+                        'url' => $wh->url,
+                        'secret' => $wh->secret ?: 'whsec_default_fallback',
+                    ]);
                 }
             }
         }
 
-        if (empty($targetUrl)) {
-            \Illuminate\Support\Facades\Log::info("QRqu: Webhook tidak dikirim karena URL webhook belum dikonfigurasi untuk transaksi #{$transaction->id}.");
+        // Check if invoice has custom webhook_url not already in destinations
+        if (!empty($invoice?->webhook_url) && !$destinations->contains('url', $invoice->webhook_url)) {
+            $activeCredential = $customer?->apiCredentials()->where('status', 'ACTIVE')->first();
+            $customSecret = $activeCredential ? ($activeCredential->getDecryptedSecret() ?: 'whsec_default_fallback') : 'whsec_default_fallback';
+            $destinations->push([
+                'url' => $invoice->webhook_url,
+                'secret' => $customSecret,
+            ]);
+        }
+
+        if ($destinations->isEmpty()) {
+            \Illuminate\Support\Facades\Log::info("QRqu: Webhook tidak dikirim karena belum ada URL webhook yang aktif untuk transaksi #{$transaction->id}.");
             return null;
         }
 
-        $eventId = 'EVT-' . strtoupper(Str::random(24));
         $now = now();
+        $lastDelivery = null;
 
-        $payload = [
-            'event' => $event,
-            'event_id' => $eventId,
-            'invoice_id' => $invoice?->id,
-            'external_id' => $invoice?->external_id,
-            'transaction_id' => $transaction->id,
-            'amount' => (float) $transaction->amount,
-            'status' => $transaction->status,
-            'doku_reference' => $transaction->doku_reference,
-            'payment_method' => $invoice?->payment_method ?? 'QRIS',
-            'paid_at' => $transaction->status === 'PAID' ? ($invoice?->paid_at ? $invoice->paid_at->toIso8601String() : $now->toIso8601String()) : null,
-            'timestamp' => $now->timestamp,
-        ];
+        foreach ($destinations as $dest) {
+            $eventId = 'EVT-' . strtoupper(Str::random(24));
+            $payload = [
+                'event' => $event,
+                'event_id' => $eventId,
+                'invoice_id' => $invoice?->id,
+                'external_id' => $invoice?->external_id,
+                'transaction_id' => $transaction->id,
+                'store_id' => $transaction->store_id,
+                'amount' => (float) $transaction->amount,
+                'status' => $transaction->status,
+                'doku_reference' => $transaction->doku_reference,
+                'payment_method' => $invoice?->payment_method ?? 'QRIS',
+                'paid_at' => $transaction->status === 'PAID' ? ($invoice?->paid_at ? $invoice->paid_at->toIso8601String() : $now->toIso8601String()) : null,
+                'timestamp' => $now->timestamp,
+            ];
 
-        $rawJson = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        $signature = hash_hmac('sha256', $rawJson, $secret);
+            $rawJson = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            $signature = hash_hmac('sha256', $rawJson, $dest['secret']);
 
-        $delivery = WebhookDelivery::create([
-            'customer_id' => $customer->id,
-            'transaction_id' => $transaction->id,
-            'invoice_id' => $invoice->id,
-            'event_id' => $eventId,
-            'event' => $event,
-            'url' => $targetUrl,
-            'payload' => $payload,
-            'signature' => $signature,
-            'attempt' => 0,
-            'max_attempts' => 4,
-            'status' => 'PENDING',
-        ]);
+            $delivery = WebhookDelivery::create([
+                'customer_id' => $customer?->id,
+                'transaction_id' => $transaction->id,
+                'invoice_id' => $invoice?->id,
+                'event_id' => $eventId,
+                'event' => $event,
+                'url' => $dest['url'],
+                'payload' => $payload,
+                'signature' => $signature,
+                'attempt' => 0,
+                'max_attempts' => 4,
+                'status' => 'PENDING',
+            ]);
 
-        // Attempt immediate synchronous delivery first for instant callback
-        $delivery = $this->executeDelivery($delivery);
+            // Attempt immediate synchronous delivery first for instant callback
+            $delivery = $this->executeDelivery($delivery);
 
-        // If initial sync attempt failed and retries remain, dispatch queue job for background retry
-        if ($delivery->status !== 'DELIVERED' && $delivery->attempt < $delivery->max_attempts) {
-            try {
-                SendCustomerWebhookJob::dispatch($delivery->id)->delay(now()->addSeconds(30));
-            } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning("QRqu: Could not queue webhook retry: " . $e->getMessage());
+            // If initial sync attempt failed and retries remain, dispatch queue job for background retry
+            if ($delivery->status !== 'DELIVERED' && $delivery->attempt < $delivery->max_attempts) {
+                try {
+                    SendCustomerWebhookJob::dispatch($delivery->id)->delay(now()->addSeconds(30));
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning("QRqu: Could not queue webhook retry: " . $e->getMessage());
+                }
             }
+
+            $lastDelivery = $delivery;
         }
 
-        return $delivery;
+        return $lastDelivery;
     }
 
     /**
