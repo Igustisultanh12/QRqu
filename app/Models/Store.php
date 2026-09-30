@@ -47,6 +47,11 @@ class Store extends Model
         return $this->hasMany(Settlement::class);
     }
 
+    public function apiCredentials()
+    {
+        return $this->hasMany(ApiCredential::class);
+    }
+
     public function getBalanceAttribute(): float
     {
         $revenue = (float) $this->transactions()->where('status', 'PAID')->sum('amount');

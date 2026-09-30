@@ -22,12 +22,20 @@ class ApiCredentialController extends Controller
             $user->ensureCustomerProfile();
         }
         $customer = $user->fresh()->customer;
+        if ($customer) {
+            $customer->ensureStores();
+        }
+
         $credentials = $customer ? ApiCredential::where('customer_id', $customer->id)
+            ->with('store')
             ->latest()
             ->get() : collect();
 
+        $stores = $customer ? $customer->stores()->orderBy('is_default', 'desc')->orderBy('name')->get() : collect();
+
         return Inertia::render('Customer/ApiCredentials/Index', [
             'credentials' => $credentials,
+            'stores' => $stores,
             'flash_secret' => session('new_secret'),
             'flash_key' => session('new_key'),
         ]);
@@ -35,13 +43,19 @@ class ApiCredentialController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $customer = $request->user()->customer;
+        if (!$customer) {
+            abort(403);
+        }
+
         $request->validate([
             'name' => 'required|string|max:50',
             'environment' => 'required|in:production,sandbox',
+            'store_id' => ['nullable', \Illuminate\Validation\Rule::exists('stores', 'id')->where('customer_id', $customer->id)],
             'ip_whitelist' => 'nullable|string',
         ]);
 
-        $customer = $request->user()->customer;
+        $storeId = $request->input('store_id') ?: $customer->defaultStore?->id;
 
         $ipWhitelist = null;
         if ($request->filled('ip_whitelist')) {
@@ -55,6 +69,7 @@ class ApiCredentialController extends Controller
 
         $credential = ApiCredential::create([
             'customer_id' => $customer->id,
+            'store_id' => $storeId,
             'name' => $request->input('name'),
             'environment' => $env,
             'api_key' => $apiKey,
@@ -67,12 +82,41 @@ class ApiCredentialController extends Controller
         AuditLog::record('CREATE_API_CREDENTIAL', $credential, null, [
             'environment' => $env,
             'name' => $credential->name,
+            'store_id' => $storeId,
         ]);
 
-        return redirect()->back()
+        return redirect()->route('customer.credentials.index')
             ->with('new_key', $apiKey)
             ->with('new_secret', $plainSecret)
             ->with('success', 'API Credential berhasil dibuat! Harap simpan API Secret Anda sekarang, karena tidak akan ditampilkan lagi.');
+    }
+
+    public function update(Request $request, ApiCredential $credential): RedirectResponse
+    {
+        $customer = $request->user()->customer;
+        if ($credential->customer_id !== $customer->id) {
+            abort(403);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:50',
+            'store_id' => ['nullable', \Illuminate\Validation\Rule::exists('stores', 'id')->where('customer_id', $customer->id)],
+        ]);
+
+        $storeId = $request->input('store_id') ?: $customer->defaultStore?->id;
+
+        $before = $credential->toArray();
+        $credential->update([
+            'name' => $request->input('name'),
+            'store_id' => $storeId,
+        ]);
+
+        AuditLog::record('UPDATE_API_CREDENTIAL', $credential, $before, [
+            'name' => $credential->name,
+            'store_id' => $storeId,
+        ]);
+
+        return redirect()->route('customer.credentials.index')->with('success', "Konfigurasi toko untuk API Key \"{$credential->name}\" berhasil diperbarui!");
     }
 
     public function revoke(Request $request, ApiCredential $credential): RedirectResponse

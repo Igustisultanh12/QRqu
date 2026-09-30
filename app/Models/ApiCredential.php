@@ -14,6 +14,7 @@ class ApiCredential extends Model
 
     protected $fillable = [
         'customer_id',
+        'store_id',
         'name',
         'environment',
         'api_key',
@@ -42,6 +43,11 @@ class ApiCredential extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
     }
 
     public function usages()
@@ -76,7 +82,7 @@ class ApiCredential extends Model
         return in_array($ip, $this->ip_whitelist);
     }
 
-    public static function generateCredentials(int $customerId, string $environment = 'production', string $name = 'Default Key'): array
+    public static function generateCredentials(int $customerId, string $environment = 'production', string $name = 'Default Key', ?int $storeId = null): array
     {
         $prefix = ($environment === 'sandbox') ? 'qrqu_sand_' : 'qrqu_live_';
         $apiKey = $prefix . Str::random(32);
@@ -84,6 +90,7 @@ class ApiCredential extends Model
 
         $credential = self::create([
             'customer_id' => $customerId,
+            'store_id' => $storeId,
             'name' => $name,
             'environment' => $environment,
             'api_key' => $apiKey,

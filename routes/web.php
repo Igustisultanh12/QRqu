@@ -95,6 +95,7 @@ Route::middleware(['auth'])->group(function () {
         // API Credentials
         Route::get('/credentials', [Customer\ApiCredentialController::class, 'index'])->name('customer.credentials.index');
         Route::post('/credentials', [Customer\ApiCredentialController::class, 'store'])->name('customer.credentials.store');
+        Route::put('/credentials/{credential}', [Customer\ApiCredentialController::class, 'update'])->name('customer.credentials.update');
         Route::post('/credentials/{credential}/revoke', [Customer\ApiCredentialController::class, 'revoke'])->name('customer.credentials.revoke');
         Route::post('/credentials/{credential}/ip-whitelist', [Customer\ApiCredentialController::class, 'updateIpWhitelist'])->name('customer.credentials.ip-whitelist');
 

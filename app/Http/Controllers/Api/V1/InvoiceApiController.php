@@ -29,6 +29,7 @@ class InvoiceApiController extends Controller
             'external_id' => 'required|string|max:100',
             'amount' => 'required|numeric|min:1|max:100000000',
             'description' => 'nullable|string|max:255',
+            'store_id' => 'nullable|integer',
             'customer' => 'nullable|array',
             'customer.name' => 'nullable|string|max:100',
             'customer.email' => 'nullable|email|max:100',
@@ -50,7 +51,13 @@ class InvoiceApiController extends Controller
             ], 422);
         }
 
-        $result = $this->invoiceService->createInvoice($customer, $validator->validated());
+        $invoiceData = $validator->validated();
+        $credential = $request->attributes->get('credential');
+        if (empty($invoiceData['store_id']) && !empty($credential?->store_id)) {
+            $invoiceData['store_id'] = $credential->store_id;
+        }
+
+        $result = $this->invoiceService->createInvoice($customer, $invoiceData);
 
         if (!$result['success']) {
             return response()->json([
