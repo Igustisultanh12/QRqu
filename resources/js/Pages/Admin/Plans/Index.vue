@@ -84,6 +84,18 @@
                     </div>
 
                     <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Kuota Webhook (Endpoint)</label>
+                        <input
+                            v-model.number="form.webhook_limit"
+                            type="number"
+                            required
+                            min="1"
+                            placeholder="Contoh: 1"
+                            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                    </div>
+
+                    <div>
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Status</label>
                         <select
                             v-model="form.status"
@@ -126,6 +138,7 @@
                                 <th class="p-4">Limit Trx</th>
                                 <th class="p-4">API Limit</th>
                                 <th class="p-4">Rate Limit</th>
+                                <th class="p-4">Kuota Webhook</th>
                                 <th class="p-4">Pelanggan Aktif</th>
                                 <th class="p-4">Status</th>
                                 <th class="p-4 text-center">Aksi</th>
@@ -136,11 +149,12 @@
                                 <td class="p-4 font-bold text-slate-900 dark:text-white">{{ plan.name }}</td>
                                 <td class="p-4">{{ plan.duration_days }} hari</td>
                                 <td class="p-4 font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                                    Rp {{ Number(plan.price).toLocaleString('id-ID') }}
+                                     Rp {{ Number(plan.price).toLocaleString('id-ID') }}
                                 </td>
                                 <td class="p-4">{{ plan.transaction_limit.toLocaleString('id-ID') }}</td>
                                 <td class="p-4">{{ plan.api_limit.toLocaleString('id-ID') }}</td>
                                 <td class="p-4 font-mono">{{ plan.rate_limit_rpm }} RPM</td>
+                                <td class="p-4 font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ (plan.webhook_limit || 1) }} Endpoint</td>
                                 <td class="p-4 font-bold text-emerald-600 dark:text-emerald-400">{{ plan.subscriptions_count }} Tenant</td>
                                 <td class="p-4">
                                     <span
@@ -255,15 +269,26 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Status</label>
-                            <select
-                                v-model="editForm.status"
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
-                            >
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
-                            </select>
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Kuota Webhook (Endpoint)</label>
+                            <input
+                                v-model.number="editForm.webhook_limit"
+                                type="number"
+                                required
+                                min="1"
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-mono"
+                            />
                         </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Status</label>
+                        <select
+                            v-model="editForm.status"
+                            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                        >
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
@@ -307,6 +332,7 @@ const form = useForm({
     transaction_limit: 1000,
     api_limit: 10000,
     rate_limit_rpm: 60,
+    webhook_limit: 1,
     status: 'active',
 });
 
@@ -318,6 +344,7 @@ const editForm = useForm({
     transaction_limit: 1000,
     api_limit: 10000,
     rate_limit_rpm: 60,
+    webhook_limit: 1,
     status: 'active',
 });
 
@@ -326,6 +353,7 @@ const submitPlan = () => {
         onSuccess: () => {
             form.reset();
             form.price = 1;
+            form.webhook_limit = 1;
         },
     });
 };
@@ -339,6 +367,7 @@ const openEditModal = (plan) => {
     editForm.transaction_limit = plan.transaction_limit;
     editForm.api_limit = plan.api_limit;
     editForm.rate_limit_rpm = plan.rate_limit_rpm;
+    editForm.webhook_limit = plan.webhook_limit || 1;
     editForm.status = plan.status;
     showEditModal.value = true;
 };

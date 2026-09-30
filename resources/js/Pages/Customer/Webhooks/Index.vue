@@ -3,29 +3,83 @@
         <template #header>Pengaturan & Log Pengiriman Webhook</template>
 
         <div class="space-y-6">
-            <!-- Header & Action Card -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900/60 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors duration-200">
-                <div>
-                    <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <span>Konfigurasi Endpoint Webhook</span>
-                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 font-bold">
-                            {{ webhooks.length }} Endpoint Aktif
-                        </span>
-                    </h2>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        Anda dapat mendaftarkan lebih dari 1 endpoint webhook untuk mengirim notifikasi pembayaran real-time (HMAC-SHA256) ke berbagai aplikasi / toko Anda.
-                    </p>
+            <!-- Header & Quota Overview Card -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <!-- Left: Title & Actions -->
+                <div class="lg:col-span-2 bg-white dark:bg-slate-900/60 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between gap-4 transition-colors duration-200">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono uppercase bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20">
+                                Multi-Endpoint Webhook
+                            </span>
+                            <span class="text-xs text-slate-400">•</span>
+                            <span class="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                                Paket {{ quota?.plan_name || 'Standar' }}
+                            </span>
+                        </div>
+                        <h2 class="text-xl font-black text-slate-900 dark:text-white">
+                            Pengelolaan Endpoint Webhook
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                            Kirim notifikasi pembayaran QRIS otomatis ke sistem ERP, toko cabang, dan bot notifikasi Anda. Setiap paket memiliki kuota endpoint tersendiri dan Anda dapat membeli slot Add-on kapan saja.
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                        <button
+                            @click="handleAddWebhookClick"
+                            type="button"
+                            class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm shadow-emerald-600/20 transition active:scale-95"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            <span>+ Tambah Webhook Baru</span>
+                        </button>
+
+                        <button
+                            @click="openAddonModal"
+                            type="button"
+                            class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-600/20 dark:hover:bg-indigo-600/30 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30 font-bold text-xs transition active:scale-95"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                            <span>+ Beli Add-on Slot (Rp {{ Number(quota?.addon_price || 25000).toLocaleString('id-ID') }})</span>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="flex items-center gap-2.5 self-start sm:self-auto shrink-0">
-                    <button
-                        @click="openCreateModal"
-                        type="button"
-                        class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm shadow-emerald-600/20 transition active:scale-95"
-                    >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        <span>+ Tambah Webhook Baru</span>
-                    </button>
+                <!-- Right: Quota Usage Card -->
+                <div class="bg-gradient-to-br from-slate-900 to-slate-950 text-white p-6 rounded-2xl border border-slate-800 shadow-md flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between text-xs font-mono text-slate-400 mb-2">
+                            <span>KUOTA ENDPOINT</span>
+                            <span class="font-bold text-emerald-400">
+                                {{ quota?.used || 0 }} / {{ quota?.max_allowed || 1 }} Terpakai
+                            </span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                            <div
+                                class="bg-emerald-500 h-2.5 rounded-full transition-all duration-500"
+                                :style="{ width: Math.min(100, Math.round(((quota?.used || 0) / (quota?.max_allowed || 1)) * 100)) + '%' }"
+                            ></div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-slate-800/80 text-[11px]">
+                            <div>
+                                <span class="text-slate-400 block">Termasuk Paket:</span>
+                                <strong class="text-white font-mono text-xs">{{ quota?.plan_limit || 1 }} Endpoint</strong>
+                            </div>
+                            <div>
+                                <span class="text-slate-400 block">Add-on Tambahan:</span>
+                                <strong class="text-indigo-300 font-mono text-xs">+{{ quota?.addon_slots || 0 }} Slot</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 flex items-center justify-between text-xs">
+                        <span class="text-slate-400">Sisa Kuota:</span>
+                        <span :class="['font-bold font-mono px-2 py-0.5 rounded-md text-[11px]', (quota?.remaining || 0) > 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400']">
+                            {{ (quota?.remaining || 0) > 0 ? `${quota.remaining} Tersedia` : 'Kuota Penuh' }}
+                        </span>
+                    </div>
                 </div>
             </div>
 
@@ -509,6 +563,119 @@
                 </div>
             </div>
         </div>
+
+        <!-- MODAL 3: Beli Add-on Kuota Webhook -->
+        <div v-if="isAddonModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+            <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full p-6 space-y-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-indigo-500">ADD-ON WEBHOOK</span>
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white mt-0.5">Beli Slot Add-on Webhook</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            Tambah kuota endpoint webhook untuk menghubungkan sistem atau bot aplikasi baru Anda.
+                        </p>
+                    </div>
+                    <button @click="closeAddonModal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl font-bold">×</button>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 space-y-3">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-600 dark:text-slate-400">Harga per Slot:</span>
+                        <span class="font-mono font-bold text-slate-900 dark:text-white">
+                            Rp {{ Number(quota?.addon_price || 25000).toLocaleString('id-ID') }}
+                        </span>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-indigo-100/80 dark:border-indigo-900/40">
+                        <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Jumlah Slot Tambahan:</span>
+                        <div class="flex items-center gap-2">
+                            <button
+                                type="button"
+                                @click="addonQuantity = Math.max(1, addonQuantity - 1)"
+                                class="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+                            >-</button>
+                            <span class="w-8 text-center font-mono font-black text-sm text-slate-900 dark:text-white">
+                                {{ addonQuantity }}
+                            </span>
+                            <button
+                                type="button"
+                                @click="addonQuantity = Math.min(20, addonQuantity + 1)"
+                                class="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+                            >+</button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-3 border-t border-indigo-200/80 dark:border-indigo-800/80 text-sm">
+                        <span class="font-bold text-slate-800 dark:text-slate-200">Total Pembayaran QRIS:</span>
+                        <span class="font-mono font-black text-lg text-emerald-600 dark:text-emerald-400">
+                            Rp {{ Number(addonQuantity * (quota?.addon_price || 25000)).toLocaleString('id-ID') }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="text-[11px] text-slate-500 dark:text-slate-400 space-y-1">
+                    <p class="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span>Aktivasi otomatis via QRIS DOKU</span>
+                    </p>
+                    <p>Setelah melakukan scan dan pembayaran, slot kuota webhook Anda otomatis bertambah {{ addonQuantity }} endpoint.</p>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+                    <button
+                        type="button"
+                        @click="closeAddonModal"
+                        class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition"
+                    >
+                        Batal
+                    </button>
+                    <button
+                        type="button"
+                        @click="submitAddonPurchase"
+                        :disabled="addonForm.processing"
+                        class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-md shadow-emerald-600/20 active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
+                    >
+                        <span>{{ addonForm.processing ? 'Membuat Tagihan...' : 'Lanjut ke Pembayaran QRIS ➔' }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL 4: Notifikasi Kuota Penuh -->
+        <div v-if="isQuotaExceededModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+            <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full p-6 space-y-5 text-center">
+                <div class="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto text-2xl">
+                    ⚡
+                </div>
+                <div>
+                    <h3 class="text-lg font-black text-slate-900 dark:text-white">Batas Kuota Webhook Tercapai</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                        Paket <strong>{{ quota?.plan_name }}</strong> Anda menyediakan <strong>{{ quota?.plan_limit }} endpoint webhook</strong><span v-if="quota?.addon_slots"> (plus {{ quota.addon_slots }} slot add-on)</span>, dan seluruh kuota telah digunakan (<strong>{{ quota?.used }} terpakai</strong>).
+                    </p>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300">
+                    Untuk menambahkan endpoint webhook baru, Anda dapat membeli slot <strong>Add-on Webhook</strong> seharga <strong class="text-emerald-600 dark:text-emerald-400 font-mono">Rp {{ Number(quota?.addon_price || 25000).toLocaleString('id-ID') }} / slot</strong>.
+                </div>
+
+                <div class="flex items-center justify-center gap-3 pt-2">
+                    <button
+                        type="button"
+                        @click="isQuotaExceededModalOpen = false"
+                        class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition"
+                    >
+                        Tutup
+                    </button>
+                    <button
+                        type="button"
+                        @click="openAddonModal"
+                        class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-md shadow-emerald-600/20 active:scale-95 flex items-center gap-1.5"
+                    >
+                        <span>+ Beli Add-on Slot Sekarang</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </CustomerLayout>
 </template>
 
@@ -528,6 +695,19 @@ const props = defineProps({
         default: () => [],
     },
     deliveries: Object,
+    quota: {
+        type: Object,
+        default: () => ({
+            used: 0,
+            plan_limit: 1,
+            addon_slots: 0,
+            max_allowed: 1,
+            remaining: 1,
+            can_add: true,
+            addon_price: 25000,
+            plan_name: 'Paket Standar',
+        }),
+    },
 });
 
 const pingingId = ref(null);
@@ -538,6 +718,38 @@ const copiedMap = reactive({});
 const isWebhookModalOpen = ref(false);
 const modalMode = ref('create'); // 'create' | 'edit'
 const editingWebhookId = ref(null);
+
+const isAddonModalOpen = ref(false);
+const isQuotaExceededModalOpen = ref(false);
+const addonQuantity = ref(1);
+
+const addonForm = useForm({
+    quantity: 1,
+});
+
+const openAddonModal = () => {
+    isQuotaExceededModalOpen.value = false;
+    addonQuantity.value = 1;
+    addonForm.quantity = 1;
+    isAddonModalOpen.value = true;
+};
+
+const closeAddonModal = () => {
+    isAddonModalOpen.value = false;
+};
+
+const submitAddonPurchase = () => {
+    addonForm.quantity = addonQuantity.value;
+    addonForm.post(route('customer.webhooks.addon.purchase'));
+};
+
+const handleAddWebhookClick = () => {
+    if (!props.quota?.can_add) {
+        isQuotaExceededModalOpen.value = true;
+        return;
+    }
+    openCreateModal();
+};
 
 const webhookForm = useForm({
     name: '',

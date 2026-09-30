@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
+use App\Models\CustomerAddon;
+use App\Models\SystemSetting;
 use App\Models\Webhook;
 use App\Models\WebhookDelivery;
+use App\Services\Invoice\InvoiceService;
 use App\Services\Webhook\CustomerWebhookService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,6 +18,10 @@ use Inertia\Response;
 
 class WebhookController extends Controller
 {
+    public function __construct(
+        protected InvoiceService $invoiceService
+    ) {}
+
     public function index(Request $request): Response
     {
         $user = $request->user();
@@ -24,6 +31,21 @@ class WebhookController extends Controller
         $customer = $user->fresh()->customer;
         if ($customer) {
             $customer->ensureStores();
+
+            // Synchronize pending addon purchases if invoice is already paid
+            $pendingAddons = CustomerAddon::where('customer_id', $customer->id)
+                ->where('status', 'pending_payment')
+                ->with('invoice')
+                ->get();
+
+            foreach ($pendingAddons as $pendingAddon) {
+                if ($pendingAddon->invoice && $pendingAddon->invoice->status === 'PAID') {
+                    $pendingAddon->update([
+                        'status' => 'active',
+                        'paid_at' => now(),
+                    ]);
+                }
+            }
         }
 
         $webhooks = $customer ? $customer->webhooks()->with('store')->latest()->get() : collect();
@@ -41,10 +63,30 @@ class WebhookController extends Controller
             ->latest()
             ->paginate(15) : null;
 
+        $usedCount = $customer ? $customer->webhooks()->count() : 0;
+        $planLimit = $customer ? $customer->getPlanWebhookLimit() : 1;
+        $addonSlots = $customer ? $customer->getAddonWebhookSlots() : 0;
+        $maxAllowed = $customer ? $customer->getMaxWebhooksAllowed() : 1;
+        $canAdd = $customer ? $customer->canAddWebhook() : false;
+        $addonPrice = (float) SystemSetting::get('webhook_addon_price', 25000);
+        $activePlanName = $customer?->activeSubscription?->plan?->name ?? 'Paket Standar';
+
+        $quota = [
+            'used' => $usedCount,
+            'plan_limit' => $planLimit,
+            'addon_slots' => $addonSlots,
+            'max_allowed' => $maxAllowed,
+            'remaining' => max(0, $maxAllowed - $usedCount),
+            'can_add' => $canAdd,
+            'addon_price' => $addonPrice,
+            'plan_name' => $activePlanName,
+        ];
+
         return Inertia::render('Customer/Webhooks/Index', [
             'webhooks' => $webhooks,
             'stores' => $stores,
             'deliveries' => $deliveries,
+            'quota' => $quota,
         ]);
     }
 
@@ -54,6 +96,11 @@ class WebhookController extends Controller
         $customer = $user->customer;
         if (!$customer) {
             abort(403);
+        }
+
+        if (!$customer->canAddWebhook()) {
+            $max = $customer->getMaxWebhooksAllowed();
+            return redirect()->back()->with('error', "Kuota webhook Anda telah mencapai batas maksimal ({$max} endpoint). Silakan beli Add-on Webhook untuk menambah endpoint baru.");
         }
 
         $validated = $request->validate([
@@ -91,6 +138,61 @@ class WebhookController extends Controller
         AuditLog::record('CREATE_WEBHOOK_ENDPOINT', $webhook, null, ['name' => $webhook->name, 'url' => $webhook->url]);
 
         return redirect()->back()->with('success', "Endpoint Webhook \"{$webhook->name}\" berhasil ditambahkan!");
+    }
+
+    public function purchaseAddon(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $customer = $user->customer;
+        if (!$customer) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'quantity' => 'required|integer|min:1|max:20',
+        ]);
+
+        $quantity = (int) $validated['quantity'];
+        $pricePerSlot = (float) SystemSetting::get('webhook_addon_price', 25000);
+        $totalAmount = $quantity * $pricePerSlot;
+
+        $externalId = 'SUB-ADDON-WH-' . $customer->id . '-' . time();
+        $invoiceResult = $this->invoiceService->createInvoice($customer, [
+            'external_id' => $externalId,
+            'amount' => $totalAmount,
+            'description' => "Add-on Kuota Webhook (+{$quantity} Slot Endpoint)",
+            'customer' => [
+                'name' => $customer->name,
+                'email' => $customer->email,
+                'phone' => $customer->phone,
+            ],
+            'callback_url' => route('customer.webhooks.index'),
+        ]);
+
+        if (!$invoiceResult['success']) {
+            return redirect()->back()->with('error', 'Gagal membuat tagihan pembayaran QRIS: ' . ($invoiceResult['error']['message'] ?? 'Terjadi kesalahan sistem'));
+        }
+
+        /** @var \App\Models\Invoice $invoice */
+        $invoice = $invoiceResult['invoice'];
+
+        CustomerAddon::create([
+            'customer_id' => $customer->id,
+            'invoice_id' => $invoice->id,
+            'type' => 'webhook_slot',
+            'quantity' => $quantity,
+            'price_paid' => $totalAmount,
+            'status' => 'pending_payment',
+        ]);
+
+        AuditLog::record('ADDON_PURCHASE_INITIATED', $invoice, null, [
+            'type' => 'webhook_slot',
+            'quantity' => $quantity,
+            'amount' => $totalAmount,
+            'invoice_id' => $invoice->id,
+        ]);
+
+        return redirect()->route('checkout.show', $invoice->id);
     }
 
     public function update(Request $request, Webhook $webhook): RedirectResponse

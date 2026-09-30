@@ -182,4 +182,37 @@ class Customer extends Model
 
         return 60;
     }
+
+    public function addons()
+    {
+        return $this->hasMany(CustomerAddon::class);
+    }
+
+    public function getPlanWebhookLimit(): int
+    {
+        $sub = $this->activeSubscription;
+        if ($sub && $sub->plan && $sub->plan->webhook_limit !== null) {
+            return (int) $sub->plan->webhook_limit;
+        }
+
+        return 1;
+    }
+
+    public function getAddonWebhookSlots(): int
+    {
+        return (int) $this->addons()
+            ->where('type', 'webhook_slot')
+            ->where('status', 'active')
+            ->sum('quantity');
+    }
+
+    public function getMaxWebhooksAllowed(): int
+    {
+        return max(1, $this->getPlanWebhookLimit() + $this->getAddonWebhookSlots());
+    }
+
+    public function canAddWebhook(): bool
+    {
+        return $this->webhooks()->count() < $this->getMaxWebhooksAllowed();
+    }
 }

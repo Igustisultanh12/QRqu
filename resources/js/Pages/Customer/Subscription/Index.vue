@@ -148,6 +148,10 @@
                                     <span :class="plan.is_popular ? 'text-orange-400 font-bold' : 'text-emerald-500 font-bold'">✓</span>
                                     <span>Rate Limit: <strong>{{ plan.rate_limit_rpm }} RPM</strong></span>
                                 </li>
+                                <li class="flex items-center gap-2">
+                                    <span :class="plan.is_popular ? 'text-orange-400 font-bold' : 'text-emerald-500 font-bold'">✓</span>
+                                    <span>Kuota Webhook: <strong>{{ (plan.webhook_limit || 1).toLocaleString('id-ID') }} Endpoint</strong> (Bisa Add-on)</span>
+                                </li>
                                 <li v-for="(feat, fIdx) in plan.cleanFeatures" :key="fIdx" class="flex items-center gap-2">
                                     <span :class="plan.is_popular ? 'text-orange-400 font-bold' : 'text-emerald-500 font-bold'">✓</span>
                                     <span>{{ feat }}</span>

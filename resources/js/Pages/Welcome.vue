@@ -30,7 +30,7 @@ const formattedPlans = computed(() => {
                 price: 150000,
                 description: 'Cocok untuk proyek baru yang mulai menerima pembayaran QRIS.',
                 is_popular: false,
-                displayFeatures: ['Kuota 1.000 Transaksi / Bulan', 'Rate Limit 60 RPM', 'Sandbox & Live API Key', 'Signed Webhook Retries'],
+                displayFeatures: ['Kuota 1.000 Transaksi / Bulan', 'Rate Limit 60 RPM', 'Termasuk 1 Endpoint Webhook (Bisa Add-on)', 'Sandbox & Live API Key'],
             },
             {
                 id: 2,
@@ -39,7 +39,7 @@ const formattedPlans = computed(() => {
                 price: 400000,
                 description: 'Dirancang untuk bisnis berkembang dengan volume transaksi aktif harian.',
                 is_popular: true,
-                displayFeatures: ['Kuota 5.000 Transaksi', 'Rate Limit 300 RPM', 'Prioritas Antrean Webhook', 'Multi IP Whitelist'],
+                displayFeatures: ['Kuota 5.000 Transaksi', 'Rate Limit 300 RPM', 'Termasuk 3 Endpoint Webhook (Bisa Add-on)', 'Multi IP Whitelist'],
             },
             {
                 id: 3,
@@ -48,7 +48,7 @@ const formattedPlans = computed(() => {
                 price: 750000,
                 description: 'Kapasitas tinggi untuk aplikasi e-commerce dan perusahaan skala besar.',
                 is_popular: false,
-                displayFeatures: ['Kuota 25.000 Transaksi', 'Rate Limit 1.000 RPM', 'Dedicated Webhook Worker', 'Support Prioritas 24/7'],
+                displayFeatures: ['Kuota 25.000 Transaksi', 'Rate Limit 1.000 RPM', 'Termasuk 10 Endpoint Webhook (Bisa Add-on)', 'Dedicated Webhook Worker'],
             },
         ];
     }
@@ -63,8 +63,8 @@ const formattedPlans = computed(() => {
         const displayFeatures = cleanFeatures.length > 0 ? cleanFeatures : [
             `Kuota ${Number(plan.transaction_limit || 1000).toLocaleString('id-ID')} Transaksi`,
             `Rate Limit ${plan.rate_limit_rpm || 60} RPM`,
+            `Termasuk ${plan.webhook_limit || 1} Endpoint Webhook (Bisa Add-on)`,
             'Sandbox & Live API Key',
-            'Signed Webhook Retries',
         ];
 
         let description = 'Cocok untuk proyek baru yang mulai menerima pembayaran QRIS.';

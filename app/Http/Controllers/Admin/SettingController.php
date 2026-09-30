@@ -43,6 +43,7 @@ class SettingController extends Controller
             // Pricing & Quota
             'monthly_price' => (float) SystemSetting::get('monthly_price', 150000),
             'monthly_quota' => (int) SystemSetting::get('monthly_quota', 1000),
+            'webhook_addon_price' => (float) SystemSetting::get('webhook_addon_price', 25000),
 
             // DOKU Payment Gateway API
             'doku_client_id' => SystemSetting::get('doku_client_id', env('DOKU_CLIENT_ID', '')),
@@ -90,6 +91,7 @@ class SettingController extends Controller
             // Pricing & Quota
             'monthly_price' => 'required|numeric|min:0',
             'monthly_quota' => 'required|integer|min:1',
+            'webhook_addon_price' => 'nullable|numeric|min:1000',
 
             // DOKU API & Settlement
             'doku_client_id' => 'nullable|string|max:100',
@@ -117,6 +119,10 @@ class SettingController extends Controller
             'monthly_price', 'monthly_quota'
         ]) as $key => $val) {
             SystemSetting::set($key, (string) $val, 'general');
+        }
+
+        if ($request->has('webhook_addon_price')) {
+            SystemSetting::set('webhook_addon_price', (string) $request->input('webhook_addon_price'), 'pricing');
         }
 
         SystemSetting::set('maintenance_mode', $request->boolean('maintenance_mode') ? 'true' : 'false', 'general');

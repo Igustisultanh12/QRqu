@@ -117,6 +117,25 @@ class Transaction extends Model
                 if ($subscription) {
                     $subscription->activateWithExtension();
                 }
+
+                // Automatically activate pending addon (e.g. webhook slot) tied to this invoice
+                $addon = CustomerAddon::where('invoice_id', $this->invoice->id)
+                    ->where('status', 'pending_payment')
+                    ->first();
+
+                if ($addon) {
+                    $addon->update([
+                        'status' => 'active',
+                        'paid_at' => now(),
+                    ]);
+
+                    AuditLog::record('ADDON_PURCHASE_PAID', $addon, null, [
+                        'customer_id' => $addon->customer_id,
+                        'type' => $addon->type,
+                        'quantity' => $addon->quantity,
+                        'amount' => $addon->price_paid,
+                    ]);
+                }
             }
         }
 

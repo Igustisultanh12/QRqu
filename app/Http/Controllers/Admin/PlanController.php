@@ -31,11 +31,13 @@ class PlanController extends Controller
             'transaction_limit' => 'required|integer|min:1',
             'api_limit' => 'required|integer|min:1',
             'rate_limit_rpm' => 'required|integer|min:1',
+            'webhook_limit' => 'nullable|integer|min:1',
             'features' => 'nullable|array',
             'status' => 'required|in:active,inactive',
         ]);
 
         $data['slug'] = Str::slug($data['name']) . '-' . $data['duration_days'] . 'd';
+        $data['webhook_limit'] = !empty($data['webhook_limit']) ? (int) $data['webhook_limit'] : 1;
 
         $plan = Plan::create($data);
         AuditLog::record('CREATE_PLAN', $plan, null, $data);
@@ -52,9 +54,12 @@ class PlanController extends Controller
             'transaction_limit' => 'required|integer|min:1',
             'api_limit' => 'required|integer|min:1',
             'rate_limit_rpm' => 'required|integer|min:1',
+            'webhook_limit' => 'nullable|integer|min:1',
             'features' => 'nullable|array',
             'status' => 'required|in:active,inactive',
         ]);
+
+        $data['webhook_limit'] = !empty($data['webhook_limit']) ? (int) $data['webhook_limit'] : ($plan->webhook_limit ?: 1);
 
         $before = $plan->toArray();
         $plan->update($data);

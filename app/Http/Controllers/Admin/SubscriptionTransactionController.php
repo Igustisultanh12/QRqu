@@ -38,6 +38,10 @@ class SubscriptionTransactionController extends Controller
                     if ($sub) {
                         $sub->activateWithExtension();
                     }
+                    $addon = \App\Models\CustomerAddon::where('invoice_id', $trx->invoice_id)->where('status', '!=', 'active')->first();
+                    if ($addon) {
+                        $addon->update(['status' => 'active', 'paid_at' => now()]);
+                    }
                 }
             }
         }
@@ -164,6 +168,10 @@ class SubscriptionTransactionController extends Controller
             $subscription = Subscription::where('invoice_id', $transaction->invoice_id)->first();
             if ($subscription && $subscription->status !== 'active') {
                 $subscription->activateWithExtension();
+            }
+            $addon = \App\Models\CustomerAddon::where('invoice_id', $transaction->invoice_id)->first();
+            if ($addon && $addon->status !== 'active') {
+                $addon->update(['status' => 'active', 'paid_at' => now()]);
             }
         }
 

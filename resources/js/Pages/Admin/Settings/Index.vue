@@ -174,7 +174,7 @@
                         <p class="text-xs text-slate-500 dark:text-slate-400">Tentukan harga langganan default dan kuota transaksi yang dialokasikan per bulan untuk merchant.</p>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         <div class="p-5 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
                             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Harga Langganan Bulanan (Rp)</label>
                             <input
@@ -204,6 +204,22 @@
                                 {{ Number(form.monthly_quota || 0).toLocaleString('id-ID') }} transaksi / bulan
                             </div>
                             <span class="text-[11px] text-slate-500 block">Batas maksimal kuota pembuatan tagihan QRIS yang diizinkan per bulan.</span>
+                        </div>
+
+                        <div class="p-5 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Harga Add-on Webhook (per Slot)</label>
+                            <input
+                                v-model.number="form.webhook_addon_price"
+                                type="number"
+                                required
+                                min="1000"
+                                step="1000"
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-300 dark:border-slate-700 text-sm font-black text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 font-mono"
+                            />
+                            <div class="text-xs font-bold text-indigo-600 dark:text-indigo-400 pt-1">
+                                Rp {{ Number(form.webhook_addon_price || 0).toLocaleString('id-ID') }} / endpoint
+                            </div>
+                            <span class="text-[11px] text-slate-500 block">Biaya yang dibayarkan merchant jika ingin menambah slot endpoint webhook di luar kuota paket.</span>
                         </div>
                     </div>
                 </div>
@@ -513,6 +529,7 @@ const form = useForm({
     // Pricing & Quota
     monthly_price: props.settings?.monthly_price || 150000,
     monthly_quota: props.settings?.monthly_quota || 1000,
+    webhook_addon_price: props.settings?.webhook_addon_price || 25000,
 
     // DOKU API & Settlement
     doku_client_id: props.settings?.doku_client_id || '',

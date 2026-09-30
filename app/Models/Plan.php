@@ -22,6 +22,10 @@ class Plan extends Model
         'status',
     ];
 
+    protected $attributes = [
+        'webhook_limit' => 1,
+    ];
+
     protected function casts(): array
     {
         return [

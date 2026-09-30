@@ -45,6 +45,7 @@ class CustomerMultiWebhookTest extends TestCase
             'transaction_limit' => 5000,
             'api_limit' => 50000,
             'rate_limit_rpm' => 120,
+            'webhook_limit' => 3,
             'features' => ['qris' => true],
             'is_active' => true,
         ]);
@@ -272,5 +273,140 @@ class CustomerMultiWebhookTest extends TestCase
         Http::assertSent(fn ($req) => $req->url() === 'https://erp.example.com/webhook');
         Http::assertSent(fn ($req) => $req->url() === 'https://jkt.example.com/webhook');
         Http::assertNotSent(fn ($req) => $req->url() === 'https://sby.example.com/webhook');
+    }
+
+    public function test_customer_cannot_exceed_plan_webhook_quota(): void
+    {
+        $this->actingAs($this->user);
+
+        // Limit plan to 1 webhook
+        $this->customer->activeSubscription->plan->update(['webhook_limit' => 1]);
+
+        // 1. Create first webhook -> should succeed
+        $response1 = $this->post('/webhooks', [
+            'name' => 'First Allowed Webhook',
+            'url' => 'https://allowed1.example.com/webhook',
+        ]);
+        $response1->assertRedirect();
+        $response1->assertSessionHas('success');
+        $this->assertDatabaseCount('webhooks', 1);
+
+        // 2. Attempt to create second webhook -> should fail with error
+        $response2 = $this->post('/webhooks', [
+            'name' => 'Second Exceeded Webhook',
+            'url' => 'https://exceeded2.example.com/webhook',
+        ]);
+        $response2->assertRedirect();
+        $response2->assertSessionHas('error');
+        $this->assertDatabaseCount('webhooks', 1);
+        $this->assertDatabaseMissing('webhooks', ['name' => 'Second Exceeded Webhook']);
+    }
+
+    public function test_customer_can_purchase_webhook_addon_and_increase_quota(): void
+    {
+        $this->actingAs($this->user);
+
+        // Limit plan to 1 webhook
+        $this->customer->activeSubscription->plan->update(['webhook_limit' => 1]);
+
+        // Create 1 webhook
+        Webhook::create([
+            'customer_id' => $this->customer->id,
+            'name' => 'Existing Webhook',
+            'url' => 'https://existing.example.com/webhook',
+            'secret' => 'whsec_existing12345678',
+        ]);
+
+        $this->assertFalse($this->customer->fresh()->canAddWebhook());
+
+        // Purchase +2 Add-on Webhook slots
+        $addonResponse = $this->post('/webhooks/addon/purchase', [
+            'quantity' => 2,
+        ]);
+
+        $addonResponse->assertRedirect();
+        $this->assertDatabaseHas('customer_addons', [
+            'customer_id' => $this->customer->id,
+            'type' => 'webhook_slot',
+            'quantity' => 2,
+            'status' => 'pending_payment',
+        ]);
+
+        $addon = \App\Models\CustomerAddon::where('customer_id', $this->customer->id)->first();
+        $invoice = $addon->invoice;
+        $this->assertNotNull($invoice);
+        $this->assertEquals(50000, (float) $invoice->amount);
+
+        // Simulate invoice payment via transaction PAID transition
+        $transaction = Transaction::create([
+            'id' => 'TXN-ADDON-001',
+            'customer_id' => $this->customer->id,
+            'invoice_id' => $invoice->id,
+            'external_id' => $invoice->external_id,
+            'amount' => 50000,
+            'payment_method' => 'QRIS',
+            'status' => 'PENDING',
+        ]);
+
+        $transaction->transitionTo('PAID', 'doku_notification', 'Paid via QRIS');
+
+        // Verify addon is now active
+        $this->assertEquals('active', $addon->fresh()->status);
+        $this->assertNotNull($addon->fresh()->paid_at);
+
+        // Customer now has max 3 allowed (1 from plan + 2 from addon)
+        $this->assertEquals(3, $this->customer->fresh()->getMaxWebhooksAllowed());
+        $this->assertTrue($this->customer->fresh()->canAddWebhook());
+
+        // Now creating second webhook succeeds
+        $respSuccess = $this->post('/webhooks', [
+            'name' => 'Second Webhook via Addon',
+            'url' => 'https://addon-wh.example.com/webhook',
+        ]);
+        $respSuccess->assertRedirect();
+        $respSuccess->assertSessionHas('success');
+        $this->assertDatabaseCount('webhooks', 2);
+    }
+
+    public function test_admin_can_update_plan_webhook_limit_and_addon_price(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active']);
+        $this->actingAs($admin);
+
+        $plan = Plan::first();
+
+        // 1. Update plan with new webhook_limit
+        $updatePlanResp = $this->put("/admin/plans/{$plan->id}", [
+            'name' => $plan->name,
+            'duration_days' => $plan->duration_days,
+            'price' => $plan->price,
+            'transaction_limit' => $plan->transaction_limit,
+            'api_limit' => $plan->api_limit,
+            'rate_limit_rpm' => $plan->rate_limit_rpm,
+            'webhook_limit' => 5,
+            'status' => 'active',
+        ]);
+        $updatePlanResp->assertRedirect();
+        $this->assertEquals(5, $plan->fresh()->webhook_limit);
+
+        // 2. Update setting webhook_addon_price
+        $updateSettingResp = $this->post('/admin/settings', [
+            'app_name' => 'QRqu',
+            'app_url' => 'https://qrqu.id',
+            'timezone' => 'Asia/Jakarta',
+            'currency' => 'IDR',
+            'maintenance_mode' => false,
+            'default_expire_minutes' => 60,
+            'api_timestamp_tolerance' => 300,
+            'webhook_max_retries' => 4,
+            'monthly_price' => 150000,
+            'monthly_quota' => 1000,
+            'webhook_addon_price' => 30000,
+            'mail_mailer' => 'smtp',
+            'mail_from_address' => 'no-reply@qrqu.id',
+            'mail_from_name' => 'QRqu',
+        ]);
+        $updateSettingResp->assertRedirect();
+        $this->assertEquals('30000', (string) \App\Models\SystemSetting::get('webhook_addon_price'));
     }
 }
