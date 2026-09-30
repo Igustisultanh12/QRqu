@@ -62,16 +62,16 @@
                 </div>
             </div>
 
-            <!-- Pilihan Toko Merchant -->
-            <div class="bg-white dark:bg-slate-900/60 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors duration-200">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+            <!-- Tabel Pilihan Toko Merchant -->
+            <div class="bg-white dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden transition-colors duration-200">
+                <div class="p-4 border-b border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/40 dark:bg-slate-900/40">
                     <div class="flex items-center gap-2.5">
                         <div class="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold border border-emerald-200 dark:border-emerald-500/20">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                         </div>
                         <div>
-                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">Pilihan Toko Merchant</h3>
-                            <p class="text-[11px] text-slate-400 dark:text-slate-500">Klik toko untuk melihat seluruh catatan transaksi toko tersebut secara spesifik.</p>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">Tabel Pilihan Toko Merchant</h3>
+                            <p class="text-[11px] text-slate-400 dark:text-slate-500">Klik baris toko untuk menyaring laporan dan rincian transaksi per toko.</p>
                         </div>
                     </div>
 
@@ -85,65 +85,116 @@
                     </button>
                 </div>
 
-                <!-- Chips Toko -->
-                <div class="flex flex-wrap items-center gap-2 pt-1">
-                    <button
-                        @click="selectStore('all')"
-                        type="button"
-                        :class="[
-                            'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition border',
-                            selectedStoreId === 'all'
-                                ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-sm'
-                                : 'bg-slate-50 dark:bg-slate-950/60 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
-                        ]"
-                    >
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-                        <span>Semua Toko</span>
-                        <span
-                            :class="[
-                                'px-1.5 py-0.5 rounded text-[10px] font-mono',
-                                selectedStoreId === 'all'
-                                    ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900'
-                                    : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
-                            ]"
-                        >
-                            {{ stores.length }}
-                        </span>
-                    </button>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-200 dark:border-slate-800/80 bg-slate-50/80 dark:bg-slate-900/60 text-slate-500 dark:text-slate-400 font-mono uppercase text-[10px] tracking-wider">
+                                <th class="py-2.5 px-4">Nama Toko</th>
+                                <th class="py-2.5 px-4">Tipe / Kode</th>
+                                <th class="py-2.5 px-4">Keterangan / Alamat</th>
+                                <th class="py-2.5 px-4 text-center">Status Filter</th>
+                                <th class="py-2.5 px-4 text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
+                            <!-- Row Semua Toko -->
+                            <tr
+                                @click="selectStore('all')"
+                                class="cursor-pointer transition-colors"
+                                :class="[
+                                    selectedStoreId === 'all'
+                                        ? 'bg-emerald-50/70 dark:bg-emerald-950/20 font-semibold'
+                                        : 'hover:bg-slate-50/60 dark:hover:bg-slate-900/30'
+                                ]"
+                            >
+                                <td class="py-3 px-4 font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full" :class="selectedStoreId === 'all' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300 dark:bg-slate-600'"></span>
+                                    <span>Semua Toko (Akumulasi Global)</span>
+                                </td>
+                                <td class="py-3 px-4 font-mono text-[11px]">
+                                    <span class="px-2 py-0.5 rounded-full bg-slate-200/70 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold">
+                                        {{ stores.length }} Toko
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4 text-slate-500 text-[11px]">
+                                    Seluruh transaksi akumulasi merchant
+                                </td>
+                                <td class="py-3 px-4 text-center">
+                                    <span v-if="selectedStoreId === 'all'" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
+                                        ● Aktif
+                                    </span>
+                                    <span v-else class="text-slate-400 text-[11px]">-</span>
+                                </td>
+                                <td class="py-3 px-4 text-right">
+                                    <button
+                                        type="button"
+                                        :class="[
+                                            'px-3 py-1 rounded-xl text-xs font-semibold transition',
+                                            selectedStoreId === 'all'
+                                                ? 'bg-emerald-600 text-white shadow-sm'
+                                                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
+                                        ]"
+                                    >
+                                        {{ selectedStoreId === 'all' ? 'Terpilih' : 'Pilih Toko' }}
+                                    </button>
+                                </td>
+                            </tr>
 
-                    <button
-                        v-for="st in stores"
-                        :key="st.id"
-                        @click="selectStore(st.id)"
-                        type="button"
-                        :class="[
-                            'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition border',
-                            String(selectedStoreId) === String(st.id)
-                                ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm shadow-emerald-600/20'
-                                : 'bg-slate-50 dark:bg-slate-950/60 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
-                        ]"
-                    >
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                        <span>{{ st.name }}</span>
-                        <span
-                            v-if="st.is_default"
-                            :class="[
-                                'px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider',
-                                String(selectedStoreId) === String(st.id) ? 'bg-white/25 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                            ]"
-                        >
-                            Utama
-                        </span>
-                        <span
-                            v-else-if="st.code"
-                            :class="[
-                                'px-1.5 py-0.5 rounded text-[9px] font-mono',
-                                String(selectedStoreId) === String(st.id) ? 'bg-white/25 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
-                            ]"
-                        >
-                            {{ st.code }}
-                        </span>
-                    </button>
+                            <!-- Row Masing-Masing Toko -->
+                            <tr
+                                v-for="st in stores"
+                                :key="st.id"
+                                @click="selectStore(st.id)"
+                                class="cursor-pointer transition-colors"
+                                :class="[
+                                    String(selectedStoreId) === String(st.id)
+                                        ? 'bg-emerald-50/70 dark:bg-emerald-950/20 font-semibold'
+                                        : 'hover:bg-slate-50/60 dark:hover:bg-slate-900/30'
+                                ]"
+                            >
+                                <td class="py-3 px-4 font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full" :class="String(selectedStoreId) === String(st.id) ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300 dark:bg-slate-600'"></span>
+                                    <span>{{ st.name }}</span>
+                                </td>
+                                <td class="py-3 px-4 font-mono text-[11px]">
+                                    <span
+                                        v-if="st.is_default"
+                                        class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20"
+                                    >
+                                        Utama
+                                    </span>
+                                    <span
+                                        v-else-if="st.code"
+                                        class="px-2 py-0.5 rounded-full text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 font-mono"
+                                    >
+                                        {{ st.code }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4 text-slate-500 text-[11px]">
+                                    {{ st.description || st.address || '-' }}
+                                </td>
+                                <td class="py-3 px-4 text-center">
+                                    <span v-if="String(selectedStoreId) === String(st.id)" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
+                                        ● Aktif
+                                    </span>
+                                    <span v-else class="text-slate-400 text-[11px]">-</span>
+                                </td>
+                                <td class="py-3 px-4 text-right">
+                                    <button
+                                        type="button"
+                                        :class="[
+                                            'px-3 py-1 rounded-xl text-xs font-semibold transition',
+                                            String(selectedStoreId) === String(st.id)
+                                                ? 'bg-emerald-600 text-white shadow-sm'
+                                                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
+                                        ]"
+                                    >
+                                        {{ String(selectedStoreId) === String(st.id) ? 'Terpilih' : 'Pilih Toko' }}
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 

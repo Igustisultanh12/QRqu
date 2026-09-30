@@ -249,16 +249,16 @@ const submitWithdrawal = () => {
                 </div>
             </div>
 
-            <!-- Pilihan Toko & Rincian Saldo Per Toko -->
-            <div class="bg-white dark:bg-slate-900/60 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors duration-200">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <!-- Tabel Pilihan Toko & Rincian Saldo -->
+            <div class="bg-white dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden transition-colors duration-200">
+                <div class="p-5 border-b border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/40 dark:bg-slate-900/40">
                     <div class="flex items-center gap-2.5">
                         <div class="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold border border-emerald-200 dark:border-emerald-500/20">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                         </div>
                         <div>
-                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">Pilihan Toko & Rincian Saldo</h3>
-                            <p class="text-[11px] text-slate-400 dark:text-slate-500">Klik toko untuk melihat rincian saldo spesifik, omzet bruto, potongan DOKU 0.7%, dan riwayat pencairan.</p>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">Tabel Pilihan Toko & Rincian Saldo</h3>
+                            <p class="text-[11px] text-slate-400 dark:text-slate-500">Pilih baris toko pada tabel di bawah untuk melihat rincian saldo spesifik, omzet bruto, potongan DOKU 0.7%, dan riwayat pencairan.</p>
                         </div>
                     </div>
 
@@ -272,89 +272,136 @@ const submitWithdrawal = () => {
                     </button>
                 </div>
 
-                <!-- Grid Kartu Toko -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                    <!-- Kartu Semua Toko -->
-                    <div
-                        @click="selectStore('all')"
-                        class="p-4 rounded-2xl border cursor-pointer transition-all relative overflow-hidden"
-                        :class="[
-                            selectedStoreId === 'all'
-                                ? 'bg-slate-900 text-white border-slate-900 shadow-md ring-2 ring-emerald-500/40 dark:bg-slate-800 dark:border-slate-700'
-                                : 'bg-slate-50/70 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
-                        ]"
-                    >
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5" :class="selectedStoreId === 'all' ? 'text-slate-200' : 'text-slate-700 dark:text-slate-300'">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-                                Semua Toko
-                            </span>
-                            <span class="text-[10px] px-2 py-0.5 rounded-full font-mono font-bold" :class="selectedStoreId === 'all' ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'">
-                                {{ stores.length }} Toko
-                            </span>
-                        </div>
-                        <div class="mt-3">
-                            <span class="text-[11px] block" :class="selectedStoreId === 'all' ? 'text-slate-300' : 'text-slate-400'">Total Saldo Tersedia</span>
-                            <div class="text-xl font-black font-mono tracking-tight" :class="selectedStoreId === 'all' ? 'text-emerald-400' : 'text-slate-900 dark:text-white'">
-                                {{ formatCurrency(selectedStoreId === 'all' ? balance : stores.reduce((sum, s) => sum + s.balance, 0)) }}
-                            </div>
-                        </div>
-                        <div class="mt-2 text-[10px] flex items-center justify-between" :class="selectedStoreId === 'all' ? 'text-slate-300' : 'text-slate-400'">
-                            <span>Total Akumulasi Semua Cabang</span>
-                            <span v-if="selectedStoreId === 'all'" class="text-emerald-400 font-bold">● Aktif</span>
-                        </div>
-                    </div>
-
-                    <!-- Kartu Masing-masing Toko -->
-                    <div
-                        v-for="st in stores"
-                        :key="st.id"
-                        @click="selectStore(st.id)"
-                        class="p-4 rounded-2xl border cursor-pointer transition-all relative overflow-hidden"
-                        :class="[
-                            String(selectedStoreId) === String(st.id)
-                                ? 'bg-slate-900 text-white border-slate-900 shadow-md ring-2 ring-emerald-500/40 dark:bg-slate-800 dark:border-slate-700'
-                                : 'bg-slate-50/70 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
-                        ]"
-                    >
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold truncate max-w-[170px]" :class="String(selectedStoreId) === String(st.id) ? 'text-white' : 'text-slate-900 dark:text-white'" :title="st.name">
-                                {{ st.name }}
-                            </span>
-                            <span
-                                v-if="st.is_default"
-                                class="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider"
-                                :class="String(selectedStoreId) === String(st.id) ? 'bg-emerald-500/30 text-emerald-300' : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20'"
+                <!-- Table Content -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-200 dark:border-slate-800/80 bg-slate-50/80 dark:bg-slate-900/60 text-slate-500 dark:text-slate-400 font-mono uppercase text-[10px] tracking-wider">
+                                <th class="py-3 px-5">Nama Toko</th>
+                                <th class="py-3 px-4">Tipe / Kode</th>
+                                <th class="py-3 px-4 text-right">Omzet Bruto</th>
+                                <th class="py-3 px-4 text-right">Fee DOKU (0.7%)</th>
+                                <th class="py-3 px-4 text-right">Omzet Bersih</th>
+                                <th class="py-3 px-4 text-right">Saldo Tersedia</th>
+                                <th class="py-3 px-4 text-right">Dicairkan</th>
+                                <th class="py-3 px-5 text-center">Status / Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
+                            <!-- Baris Semua Toko -->
+                            <tr
+                                @click="selectStore('all')"
+                                class="cursor-pointer transition-colors"
+                                :class="[
+                                    selectedStoreId === 'all'
+                                        ? 'bg-emerald-50/70 dark:bg-emerald-950/20 font-semibold'
+                                        : 'hover:bg-slate-50/60 dark:hover:bg-slate-900/30'
+                                ]"
                             >
-                                Toko Utama
-                            </span>
-                            <span
-                                v-else-if="st.code"
-                                class="text-[9px] px-2 py-0.5 rounded-full font-mono"
-                                :class="String(selectedStoreId) === String(st.id) ? 'bg-white/20 text-slate-200' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'"
+                                <td class="py-3.5 px-5">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="w-2 h-2 rounded-full" :class="selectedStoreId === 'all' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300 dark:bg-slate-600'"></span>
+                                        <span class="font-bold text-slate-900 dark:text-white">Semua Toko (Akumulasi Global)</span>
+                                    </div>
+                                </td>
+                                <td class="py-3.5 px-4 font-mono text-[11px]">
+                                    <span class="px-2 py-0.5 rounded-full bg-slate-200/70 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold">
+                                        {{ stores.length }} Toko
+                                    </span>
+                                </td>
+                                <td class="py-3.5 px-4 text-right font-mono text-slate-700 dark:text-slate-300">
+                                    {{ formatCurrency(stores.reduce((sum, s) => sum + s.gross_income, 0)) }}
+                                </td>
+                                <td class="py-3.5 px-4 text-right font-mono text-rose-500 dark:text-rose-400">
+                                    {{ formatCurrency(stores.reduce((sum, s) => sum + s.doku_fee, 0)) }}
+                                </td>
+                                <td class="py-3.5 px-4 text-right font-mono text-slate-900 dark:text-white font-bold">
+                                    {{ formatCurrency(stores.reduce((sum, s) => sum + s.net_income, 0)) }}
+                                </td>
+                                <td class="py-3.5 px-4 text-right font-mono font-black text-emerald-600 dark:text-emerald-400 text-sm">
+                                    {{ formatCurrency(selectedStoreId === 'all' ? balance : stores.reduce((sum, s) => sum + s.balance, 0)) }}
+                                </td>
+                                <td class="py-3.5 px-4 text-right font-mono text-slate-500 dark:text-slate-400">
+                                    {{ formatCurrency(stores.reduce((sum, s) => sum + s.withdrawn, 0)) }}
+                                </td>
+                                <td class="py-3.5 px-5 text-center">
+                                    <button
+                                        type="button"
+                                        :class="[
+                                            'px-3 py-1 rounded-xl text-[11px] font-bold transition',
+                                            selectedStoreId === 'all'
+                                                ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
+                                                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
+                                        ]"
+                                    >
+                                        {{ selectedStoreId === 'all' ? '● Aktif' : 'Pilih' }}
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Baris Masing-Masing Toko -->
+                            <tr
+                                v-for="st in stores"
+                                :key="st.id"
+                                @click="selectStore(st.id)"
+                                class="cursor-pointer transition-colors"
+                                :class="[
+                                    String(selectedStoreId) === String(st.id)
+                                        ? 'bg-emerald-50/70 dark:bg-emerald-950/20 font-semibold'
+                                        : 'hover:bg-slate-50/60 dark:hover:bg-slate-900/30'
+                                ]"
                             >
-                                {{ st.code }}
-                            </span>
-                        </div>
-
-                        <div class="mt-3">
-                            <span class="text-[11px] block" :class="String(selectedStoreId) === String(st.id) ? 'text-slate-300' : 'text-slate-400'">Saldo Tersedia</span>
-                            <div class="text-xl font-black font-mono tracking-tight" :class="String(selectedStoreId) === String(st.id) ? 'text-emerald-400' : 'text-slate-900 dark:text-white'">
-                                {{ formatCurrency(st.balance) }}
-                            </div>
-                        </div>
-
-                        <div class="mt-2 pt-2 border-t text-[10px] grid grid-cols-2 gap-2" :class="String(selectedStoreId) === String(st.id) ? 'border-slate-700 text-slate-300' : 'border-slate-200 dark:border-slate-800 text-slate-400'">
-                            <div>
-                                <span>Bruto:</span>
-                                <strong class="ml-1" :class="String(selectedStoreId) === String(st.id) ? 'text-white' : 'text-slate-700 dark:text-slate-200'">{{ formatCurrency(st.gross_income) }}</strong>
-                            </div>
-                            <div class="text-right">
-                                <span>Fee 0.7%:</span>
-                                <strong class="ml-1 text-rose-400">{{ formatCurrency(st.doku_fee) }}</strong>
-                            </div>
-                        </div>
-                    </div>
+                                <td class="py-3.5 px-5">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="w-2 h-2 rounded-full" :class="String(selectedStoreId) === String(st.id) ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300 dark:bg-slate-600'"></span>
+                                        <span class="font-bold text-slate-900 dark:text-white">{{ st.name }}</span>
+                                    </div>
+                                </td>
+                                <td class="py-3.5 px-4 font-mono text-[11px]">
+                                    <span
+                                        v-if="st.is_default"
+                                        class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20"
+                                    >
+                                        Toko Utama
+                                    </span>
+                                    <span
+                                        v-else-if="st.code"
+                                        class="px-2 py-0.5 rounded-full text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 font-mono"
+                                    >
+                                        {{ st.code }}
+                                    </span>
+                                </td>
+                                <td class="py-3.5 px-4 text-right font-mono text-slate-700 dark:text-slate-300">
+                                    {{ formatCurrency(st.gross_income) }}
+                                </td>
+                                <td class="py-3.5 px-4 text-right font-mono text-rose-500 dark:text-rose-400">
+                                    {{ formatCurrency(st.doku_fee) }}
+                                </td>
+                                <td class="py-3.5 px-4 text-right font-mono text-slate-900 dark:text-white font-bold">
+                                    {{ formatCurrency(st.net_income) }}
+                                </td>
+                                <td class="py-3.5 px-4 text-right font-mono font-black text-emerald-600 dark:text-emerald-400 text-sm">
+                                    {{ formatCurrency(st.balance) }}
+                                </td>
+                                <td class="py-3.5 px-4 text-right font-mono text-slate-500 dark:text-slate-400">
+                                    {{ formatCurrency(st.withdrawn) }}
+                                </td>
+                                <td class="py-3.5 px-5 text-center">
+                                    <button
+                                        type="button"
+                                        :class="[
+                                            'px-3 py-1 rounded-xl text-[11px] font-bold transition',
+                                            String(selectedStoreId) === String(st.id)
+                                                ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
+                                                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
+                                        ]"
+                                    >
+                                        {{ String(selectedStoreId) === String(st.id) ? '● Aktif' : 'Pilih' }}
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
