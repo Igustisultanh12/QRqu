@@ -45,6 +45,56 @@ class Customer extends Model
             });
     }
 
+    public function stores()
+    {
+        return $this->hasMany(Store::class);
+    }
+
+    public function defaultStore()
+    {
+        return $this->hasOne(Store::class)->where('is_default', true);
+    }
+
+    public function ensureStores(): void
+    {
+        if ($this->stores()->count() === 0) {
+            $defaultName = $this->company_name ?: ($this->name . ' Store');
+            $defaultStore = $this->stores()->create([
+                'name' => $defaultName,
+                'code' => strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $defaultName), 0, 8)) ?: 'STORE1',
+                'is_default' => true,
+                'status' => 'active',
+            ]);
+
+            // If there are ROMEI transactions/invoices, also create Toko ROMEI
+            $hasRomei = $this->invoices()->where(function ($q) {
+                $q->where('external_id', 'like', '%ROMEI%')
+                  ->orWhere('description', 'like', '%ROMEI%');
+            })->exists();
+
+            if ($hasRomei && !str_contains(strtoupper($defaultName), 'ROMEI')) {
+                $romeiStore = $this->stores()->create([
+                    'name' => 'Toko ROMEI',
+                    'code' => 'ROMEI',
+                    'is_default' => false,
+                    'status' => 'active',
+                ]);
+
+                $romeiInvoiceIds = $this->invoices()->where(function ($q) {
+                    $q->where('external_id', 'like', '%ROMEI%')
+                      ->orWhere('description', 'like', '%ROMEI%');
+                })->pluck('id');
+
+                $this->invoices()->whereIn('id', $romeiInvoiceIds)->update(['store_id' => $romeiStore->id]);
+                $this->transactions()->whereIn('invoice_id', $romeiInvoiceIds)->update(['store_id' => $romeiStore->id]);
+            }
+
+            // Link remaining invoices & transactions to defaultStore
+            $this->invoices()->whereNull('store_id')->update(['store_id' => $defaultStore->id]);
+            $this->transactions()->whereNull('store_id')->update(['store_id' => $defaultStore->id]);
+        }
+    }
+
     public function apiCredentials()
     {
         return $this->hasMany(ApiCredential::class);

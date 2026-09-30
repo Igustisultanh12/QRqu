@@ -1,18 +1,45 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { useForm, Head } from '@inertiajs/vue3';
+import { useForm, Head, router, Link } from '@inertiajs/vue3';
 import CustomerLayout from '@/Layouts/CustomerLayout.vue';
 import Swal from 'sweetalert2';
 
 const props = defineProps({
+    stores: {
+        type: Array,
+        default: () => [],
+    },
+    selected_store_id: {
+        type: [String, Number],
+        default: 'all',
+    },
+    selected_store: {
+        type: Object,
+        default: null,
+    },
+    doku_fee_enabled: {
+        type: Boolean,
+        default: true,
+    },
+    doku_fee_percent: {
+        type: Number,
+        default: 0.7,
+    },
+    doku_fee_amount: {
+        type: Number,
+        default: 0,
+    },
     balance: Number,
     total_income: Number,
+    total_net: Number,
     total_withdrawn: Number,
     pending_withdrawn: Number,
     settlements: Object,
 });
 
 const isModalOpen = ref(false);
+const isAddStoreOpen = ref(false);
+const selectedStoreId = ref(props.selected_store_id || 'all');
 
 const bankOptions = [
     'BCA',
@@ -37,6 +64,15 @@ const form = useForm({
     bank_name: '',
     account_number: '',
     account_name: '',
+    store_id: props.selected_store_id !== 'all' ? props.selected_store_id : '',
+});
+
+const storeForm = useForm({
+    name: '',
+    code: '',
+    description: '',
+    address: '',
+    phone: '',
 });
 
 const formatCurrency = (val) => {
@@ -59,9 +95,33 @@ const formatDate = (dateStr) => {
     });
 };
 
+const pdfExportUrl = computed(() => {
+    return route('customer.settlements.pdf', {
+        store_id: selectedStoreId.value,
+    });
+});
+
+const selectStore = (storeId) => {
+    selectedStoreId.value = storeId;
+    router.get(route('customer.settlements.index'), {
+        store_id: storeId,
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+    });
+};
+
+const activeMaxBalance = computed(() => {
+    if (form.store_id && form.store_id !== 'all') {
+        const target = props.stores.find(s => String(s.id) === String(form.store_id));
+        return target ? target.balance : props.balance;
+    }
+    return props.balance;
+});
+
 const setQuickAmount = (val) => {
     if (val === 'all') {
-        form.amount = Math.floor(props.balance);
+        form.amount = Math.floor(activeMaxBalance.value);
     } else {
         form.amount = val;
     }
@@ -78,6 +138,7 @@ const openModal = () => {
         return;
     }
     form.reset();
+    form.store_id = selectedStoreId.value !== 'all' ? selectedStoreId.value : '';
     isModalOpen.value = true;
 };
 
@@ -86,12 +147,37 @@ const closeModal = () => {
     form.reset();
 };
 
+const openAddStoreModal = () => {
+    storeForm.reset();
+    isAddStoreOpen.value = true;
+};
+
+const closeAddStoreModal = () => {
+    isAddStoreOpen.value = false;
+    storeForm.reset();
+};
+
+const submitAddStore = () => {
+    storeForm.post(route('customer.stores.store'), {
+        preserveScroll: true,
+        onSuccess: () => {
+            closeAddStoreModal();
+            Swal.fire({
+                icon: 'success',
+                title: 'Toko Berhasil Ditambahkan',
+                text: 'Toko baru Anda telah aktif dan tercatat pada daftar toko.',
+                confirmButtonColor: '#10b981',
+            });
+        },
+    });
+};
+
 const submitWithdrawal = () => {
-    if (Number(form.amount) > props.balance) {
+    if (Number(form.amount) > activeMaxBalance.value) {
         Swal.fire({
             icon: 'warning',
             title: 'Nominal Melebihi Saldo',
-            text: `Nominal penarikan (${formatCurrency(form.amount)}) tidak boleh melebihi saldo tersedia (${formatCurrency(props.balance)}).`,
+            text: `Nominal penarikan (${formatCurrency(form.amount)}) tidak boleh melebihi saldo tersedia (${formatCurrency(activeMaxBalance.value)}).`,
             confirmButtonColor: '#10b981',
         });
         return;
@@ -126,22 +212,196 @@ const submitWithdrawal = () => {
         <Head title="Saldo & Penarikan Dana - QRqu" />
 
         <div class="space-y-6">
-            <!-- Header Section -->
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <!-- Header Section & Tombol Aksi -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-slate-900/60 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors duration-200">
                 <div>
-                    <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Saldo & Penarikan Dana</h1>
+                    <h1 class="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                        <span>Saldo & Penarikan Dana</span>
+                        <span v-if="selected_store" class="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20 font-bold">
+                            {{ selected_store.name }}
+                        </span>
+                    </h1>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        Kelola pendapatan transaksi QRIS Anda dan ajukan pencairan saldo ke rekening bank atau e-wallet.
+                        Kelola saldo transaksi per toko, pantau tarif settlement DOKU, dan cairkan dana langsung ke rekening bank atau e-wallet.
                     </p>
                 </div>
-                <button
-                    @click="openModal"
-                    type="button"
-                    class="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-slate-950 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-bold text-xs tracking-tight shadow-sm active:scale-95 transition-all shrink-0"
-                >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    <span>Ajukan Tarik Saldo</span>
-                </button>
+
+                <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+                    <!-- Tombol Cetak Laporan Saldo PDF -->
+                    <a
+                        :href="pdfExportUrl"
+                        target="_blank"
+                        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs tracking-tight shadow-sm shadow-orange-600/20 active:scale-95 transition-all"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <span>Cetak Laporan Saldo (PDF)</span>
+                    </a>
+
+                    <!-- Tombol Ajukan Tarik Saldo -->
+                    <button
+                        @click="openModal"
+                        type="button"
+                        class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-bold text-xs tracking-tight shadow-sm active:scale-95 transition-all"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        <span>Ajukan Tarik Saldo</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pilihan Toko & Rincian Saldo Per Toko -->
+            <div class="bg-white dark:bg-slate-900/60 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors duration-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold border border-emerald-200 dark:border-emerald-500/20">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">Pilihan Toko & Rincian Saldo</h3>
+                            <p class="text-[11px] text-slate-400 dark:text-slate-500">Klik toko untuk melihat rincian saldo spesifik, omzet bruto, potongan DOKU 0.7%, dan riwayat pencairan.</p>
+                        </div>
+                    </div>
+
+                    <button
+                        @click="openAddStoreModal"
+                        type="button"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition self-start sm:self-auto"
+                    >
+                        <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        <span>+ Tambah Toko</span>
+                    </button>
+                </div>
+
+                <!-- Grid Kartu Toko -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                    <!-- Kartu Semua Toko -->
+                    <div
+                        @click="selectStore('all')"
+                        class="p-4 rounded-2xl border cursor-pointer transition-all relative overflow-hidden"
+                        :class="[
+                            selectedStoreId === 'all'
+                                ? 'bg-slate-900 text-white border-slate-900 shadow-md ring-2 ring-emerald-500/40 dark:bg-slate-800 dark:border-slate-700'
+                                : 'bg-slate-50/70 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                        ]"
+                    >
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5" :class="selectedStoreId === 'all' ? 'text-slate-200' : 'text-slate-700 dark:text-slate-300'">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                                Semua Toko
+                            </span>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full font-mono font-bold" :class="selectedStoreId === 'all' ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'">
+                                {{ stores.length }} Toko
+                            </span>
+                        </div>
+                        <div class="mt-3">
+                            <span class="text-[11px] block" :class="selectedStoreId === 'all' ? 'text-slate-300' : 'text-slate-400'">Total Saldo Tersedia</span>
+                            <div class="text-xl font-black font-mono tracking-tight" :class="selectedStoreId === 'all' ? 'text-emerald-400' : 'text-slate-900 dark:text-white'">
+                                {{ formatCurrency(selectedStoreId === 'all' ? balance : stores.reduce((sum, s) => sum + s.balance, 0)) }}
+                            </div>
+                        </div>
+                        <div class="mt-2 text-[10px] flex items-center justify-between" :class="selectedStoreId === 'all' ? 'text-slate-300' : 'text-slate-400'">
+                            <span>Total Akumulasi Semua Cabang</span>
+                            <span v-if="selectedStoreId === 'all'" class="text-emerald-400 font-bold">● Aktif</span>
+                        </div>
+                    </div>
+
+                    <!-- Kartu Masing-masing Toko -->
+                    <div
+                        v-for="st in stores"
+                        :key="st.id"
+                        @click="selectStore(st.id)"
+                        class="p-4 rounded-2xl border cursor-pointer transition-all relative overflow-hidden"
+                        :class="[
+                            String(selectedStoreId) === String(st.id)
+                                ? 'bg-slate-900 text-white border-slate-900 shadow-md ring-2 ring-emerald-500/40 dark:bg-slate-800 dark:border-slate-700'
+                                : 'bg-slate-50/70 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                        ]"
+                    >
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold truncate max-w-[170px]" :class="String(selectedStoreId) === String(st.id) ? 'text-white' : 'text-slate-900 dark:text-white'" :title="st.name">
+                                {{ st.name }}
+                            </span>
+                            <span
+                                v-if="st.is_default"
+                                class="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider"
+                                :class="String(selectedStoreId) === String(st.id) ? 'bg-emerald-500/30 text-emerald-300' : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20'"
+                            >
+                                Toko Utama
+                            </span>
+                            <span
+                                v-else-if="st.code"
+                                class="text-[9px] px-2 py-0.5 rounded-full font-mono"
+                                :class="String(selectedStoreId) === String(st.id) ? 'bg-white/20 text-slate-200' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'"
+                            >
+                                {{ st.code }}
+                            </span>
+                        </div>
+
+                        <div class="mt-3">
+                            <span class="text-[11px] block" :class="String(selectedStoreId) === String(st.id) ? 'text-slate-300' : 'text-slate-400'">Saldo Tersedia</span>
+                            <div class="text-xl font-black font-mono tracking-tight" :class="String(selectedStoreId) === String(st.id) ? 'text-emerald-400' : 'text-slate-900 dark:text-white'">
+                                {{ formatCurrency(st.balance) }}
+                            </div>
+                        </div>
+
+                        <div class="mt-2 pt-2 border-t text-[10px] grid grid-cols-2 gap-2" :class="String(selectedStoreId) === String(st.id) ? 'border-slate-700 text-slate-300' : 'border-slate-200 dark:border-slate-800 text-slate-400'">
+                            <div>
+                                <span>Bruto:</span>
+                                <strong class="ml-1" :class="String(selectedStoreId) === String(st.id) ? 'text-white' : 'text-slate-700 dark:text-slate-200'">{{ formatCurrency(st.gross_income) }}</strong>
+                            </div>
+                            <div class="text-right">
+                                <span>Fee 0.7%:</span>
+                                <strong class="ml-1 text-rose-400">{{ formatCurrency(st.doku_fee) }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Banner Tarif Settlement DOKU Gateway (0.7%) -->
+            <div
+                class="p-4 rounded-2xl border transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                :class="doku_fee_enabled
+                    ? 'bg-emerald-50/70 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20'
+                    : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800'"
+            >
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0"
+                        :class="doku_fee_enabled ? 'bg-emerald-500 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'"
+                    >
+                        %
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-slate-900 dark:text-white">
+                                Tarif Settlement DOKU Gateway: {{ doku_fee_enabled ? `${doku_fee_percent}% (Aktif)` : 'Nonaktif (0%)' }}
+                            </span>
+                            <span
+                                :class="[
+                                    'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider',
+                                    doku_fee_enabled
+                                        ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400'
+                                        : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                                ]"
+                            >
+                                {{ doku_fee_enabled ? 'Dipotong Sistem' : 'Bebas Biaya' }}
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            <span v-if="doku_fee_enabled">
+                                Total potongan fee settlement: <strong class="text-slate-900 dark:text-white font-mono">{{ formatCurrency(doku_fee_amount) }}</strong> dari bruto {{ formatCurrency(total_income) }}. Omzet bersih: <strong class="text-emerald-600 dark:text-emerald-400 font-mono">{{ formatCurrency(total_net) }}</strong>.
+                            </span>
+                            <span v-else>
+                                Tarif settlement dinonaktifkan oleh Admin. Omzet bruto langsung diteruskan tanpa potongan 0.7%.
+                            </span>
+                        </p>
+                    </div>
+                </div>
+
+                <div v-if="selected_store" class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 self-start sm:self-auto shrink-0">
+                    Toko Terpilih: {{ selected_store.name }}
+                </div>
             </div>
 
             <!-- Financial Stats Cards -->
@@ -158,14 +418,17 @@ const submitWithdrawal = () => {
                         <div class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                             {{ formatCurrency(balance) }}
                         </div>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Dana siap dicairkan ke rekening</p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                            <span v-if="selected_store">Untuk {{ selected_store.name }}</span>
+                            <span v-else>Dana siap dicairkan ke rekening</span>
+                        </p>
                     </div>
                 </div>
 
-                <!-- Total Income -->
+                <!-- Total Income (Gross) -->
                 <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">Total Pendapatan</span>
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">Total Pendapatan (Bruto)</span>
                         <div class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
                         </div>
@@ -216,7 +479,9 @@ const submitWithdrawal = () => {
                 <div class="p-6 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
                     <div>
                         <h2 class="text-base font-bold text-slate-900 dark:text-white">Riwayat Pengajuan Penarikan Dana</h2>
-                        <p class="text-xs text-slate-400 mt-0.5">Pantau status verifikasi dan bukti penyelesaian transfer dana Anda.</p>
+                        <p class="text-xs text-slate-400 mt-0.5">
+                            Pantau status verifikasi dan bukti transfer dana<span v-if="selected_store"> untuk toko {{ selected_store.name }}</span>.
+                        </p>
                     </div>
                 </div>
 
@@ -226,6 +491,7 @@ const submitWithdrawal = () => {
                         <thead>
                             <tr class="border-b border-slate-200 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 text-slate-400 font-mono uppercase text-[11px]">
                                 <th class="py-3.5 px-6">No. Referensi</th>
+                                <th class="py-3.5 px-4">Toko</th>
                                 <th class="py-3.5 px-4">Tanggal Pengajuan</th>
                                 <th class="py-3.5 px-4">Rekening Tujuan</th>
                                 <th class="py-3.5 px-4">Nominal</th>
@@ -237,6 +503,11 @@ const submitWithdrawal = () => {
                             <tr v-for="item in settlements.data" :key="item.id" class="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors">
                                 <td class="py-4 px-6 font-mono font-bold text-emerald-600 dark:text-emerald-400">
                                     {{ item.settlement_number }}
+                                </td>
+                                <td class="py-4 px-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700">
+                                        {{ item.store ? item.store.name : 'Semua Toko' }}
+                                    </span>
                                 </td>
                                 <td class="py-4 px-4 text-slate-600 dark:text-slate-300 font-mono text-[11px]">
                                     {{ formatDate(item.created_at) }}
@@ -272,8 +543,8 @@ const submitWithdrawal = () => {
                                 </td>
                             </tr>
                             <tr v-if="settlements.data.length === 0">
-                                <td colspan="6" class="text-center py-12 text-slate-400 font-sans italic">
-                                    Belum ada riwayat penarikan saldo. Klik tombol "Ajukan Tarik Saldo" di atas untuk memulai pencairan.
+                                <td colspan="7" class="text-center py-12 text-slate-400 font-sans italic">
+                                    Belum ada riwayat penarikan saldo<span v-if="selected_store"> untuk toko {{ selected_store.name }}</span>. Klik tombol "Ajukan Tarik Saldo" di atas untuk memulai pencairan.
                                 </td>
                             </tr>
                         </tbody>
@@ -297,6 +568,10 @@ const submitWithdrawal = () => {
                             <span v-else class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/20">
                                 Ditolak
                             </span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-slate-500">Toko:</span>
+                            <span class="font-bold text-slate-700 dark:text-slate-300">{{ item.store ? item.store.name : 'Semua Toko' }}</span>
                         </div>
                         <div class="flex items-center justify-between text-xs">
                             <span class="text-slate-500">Nominal:</span>
@@ -345,12 +620,12 @@ const submitWithdrawal = () => {
         <!-- Modal Ajukan Tarik Saldo -->
         <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm" @click="closeModal"></div>
-            
+
             <div class="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-lg p-6 shadow-2xl z-10 space-y-5 animate-in fade-in zoom-in-95 duration-200">
                 <div class="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-slate-800">
                     <div>
                         <h3 class="text-lg font-black text-slate-900 dark:text-white tracking-tight">Formulir Tarik Saldo</h3>
-                        <p class="text-xs text-slate-400 mt-0.5">Saldo Tersedia: <strong class="text-emerald-500">{{ formatCurrency(balance) }}</strong></p>
+                        <p class="text-xs text-slate-400 mt-0.5">Saldo Tersedia: <strong class="text-emerald-500">{{ formatCurrency(activeMaxBalance) }}</strong></p>
                     </div>
                     <button @click="closeModal" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -358,6 +633,21 @@ const submitWithdrawal = () => {
                 </div>
 
                 <form @submit.prevent="submitWithdrawal" class="space-y-4">
+                    <!-- Store Selector -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Pilih Toko Sumber Saldo</label>
+                        <select
+                            v-model="form.store_id"
+                            class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        >
+                            <option value="">Semua Toko / Saldo Global (Maks: {{ formatCurrency(balance) }})</option>
+                            <option v-for="st in stores" :key="st.id" :value="st.id">
+                                {{ st.name }} (Saldo: {{ formatCurrency(st.balance) }})
+                            </option>
+                        </select>
+                        <span v-if="form.errors.store_id" class="text-[11px] text-red-500 font-bold block">{{ form.errors.store_id }}</span>
+                    </div>
+
                     <!-- Amount Input -->
                     <div class="space-y-1.5">
                         <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Nominal Penarikan (IDR)</label>
@@ -367,7 +657,7 @@ const submitWithdrawal = () => {
                                 v-model="form.amount"
                                 type="number"
                                 min="10000"
-                                :max="balance"
+                                :max="activeMaxBalance"
                                 placeholder="Min. 10.000"
                                 class="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                                 required
@@ -460,6 +750,95 @@ const submitWithdrawal = () => {
                         >
                             <svg v-if="form.processing" class="animate-spin h-3.5 w-3.5 text-slate-950" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
                             <span>{{ form.processing ? 'Mengirim Pengajuan...' : 'Kirim Pengajuan' }}</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal Tambah Toko Baru -->
+        <div v-if="isAddStoreOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm" @click="closeAddStoreModal"></div>
+
+            <div class="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-md p-6 shadow-2xl z-10 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">Tambah Toko Baru</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Kelola saldo dan transaksi per outlet / cabang toko.</p>
+                    </div>
+                    <button @click="closeAddStoreModal" class="p-1 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <form @submit.prevent="submitAddStore" class="space-y-3.5">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Nama Toko / Outlet *</label>
+                        <input
+                            v-model="storeForm.name"
+                            type="text"
+                            placeholder="Contoh: Toko Cabang Sudirman / Toko Online"
+                            required
+                            class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        />
+                        <span v-if="storeForm.errors.name" class="text-[11px] text-rose-500">{{ storeForm.errors.name }}</span>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Kode Unik Toko (Opsional)</label>
+                        <input
+                            v-model="storeForm.code"
+                            type="text"
+                            placeholder="Contoh: SDR-01 / ONLINE"
+                            class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs font-mono uppercase text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        />
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Deskripsi / Keterangan</label>
+                        <input
+                            v-model="storeForm.description"
+                            type="text"
+                            placeholder="Contoh: Penjualan produk digital via API"
+                            class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        />
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Nomor Telepon</label>
+                            <input
+                                v-model="storeForm.phone"
+                                type="text"
+                                placeholder="08..."
+                                class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            />
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Kota / Alamat</label>
+                            <input
+                                v-model="storeForm.address"
+                                type="text"
+                                placeholder="Jakarta Selatan"
+                                class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-2">
+                        <button
+                            type="button"
+                            @click="closeAddStoreModal"
+                            class="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="storeForm.processing"
+                            class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm transition disabled:opacity-50"
+                        >
+                            {{ storeForm.processing ? 'Menyimpan...' : 'Simpan Toko' }}
                         </button>
                     </div>
                 </form>

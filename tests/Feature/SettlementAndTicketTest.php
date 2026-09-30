@@ -70,7 +70,7 @@ class SettlementAndTicketTest extends TestCase
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page
             ->component('Customer/Settlements/Index')
-            ->where('balance', 500000)
+            ->where('balance', 496500)
             ->where('total_income', 500000)
             ->where('pending_withdrawn', 0)
         );

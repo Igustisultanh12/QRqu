@@ -359,7 +359,7 @@
                 <tr>
                     <td class="meta-label">Badan Usaha / Toko</td>
                     <td class="meta-sep">:</td>
-                    <td class="meta-val">{{ $customer->company_name ?? ($customer->name ?? 'Platform QRqu') }}</td>
+                    <td class="meta-val">{{ !empty($selectedStore) ? $selectedStore->name . ' (' . ($customer->company_name ?? $customer->name) . ')' : ($customer->company_name ?? ($customer->name ?? 'Platform QRqu')) . ' (Semua Toko)' }}</td>
 
                     <td class="meta-label">Waktu Cetak Sistem</td>
                     <td class="meta-sep">:</td>

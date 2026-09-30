@@ -42,6 +42,19 @@ class MonthlyReportController extends Controller
             ->whereYear('created_at', $year)
             ->whereMonth('created_at', $month);
 
+        // Pastikan toko tersedia
+        $customer->ensureStores();
+        $stores = $customer->stores()->orderBy('is_default', 'desc')->orderBy('name')->get();
+
+        $storeId = $request->input('store_id');
+        $selectedStore = null;
+        if (!empty($storeId) && $storeId !== 'all') {
+            $selectedStore = $stores->firstWhere('id', (int) $storeId);
+            if ($selectedStore) {
+                $baseMonthlyQuery->where('store_id', $selectedStore->id);
+            }
+        }
+
         $quotaUsed = (clone $baseMonthlyQuery)->count();
         $quotaRemaining = max(0, $quotaLimit - $quotaUsed);
         $quotaPercentage = min(100, round(($quotaUsed / max(1, $quotaLimit)) * 100, 1));
@@ -68,7 +81,7 @@ class MonthlyReportController extends Controller
         $successRate = $totalCount > 0 ? round(($successfulCount / $totalCount) * 100, 1) : 0;
 
         // Query Daftar Transaksi dengan Filter
-        $query = (clone $baseMonthlyQuery)->with('invoice')->latest();
+        $query = (clone $baseMonthlyQuery)->with(['invoice', 'store'])->latest();
 
         if ($status !== 'all' && !empty($status)) {
             $query->where('status', strtoupper($status));
@@ -93,6 +106,8 @@ class MonthlyReportController extends Controller
                 'id' => $trx->id,
                 'invoice_id' => $trx->invoice_id,
                 'external_id' => $trx->external_id,
+                'store_id' => $trx->store_id,
+                'store_name' => $trx->store?->name ?: 'Toko Utama',
                 'nama_transaksi' => $trx->invoice?->description ?: ($trx->external_id ?: 'Transaksi QRIS'),
                 'customer_name' => $trx->invoice?->customer_name ?: 'Pelanggan',
                 'customer_email' => $trx->invoice?->customer_email,
@@ -131,6 +146,7 @@ class MonthlyReportController extends Controller
                 'total_amount' => $totalAmount,
                 'successful_count' => $successfulCount,
                 'successful_amount' => $successfulAmount,
+                'successfulAmount' => $successfulAmount,
                 'failed_count' => $failedCount,
                 'failed_amount' => $failedAmount,
                 'expired_count' => $expiredCount,
@@ -140,11 +156,15 @@ class MonthlyReportController extends Controller
                 'success_rate' => $successRate,
             ],
             'transactions' => $transactions,
+            'stores' => $stores,
+            'selected_store_id' => $selectedStore ? $selectedStore->id : 'all',
+            'selected_store' => $selectedStore,
             'filters' => [
                 'year' => $year,
                 'month' => $month,
                 'status' => $status,
                 'search' => $search,
+                'store_id' => $selectedStore ? $selectedStore->id : 'all',
             ],
         ]);
     }
@@ -167,8 +187,13 @@ class MonthlyReportController extends Controller
             ->where('external_id', 'not like', 'SUB-%')
             ->whereYear('created_at', $year)
             ->whereMonth('created_at', $month)
-            ->with('invoice')
+            ->with(['invoice', 'store'])
             ->latest();
+
+        $storeId = $request->input('store_id');
+        if (!empty($storeId) && $storeId !== 'all') {
+            $query->where('store_id', (int) $storeId);
+        }
 
         if ($status !== 'all' && !empty($status)) {
             $query->where('status', strtoupper($status));
@@ -267,6 +292,18 @@ class MonthlyReportController extends Controller
             ->whereYear('created_at', $year)
             ->whereMonth('created_at', $month);
 
+        // Pastikan toko tersedia
+        $customer->ensureStores();
+        $stores = $customer->stores()->get();
+        $storeId = $request->input('store_id');
+        $selectedStore = null;
+        if (!empty($storeId) && $storeId !== 'all') {
+            $selectedStore = $stores->firstWhere('id', (int) $storeId);
+            if ($selectedStore) {
+                $baseMonthlyQuery->where('store_id', $selectedStore->id);
+            }
+        }
+
         $successfulQuery = (clone $baseMonthlyQuery)->where('status', 'PAID');
         $successfulCount = $successfulQuery->count();
         $successfulAmount = (float) $successfulQuery->sum('amount');
@@ -334,6 +371,7 @@ class MonthlyReportController extends Controller
 
         $data = [
             'customer' => $customer,
+            'selectedStore' => $selectedStore,
             'transactions' => $transactions,
             'year' => $year,
             'month' => $month,
@@ -348,12 +386,23 @@ class MonthlyReportController extends Controller
             'printedAt' => $printedAt,
         ];
 
-        $pdf = Pdf::loadView('pdf.passbook_statement', $data)
-            ->setPaper('a4', 'landscape');
+        $fontDir = storage_path('fonts');
+        if (!is_dir($fontDir)) {
+            @mkdir($fontDir, 0775, true);
+        }
 
         $cleanCustomerName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $customer->name);
-        $filename = "buku-tabungan-{$cleanCustomerName}-{$year}-" . str_pad($month, 2, '0', STR_PAD_LEFT) . ".pdf";
+        $storeSlug = $selectedStore ? \Illuminate\Support\Str::slug($selectedStore->name) . '-' : '';
+        $filename = "laporan-bulanan-{$storeSlug}{$cleanCustomerName}-{$year}-" . str_pad($month, 2, '0', STR_PAD_LEFT) . ".pdf";
 
-        return $pdf->download($filename);
+        try {
+            $pdf = Pdf::loadView('pdf.passbook_statement', $data)
+                ->setPaper('a4', 'landscape');
+
+            return $pdf->download($filename);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Monthly Report PDF Error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            return redirect()->back()->with('error', 'Gagal membuat dokumen PDF Laporan Bulanan: ' . $e->getMessage());
+        }
     }
 }

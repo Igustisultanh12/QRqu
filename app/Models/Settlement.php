@@ -13,6 +13,7 @@ class Settlement extends Model
     protected $fillable = [
         'settlement_number',
         'customer_id',
+        'store_id',
         'user_id',
         'amount',
         'bank_name',
@@ -34,6 +35,11 @@ class Settlement extends Model
     public static function generateNumber(): string
     {
         return 'WD-' . now()->format('Ymd') . '-' . strtoupper(Str::random(5));
+    }
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
     }
 
     public function customer()

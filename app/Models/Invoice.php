@@ -16,6 +16,7 @@ class Invoice extends Model
     protected $fillable = [
         'id',
         'customer_id',
+        'store_id',
         'external_id',
         'amount',
         'description',
@@ -39,6 +40,11 @@ class Invoice extends Model
             'expired_at' => 'datetime',
             'paid_at' => 'datetime',
         ];
+    }
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
     }
 
     public function customer()

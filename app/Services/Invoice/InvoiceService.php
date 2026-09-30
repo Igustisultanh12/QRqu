@@ -55,6 +55,22 @@ class InvoiceService
 
             $customerData = $data['customer'] ?? [];
 
+            // Determine Store ID
+            $storeId = $data['store_id'] ?? null;
+            if (!$storeId && method_exists($customer, 'stores')) {
+                $customer->ensureStores();
+                $desc = $data['description'] ?? '';
+                $matchingStore = $customer->stores()->where(function ($sq) use ($externalId, $desc) {
+                    $sq->where(function ($sub) use ($externalId, $desc) {
+                        if (str_contains(strtoupper($externalId), 'ROMEI') || str_contains(strtoupper($desc), 'ROMEI')) {
+                            $sub->where('code', 'ROMEI')->orWhere('name', 'like', '%ROMEI%');
+                        }
+                    });
+                })->first();
+
+                $storeId = $matchingStore?->id ?? ($customer->defaultStore?->id ?? $customer->stores()->first()?->id);
+            }
+
             $result = DB::transaction(function () use (
                 $customer,
                 $invoiceId,
@@ -63,11 +79,13 @@ class InvoiceService
                 $amount,
                 $data,
                 $customerData,
-                $expiredAt
+                $expiredAt,
+                $storeId
             ) {
                 $invoice = Invoice::create([
                     'id' => $invoiceId,
                     'customer_id' => $customer->id,
+                    'store_id' => $storeId,
                     'external_id' => $externalId,
                     'amount' => $amount,
                     'description' => $data['description'] ?? "Pembayaran Order #{$externalId}",
@@ -85,6 +103,7 @@ class InvoiceService
                     'id' => $transactionId,
                     'invoice_id' => $invoiceId,
                     'customer_id' => $customer->id,
+                    'store_id' => $storeId,
                     'external_id' => $externalId,
                     'amount' => $amount,
                     'status' => 'CREATED',

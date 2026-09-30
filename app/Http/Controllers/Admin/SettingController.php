@@ -51,6 +51,10 @@ class SettingController extends Controller
             'doku_base_url' => SystemSetting::get('doku_api_base_url', SystemSetting::get('doku_base_url', env('DOKU_BASE_URL', 'https://api-sandbox.doku.com'))),
             'doku_environment' => SystemSetting::get('doku_environment', env('DOKU_ENVIRONMENT', 'sandbox')),
 
+            // DOKU Settlement Fee Tarif
+            'doku_settlement_fee_enabled' => SystemSetting::get('doku_settlement_fee_enabled', 'true') === 'true',
+            'doku_settlement_fee_percent' => (float) SystemSetting::get('doku_settlement_fee_percent', 0.7),
+
             // Mail Gateway (SMTP)
             'mail_mailer' => SystemSetting::get('mail_mailer', config('mail.default', 'smtp')),
             'mail_host' => SystemSetting::get('mail_host', config('mail.mailers.smtp.host', 'smtp.mailtrap.io')),
@@ -87,11 +91,13 @@ class SettingController extends Controller
             'monthly_price' => 'required|numeric|min:0',
             'monthly_quota' => 'required|integer|min:1',
 
-            // DOKU API
+            // DOKU API & Settlement
             'doku_client_id' => 'nullable|string|max:100',
             'doku_secret_key' => 'nullable|string|max:255',
             'doku_base_url' => 'nullable|url|max:255',
             'doku_environment' => 'nullable|in:sandbox,production',
+            'doku_settlement_fee_enabled' => 'nullable|boolean',
+            'doku_settlement_fee_percent' => 'nullable|numeric|min:0|max:100',
 
             // Mail Gateway
             'mail_mailer' => 'required|string|in:smtp,sendmail,log',
@@ -114,6 +120,10 @@ class SettingController extends Controller
         }
 
         SystemSetting::set('maintenance_mode', $request->boolean('maintenance_mode') ? 'true' : 'false', 'general');
+
+        // Settlement Settings
+        SystemSetting::set('doku_settlement_fee_enabled', $request->boolean('doku_settlement_fee_enabled') ? 'true' : 'false', 'settlement');
+        SystemSetting::set('doku_settlement_fee_percent', (string) $request->input('doku_settlement_fee_percent', '0.7'), 'settlement');
 
         // 2. Sinkronisasi ke starter plan bulanan
         $starterPlan = Plan::where('slug', 'monthly-30d')

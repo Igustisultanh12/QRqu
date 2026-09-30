@@ -6,6 +6,8 @@ use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Plan;
 use App\Models\Role;
+use App\Models\Settlement;
+use App\Models\Store;
 use App\Models\Subscription;
 use App\Models\SystemSetting;
 use App\Models\Transaction;
@@ -728,6 +730,232 @@ class MonthlyReportAndSettingsTest extends TestCase
         $this->assertEquals('EXPIRED', $invoice->fresh()->status);
         $this->assertEquals('EXPIRED', $trx->fresh()->status);
         $this->assertEquals('cancelled', $sub->fresh()->status);
+    }
+
+    public function test_customer_can_create_store_and_filter_monthly_report_by_store(): void
+    {
+        // 1. Create a store via POST /stores
+        $resStore = $this->actingAs($this->merchantUser)
+            ->post('/stores', [
+                'name' => 'Toko Cabang Bandung',
+                'code' => 'BDG-01',
+                'description' => 'Outlet cabang Jawa Barat',
+            ]);
+        $resStore->assertRedirect();
+        $resStore->assertSessionHas('success');
+
+        $this->assertDatabaseHas('stores', [
+            'customer_id' => $this->customer->id,
+            'name' => 'Toko Cabang Bandung',
+            'code' => 'BDG-01',
+        ]);
+
+        $storeBdg = Store::where('code', 'BDG-01')->first();
+        $this->customer->ensureStores();
+        $defaultStore = $this->customer->defaultStore;
+
+        // 2. Buat transaksi untuk storeBdg dan defaultStore
+        $invBdg = Invoice::create([
+            'id' => 'INV-BDG-001',
+            'customer_id' => $this->customer->id,
+            'store_id' => $storeBdg->id,
+            'external_id' => 'order-bdg-001',
+            'amount' => 50000,
+            'status' => 'PAID',
+            'expired_at' => now()->addHour(),
+        ]);
+        Transaction::create([
+            'id' => 'TRX-BDG-001',
+            'customer_id' => $this->customer->id,
+            'store_id' => $storeBdg->id,
+            'invoice_id' => $invBdg->id,
+            'external_id' => 'order-bdg-001',
+            'amount' => 50000,
+            'status' => 'PAID',
+        ]);
+
+        $invDef = Invoice::create([
+            'id' => 'INV-DEF-001',
+            'customer_id' => $this->customer->id,
+            'store_id' => $defaultStore->id,
+            'external_id' => 'order-def-001',
+            'amount' => 100000,
+            'status' => 'PAID',
+            'expired_at' => now()->addHour(),
+        ]);
+        Transaction::create([
+            'id' => 'TRX-DEF-001',
+            'customer_id' => $this->customer->id,
+            'store_id' => $defaultStore->id,
+            'invoice_id' => $invDef->id,
+            'external_id' => 'order-def-001',
+            'amount' => 100000,
+            'status' => 'PAID',
+        ]);
+
+        // 3. Filter Monthly Report by storeBdg
+        $resFilter = $this->actingAs($this->merchantUser)
+            ->get(route('customer.reports.monthly', ['store_id' => $storeBdg->id]));
+        $resFilter->assertOk();
+        $resFilter->assertInertia(fn ($page) =>
+            $page->component('Customer/Reports/Monthly')
+                ->where('selected_store_id', $storeBdg->id)
+                ->where('summary.total_count', 1)
+                ->where('summary.total_amount', 50000)
+        );
+
+        // 4. Filter Monthly Report with all stores
+        $resAll = $this->actingAs($this->merchantUser)
+            ->get(route('customer.reports.monthly', ['store_id' => 'all']));
+        $resAll->assertOk();
+        $resAll->assertInertia(fn ($page) =>
+            $page->component('Customer/Reports/Monthly')
+                ->where('selected_store_id', 'all')
+                ->where('summary.total_count', 2)
+                ->where('summary.total_amount', 150000)
+        );
+    }
+
+    public function test_customer_can_export_monthly_report_pdf_with_store_filter(): void
+    {
+        $this->customer->ensureStores();
+        $defaultStore = $this->customer->defaultStore;
+
+        $inv = Invoice::create([
+            'id' => 'INV-PDF-001',
+            'customer_id' => $this->customer->id,
+            'store_id' => $defaultStore->id,
+            'external_id' => 'order-pdf-001',
+            'amount' => 75000,
+            'status' => 'PAID',
+            'expired_at' => now()->addHour(),
+        ]);
+        Transaction::create([
+            'id' => 'TRX-PDF-001',
+            'customer_id' => $this->customer->id,
+            'store_id' => $defaultStore->id,
+            'invoice_id' => $inv->id,
+            'external_id' => 'order-pdf-001',
+            'amount' => 75000,
+            'status' => 'PAID',
+        ]);
+
+        $response = $this->actingAs($this->merchantUser)
+            ->get(route('customer.reports.monthly.pdf', ['store_id' => $defaultStore->id]));
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_customer_settlement_page_shows_store_breakdown_and_doku_fee(): void
+    {
+        SystemSetting::set('doku_settlement_fee_enabled', 'true');
+        SystemSetting::set('doku_settlement_fee_percent', '0.7');
+
+        $this->customer->ensureStores();
+        $defaultStore = $this->customer->defaultStore;
+
+        // Income 1.000.000 -> Fee 0.7% = 7.000 -> Net = 993.000
+        $inv = Invoice::create([
+            'id' => 'INV-SETTLE-001',
+            'customer_id' => $this->customer->id,
+            'store_id' => $defaultStore->id,
+            'external_id' => 'order-set-001',
+            'amount' => 1000000,
+            'status' => 'PAID',
+            'expired_at' => now()->addHour(),
+        ]);
+        Transaction::create([
+            'id' => 'TRX-SETTLE-001',
+            'customer_id' => $this->customer->id,
+            'store_id' => $defaultStore->id,
+            'invoice_id' => $inv->id,
+            'external_id' => 'order-set-001',
+            'amount' => 1000000,
+            'status' => 'PAID',
+        ]);
+
+        $response = $this->actingAs($this->merchantUser)
+            ->get(route('customer.settlements.index', ['store_id' => $defaultStore->id]));
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) =>
+            $page->component('Customer/Settlements/Index')
+                ->where('doku_fee_enabled', true)
+                ->where('doku_fee_percent', 0.7)
+                ->where('doku_fee_amount', 7000)
+                ->where('balance', 993000)
+                ->where('total_income', 1000000)
+                ->where('total_net', 993000)
+        );
+
+        // Tarik saldo
+        $resWithdraw = $this->actingAs($this->merchantUser)
+            ->post(route('customer.settlements.store'), [
+                'amount' => 500000,
+                'bank_name' => 'BCA',
+                'account_number' => '1234567890',
+                'account_name' => 'PT Kelontong Sukses',
+                'store_id' => $defaultStore->id,
+            ]);
+        $resWithdraw->assertRedirect();
+        $resWithdraw->assertSessionHas('success');
+
+        $this->assertDatabaseHas('settlements', [
+            'customer_id' => $this->customer->id,
+            'store_id' => $defaultStore->id,
+            'amount' => 500000,
+            'status' => 'verifikasi',
+        ]);
+    }
+
+    public function test_customer_can_export_settlement_pdf_report(): void
+    {
+        $this->customer->ensureStores();
+        $defaultStore = $this->customer->defaultStore;
+
+        $response = $this->actingAs($this->merchantUser)
+            ->get(route('customer.settlements.pdf', ['store_id' => $defaultStore->id]));
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_admin_can_toggle_doku_settlement_fee_in_settings(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->post('/admin/settings', [
+                'app_name' => 'QRqu Gateway Production',
+                'app_url' => 'https://qrqu.id',
+                'timezone' => 'Asia/Jakarta',
+                'currency' => 'IDR',
+                'maintenance_mode' => false,
+                'default_expire_minutes' => 60,
+                'api_timestamp_tolerance' => 300,
+                'webhook_max_retries' => 4,
+                'monthly_price' => 200000,
+                'monthly_quota' => 1500,
+                'doku_settlement_fee_enabled' => false,
+                'doku_settlement_fee_percent' => 0.5,
+                'doku_client_id' => 'MCH-DEMO-999',
+                'doku_secret_key' => 'sec_test_doku_key_123',
+                'doku_base_url' => 'https://api-sandbox.doku.com',
+                'doku_environment' => 'sandbox',
+                'mail_mailer' => 'log',
+                'mail_host' => 'smtp.mailtrap.io',
+                'mail_port' => 587,
+                'mail_username' => 'testuser',
+                'mail_password' => 'secret123',
+                'mail_encryption' => 'tls',
+                'mail_from_address' => 'no-reply@qrqu.id',
+                'mail_from_name' => 'QRqu Gateway',
+            ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $this->assertEquals('false', SystemSetting::get('doku_settlement_fee_enabled'));
+        $this->assertEquals('0.5', SystemSetting::get('doku_settlement_fee_percent'));
     }
 }
 

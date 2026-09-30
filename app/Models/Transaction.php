@@ -17,6 +17,7 @@ class Transaction extends Model
         'id',
         'invoice_id',
         'customer_id',
+        'store_id',
         'external_id',
         'amount',
         'status',
@@ -35,6 +36,11 @@ class Transaction extends Model
             'status_changed_at' => 'datetime',
             'doku_response' => 'array',
         ];
+    }
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
     }
 
     public function invoice()

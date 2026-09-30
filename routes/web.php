@@ -65,9 +65,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/monthly/export', [Customer\MonthlyReportController::class, 'exportCsv'])->name('customer.reports.monthly.export');
     Route::get('/reports/monthly/pdf', [Customer\MonthlyReportController::class, 'exportPdf'])->name('customer.reports.monthly.pdf');
 
+    // Manajemen Toko (Stores)
+    Route::post('/stores', [Customer\StoreController::class, 'store'])->name('customer.stores.store');
+    Route::put('/stores/{store}', [Customer\StoreController::class, 'update'])->name('customer.stores.update');
+
     // Saldo & Penarikan Dana (Settlements)
     Route::get('/settlements', [Customer\SettlementController::class, 'index'])->name('customer.settlements.index');
     Route::post('/settlements', [Customer\SettlementController::class, 'store'])->name('customer.settlements.store');
+    Route::get('/settlements/pdf', [Customer\SettlementController::class, 'exportPdf'])->name('customer.settlements.pdf');
 
     // Tiket Bantuan & Pengaduan
     Route::get('/tickets', [Customer\TicketController::class, 'index'])->name('customer.tickets.index');

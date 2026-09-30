@@ -11,6 +11,9 @@
                         <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 font-normal">
                             {{ quota.plan_name }}
                         </span>
+                        <span v-if="selected_store" class="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20 font-semibold">
+                            Toko: {{ selected_store.name }}
+                        </span>
                     </h2>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Analisis transaksi berhasil vs gagal, rekapan nama transaksi, dan kuota bulanan merchant.</p>
                 </div>
@@ -38,14 +41,14 @@
                         </option>
                     </select>
 
-                    <!-- Tombol Cetak PDF Buku Tabungan Bank -->
+                    <!-- Tombol Cetak Laporan (PDF) -->
                     <a
                         :href="pdfExportUrl"
                         target="_blank"
                         class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-orange-600 hover:bg-orange-500 text-white transition shadow-sm shadow-orange-600/20"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        <span>Cetak PDF Buku Tabungan</span>
+                        <span>Cetak Laporan</span>
                     </a>
 
                     <!-- Tombol Download CSV -->
@@ -56,6 +59,91 @@
                         <svg class="w-4 h-4 text-emerald-500 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         Ekspor CSV
                     </a>
+                </div>
+            </div>
+
+            <!-- Pilihan Toko Merchant -->
+            <div class="bg-white dark:bg-slate-900/60 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors duration-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold border border-emerald-200 dark:border-emerald-500/20">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">Pilihan Toko Merchant</h3>
+                            <p class="text-[11px] text-slate-400 dark:text-slate-500">Klik toko untuk melihat seluruh catatan transaksi toko tersebut secara spesifik.</p>
+                        </div>
+                    </div>
+
+                    <button
+                        @click="openAddStoreModal"
+                        type="button"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition self-start sm:self-auto"
+                    >
+                        <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        <span>+ Tambah Toko</span>
+                    </button>
+                </div>
+
+                <!-- Chips Toko -->
+                <div class="flex flex-wrap items-center gap-2 pt-1">
+                    <button
+                        @click="selectStore('all')"
+                        type="button"
+                        :class="[
+                            'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition border',
+                            selectedStoreId === 'all'
+                                ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-sm'
+                                : 'bg-slate-50 dark:bg-slate-950/60 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                        ]"
+                    >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                        <span>Semua Toko</span>
+                        <span
+                            :class="[
+                                'px-1.5 py-0.5 rounded text-[10px] font-mono',
+                                selectedStoreId === 'all'
+                                    ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900'
+                                    : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                            ]"
+                        >
+                            {{ stores.length }}
+                        </span>
+                    </button>
+
+                    <button
+                        v-for="st in stores"
+                        :key="st.id"
+                        @click="selectStore(st.id)"
+                        type="button"
+                        :class="[
+                            'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition border',
+                            String(selectedStoreId) === String(st.id)
+                                ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm shadow-emerald-600/20'
+                                : 'bg-slate-50 dark:bg-slate-950/60 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                        ]"
+                    >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                        <span>{{ st.name }}</span>
+                        <span
+                            v-if="st.is_default"
+                            :class="[
+                                'px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider',
+                                String(selectedStoreId) === String(st.id) ? 'bg-white/25 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                            ]"
+                        >
+                            Utama
+                        </span>
+                        <span
+                            v-else-if="st.code"
+                            :class="[
+                                'px-1.5 py-0.5 rounded text-[9px] font-mono',
+                                String(selectedStoreId) === String(st.id) ? 'bg-white/25 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                            ]"
+                        >
+                            {{ st.code }}
+                        </span>
+                    </button>
                 </div>
             </div>
 
@@ -217,6 +305,7 @@
                         <thead class="bg-slate-50/80 dark:bg-slate-900/60 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-800">
                             <tr>
                                 <th class="py-3 px-4 font-semibold">Tanggal & Jam</th>
+                                <th class="py-3 px-4 font-semibold">Toko</th>
                                 <th class="py-3 px-4 font-semibold">Nama Transaksi</th>
                                 <th class="py-3 px-4 font-semibold">No. Invoice & ID</th>
                                 <th class="py-3 px-4 font-semibold">Pelanggan</th>
@@ -230,6 +319,11 @@
                             <tr v-for="trx in transactions.data" :key="trx.id" class="hover:bg-slate-50 dark:hover:bg-slate-900/40 transition">
                                 <td class="py-3.5 px-4 font-mono text-[11px] text-slate-500 dark:text-slate-400 whitespace-nowrap">
                                     {{ trx.created_at }}
+                                </td>
+                                <td class="py-3.5 px-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700">
+                                        {{ trx.store_name }}
+                                    </span>
                                 </td>
                                 <td class="py-3.5 px-4">
                                     <div class="font-bold text-slate-900 dark:text-white max-w-xs truncate" :title="trx.nama_transaksi">
@@ -278,9 +372,9 @@
                             </tr>
 
                             <tr v-if="transactions.data.length === 0">
-                                <td colspan="8" class="text-center py-12 text-slate-400 dark:text-slate-500">
+                                <td colspan="9" class="text-center py-12 text-slate-400 dark:text-slate-500">
                                     <svg class="w-10 h-10 mx-auto mb-2 text-slate-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                    Tidak ada catatan transaksi pada periode {{ period.label }}.
+                                    Tidak ada catatan transaksi pada periode {{ period.label }}<span v-if="selected_store"> untuk {{ selected_store.name }}</span>.
                                 </td>
                             </tr>
                         </tbody>
@@ -307,13 +401,103 @@
                 </div>
             </div>
         </div>
+
+        <!-- Modal Tambah Toko Baru -->
+        <div v-if="isAddStoreOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm" @click="closeAddStoreModal"></div>
+
+            <div class="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-md p-6 shadow-2xl z-10 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">Tambah Toko Baru</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Kelompokkan transaksi QRIS Anda per cabang atau nama toko.</p>
+                    </div>
+                    <button @click="closeAddStoreModal" class="p-1 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <form @submit.prevent="submitAddStore" class="space-y-3.5">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Nama Toko / Outlet *</label>
+                        <input
+                            v-model="storeForm.name"
+                            type="text"
+                            placeholder="Contoh: Toko Cabang Sudirman / Toko Online"
+                            required
+                            class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        />
+                        <span v-if="storeForm.errors.name" class="text-[11px] text-rose-500">{{ storeForm.errors.name }}</span>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Kode Unik Toko (Opsional)</label>
+                        <input
+                            v-model="storeForm.code"
+                            type="text"
+                            placeholder="Contoh: SDR-01 / ONLINE"
+                            class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs font-mono uppercase text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        />
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Deskripsi / Keterangan</label>
+                        <input
+                            v-model="storeForm.description"
+                            type="text"
+                            placeholder="Contoh: Penjualan produk digital via API"
+                            class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        />
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Nomor Telepon</label>
+                            <input
+                                v-model="storeForm.phone"
+                                type="text"
+                                placeholder="08..."
+                                class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            />
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Kota / Alamat</label>
+                            <input
+                                v-model="storeForm.address"
+                                type="text"
+                                placeholder="Jakarta Selatan"
+                                class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-2">
+                        <button
+                            type="button"
+                            @click="closeAddStoreModal"
+                            class="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="storeForm.processing"
+                            class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm transition disabled:opacity-50"
+                        >
+                            {{ storeForm.processing ? 'Menyimpan...' : 'Simpan Toko' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </CustomerLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue';
-import { router, Link } from '@inertiajs/vue3';
+import { router, Link, useForm } from '@inertiajs/vue3';
 import CustomerLayout from '@/Layouts/CustomerLayout.vue';
+import Swal from 'sweetalert2';
 
 const props = defineProps({
     period: Object,
@@ -321,6 +505,18 @@ const props = defineProps({
     summary: Object,
     transactions: Object,
     filters: Object,
+    stores: {
+        type: Array,
+        default: () => [],
+    },
+    selected_store_id: {
+        type: [String, Number],
+        default: 'all',
+    },
+    selected_store: {
+        type: Object,
+        default: null,
+    },
 });
 
 const monthNames = [
@@ -332,6 +528,46 @@ const selectedMonth = ref(props.filters.month || new Date().getMonth() + 1);
 const selectedYear = ref(props.filters.year || new Date().getFullYear());
 const currentStatus = ref(props.filters.status || 'all');
 const searchQuery = ref(props.filters.search || '');
+const selectedStoreId = ref(props.filters.store_id || props.selected_store_id || 'all');
+
+const isAddStoreOpen = ref(false);
+const storeForm = useForm({
+    name: '',
+    code: '',
+    description: '',
+    address: '',
+    phone: '',
+});
+
+const openAddStoreModal = () => {
+    storeForm.reset();
+    isAddStoreOpen.value = true;
+};
+
+const closeAddStoreModal = () => {
+    isAddStoreOpen.value = false;
+    storeForm.reset();
+};
+
+const submitAddStore = () => {
+    storeForm.post(route('customer.stores.store'), {
+        preserveScroll: true,
+        onSuccess: () => {
+            closeAddStoreModal();
+            Swal.fire({
+                icon: 'success',
+                title: 'Toko Berhasil Ditambahkan',
+                text: 'Toko baru Anda telah aktif dan siap digunakan untuk transaksi.',
+                confirmButtonColor: '#10b981',
+            });
+        },
+    });
+};
+
+const selectStore = (storeId) => {
+    selectedStoreId.value = storeId;
+    applyFilter();
+};
 
 const applyFilter = () => {
     router.get(route('customer.reports.monthly'), {
@@ -339,6 +575,7 @@ const applyFilter = () => {
         year: selectedYear.value,
         status: currentStatus.value,
         search: searchQuery.value,
+        store_id: selectedStoreId.value,
     }, {
         preserveState: true,
         preserveScroll: true,
@@ -356,6 +593,7 @@ const exportUrl = computed(() => {
         year: selectedYear.value,
         status: currentStatus.value,
         search: searchQuery.value,
+        store_id: selectedStoreId.value,
     });
 });
 
@@ -365,10 +603,7 @@ const pdfExportUrl = computed(() => {
         year: selectedYear.value,
         status: currentStatus.value,
         search: searchQuery.value,
+        store_id: selectedStoreId.value,
     });
 });
-
-const printReport = () => {
-    window.open(pdfExportUrl.value, '_blank');
-};
 </script>
