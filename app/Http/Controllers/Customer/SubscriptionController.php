@@ -29,15 +29,35 @@ class SubscriptionController extends Controller
         // Cek jika ada tagihan langganan yang belum dibayar
         $pendingSubscription = Subscription::where('customer_id', $customer->id)
             ->where('status', 'pending_payment')
-            ->with(['plan', 'invoice'])
+            ->with(['plan', 'invoice.latestTransaction'])
             ->latest()
             ->first();
 
         // Pastikan invoice belum kedaluwarsa jika ada pending subscription
-        if ($pendingSubscription && $pendingSubscription->invoice && $pendingSubscription->invoice->status === 'PAID') {
-            $pendingSubscription->update(['status' => 'active']);
-            $pendingSubscription = null;
-            $activeSubscription = $customer->fresh()->activeSubscription ? $customer->fresh()->activeSubscription->load('plan') : null;
+        if ($pendingSubscription) {
+            $isOverdue = false;
+            if ($pendingSubscription->created_at && $pendingSubscription->created_at->diffInMinutes(now()) >= 60) {
+                $isOverdue = true;
+            } elseif ($pendingSubscription->invoice && $pendingSubscription->invoice->expired_at && $pendingSubscription->invoice->expired_at->isPast()) {
+                $isOverdue = true;
+            } elseif ($pendingSubscription->invoice && $pendingSubscription->invoice->created_at && $pendingSubscription->invoice->created_at->diffInMinutes(now()) >= 60) {
+                $isOverdue = true;
+            }
+
+            if ($isOverdue) {
+                $pendingSubscription->update(['status' => 'cancelled']);
+                if ($pendingSubscription->invoice) {
+                    $pendingSubscription->invoice->update(['status' => 'EXPIRED']);
+                    if ($pendingSubscription->invoice->latestTransaction) {
+                        $pendingSubscription->invoice->latestTransaction->checkAndExpire();
+                    }
+                }
+                $pendingSubscription = null;
+            } elseif ($pendingSubscription->invoice && $pendingSubscription->invoice->status === 'PAID') {
+                $pendingSubscription->activateWithExtension();
+                $pendingSubscription = null;
+                $activeSubscription = $customer->fresh()->activeSubscription ? $customer->fresh()->activeSubscription->load('plan') : null;
+            }
         }
 
         $plans = Plan::where('status', 'active')->orderBy('price')->get();
@@ -60,36 +80,17 @@ class SubscriptionController extends Controller
 
         // 1. Jika paket gratis (0 rupiah), langsung aktifkan tanpa invoice
         if ((float) $plan->price <= 0) {
-            $currentSub = $customer->activeSubscription;
-            $startsAt = now();
-            $expiresAt = now()->addDays($plan->duration_days);
-
-            if ($currentSub && $currentSub->expires_at->isFuture()) {
-                $expiresAt = $currentSub->expires_at->copy()->addDays($plan->duration_days);
-            }
-
             $subscription = Subscription::create([
                 'customer_id' => $customer->id,
                 'plan_id' => $plan->id,
-                'starts_at' => $startsAt,
-                'expires_at' => $expiresAt,
+                'starts_at' => now(),
+                'expires_at' => now()->addDays($plan->duration_days),
                 'grace_period_days' => 3,
-                'status' => 'active',
+                'status' => 'pending_payment',
                 'auto_renew' => true,
             ]);
 
-            SubscriptionHistory::create([
-                'subscription_id' => $subscription->id,
-                'customer_id' => $customer->id,
-                'plan_id' => $plan->id,
-                'event' => $currentSub ? 'upgraded' : 'created',
-                'note' => "Berlangganan paket gratis {$plan->name} ({$plan->duration_days} hari)",
-                'amount_paid' => 0,
-            ]);
-
-            if ($customer->apiCredentials()->count() === 0) {
-                \App\Models\ApiCredential::generateCredentials($customer->id, 'sandbox', 'Sandbox Key');
-            }
+            $subscription->activateWithExtension();
 
             return redirect()->back()->with('success', "Berhasil mengaktifkan langganan {$plan->name}!");
         }
@@ -115,13 +116,19 @@ class SubscriptionController extends Controller
         /** @var Invoice $invoice */
         $invoice = $invoiceResult['invoice'];
 
+        $currentSub = $customer->activeSubscription;
+        $prospectiveStartsAt = ($currentSub && $currentSub->expires_at->isFuture()) ? $currentSub->expires_at : now();
+        $prospectiveExpiresAt = ($currentSub && $currentSub->expires_at->isFuture())
+            ? $currentSub->expires_at->copy()->addDays($plan->duration_days)
+            : now()->addDays($plan->duration_days);
+
         // Buat record subscription berstatus pending_payment yang terhubung ke invoice
         Subscription::create([
             'customer_id' => $customer->id,
             'plan_id' => $plan->id,
             'invoice_id' => $invoice->id,
-            'starts_at' => now(),
-            'expires_at' => now()->addDays($plan->duration_days),
+            'starts_at' => $prospectiveStartsAt,
+            'expires_at' => $prospectiveExpiresAt,
             'grace_period_days' => 3,
             'status' => 'pending_payment',
             'auto_renew' => true,

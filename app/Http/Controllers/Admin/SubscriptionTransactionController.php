@@ -34,7 +34,10 @@ class SubscriptionTransactionController extends Controller
                 \Illuminate\Support\Facades\Cache::put($throttleKey, true, 2);
                 $res = $dokuService->syncTransactionWithDoku($trx, $webhookService);
                 if ($res['is_paid'] && $trx->invoice_id) {
-                    Subscription::where('invoice_id', $trx->invoice_id)->update(['status' => 'active']);
+                    $sub = Subscription::where('invoice_id', $trx->invoice_id)->where('status', '!=', 'active')->first();
+                    if ($sub) {
+                        $sub->activateWithExtension();
+                    }
                 }
             }
         }
@@ -160,7 +163,7 @@ class SubscriptionTransactionController extends Controller
         if ($result['is_paid'] && $transaction->invoice_id) {
             $subscription = Subscription::where('invoice_id', $transaction->invoice_id)->first();
             if ($subscription && $subscription->status !== 'active') {
-                $subscription->update(['status' => 'active']);
+                $subscription->activateWithExtension();
             }
         }
 

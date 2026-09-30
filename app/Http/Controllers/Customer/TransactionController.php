@@ -22,8 +22,25 @@ class TransactionController extends Controller
         }
         $customer = $user->fresh()->customer;
 
-        // Auto-sync transaksi PENDING terbaru pelanggan ini langsung ke DOKU (Otomatis seperti admin monitoring)
+        // Auto-expire transaksi yang sudah lebih dari 1 jam atau kadaluarsa
         if ($customer) {
+            $overdueTransactions = Transaction::where('customer_id', $customer->id)
+                ->whereIn('status', ['PENDING', 'CREATED'])
+                ->where(function ($q) {
+                    $q->where('created_at', '<=', now()->subMinutes(60))
+                        ->orWhereHas('invoice', function ($iq) {
+                            $iq->where('expired_at', '<=', now())
+                               ->orWhere('created_at', '<=', now()->subMinutes(60));
+                        });
+                })
+                ->limit(20)
+                ->get();
+
+            foreach ($overdueTransactions as $trx) {
+                $trx->checkAndExpire();
+            }
+
+            // Auto-sync transaksi PENDING terbaru pelanggan ini langsung ke DOKU (Otomatis seperti admin monitoring)
             $pendingRecent = Transaction::where('customer_id', $customer->id)
                 ->where('status', 'PENDING')
                 ->where('created_at', '>=', now()->subHours(24))
@@ -80,6 +97,10 @@ class TransactionController extends Controller
         if (!$user->isAdmin() && (!$customer || $transaction->customer_id !== $customer->id)) {
             abort(403);
         }
+
+        // Cek dan kadaluarsakan jika transaksi sudah lebih dari 1 jam
+        $transaction->checkAndExpire();
+        $transaction->refresh();
 
         // Jika transaksi masih PENDING, sinkronkan otomatis ke server DOKU live
         if ($transaction->status === 'PENDING') {

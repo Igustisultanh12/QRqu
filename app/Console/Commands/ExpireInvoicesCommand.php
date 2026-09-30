@@ -18,7 +18,10 @@ class ExpireInvoicesCommand extends Command
     {
         $now = now();
         $expiredInvoices = Invoice::where('status', 'PENDING')
-            ->where('expired_at', '<=', $now)
+            ->where(function ($q) use ($now) {
+                $q->where('expired_at', '<=', $now)
+                    ->orWhere('created_at', '<=', $now->copy()->subMinutes(60));
+            })
             ->with(['latestTransaction', 'customer'])
             ->limit(100)
             ->get();
@@ -37,9 +40,13 @@ class ExpireInvoicesCommand extends Command
                 $invoice->update(['status' => 'EXPIRED']);
 
                 if ($invoice->latestTransaction) {
-                    $invoice->latestTransaction->transitionTo('EXPIRED', 'scheduler', 'Invoice expired by system scheduler');
+                    $invoice->latestTransaction->transitionTo('EXPIRED', 'scheduler', 'Transaksi kadaluarsa / dibatalkan otomatis oleh sistem (melebihi batas waktu 1 jam)');
                     $webhookService->dispatchPaymentEvent($invoice->latestTransaction->fresh(), 'payment.expired');
                 }
+
+                \App\Models\Subscription::where('invoice_id', $invoice->id)
+                    ->where('status', 'pending_payment')
+                    ->update(['status' => 'cancelled']);
 
                 Cache::put('payment_status_' . $invoice->id, 'EXPIRED', 300);
                 $count++;

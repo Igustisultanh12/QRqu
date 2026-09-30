@@ -37,7 +37,12 @@ class Customer extends Model
         return $this->hasOne(Subscription::class)
             ->whereIn('status', ['active', 'suspended'])
             ->where('expires_at', '>', now())
-            ->latestOfMany();
+            ->ofMany([
+                'id' => 'max',
+            ], function ($query) {
+                $query->whereIn('status', ['active', 'suspended'])
+                      ->where('expires_at', '>', now());
+            });
     }
 
     public function apiCredentials()

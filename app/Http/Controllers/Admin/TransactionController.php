@@ -17,6 +17,22 @@ class TransactionController extends Controller
 {
     public function index(Request $request, DokuService $dokuService, CustomerWebhookService $webhookService): Response
     {
+        // Auto-expire transaksi yang sudah lebih dari 1 jam atau kadaluarsa
+        $overdueTransactions = Transaction::whereIn('status', ['PENDING', 'CREATED'])
+            ->where(function ($q) {
+                $q->where('created_at', '<=', now()->subMinutes(60))
+                    ->orWhereHas('invoice', function ($iq) {
+                        $iq->where('expired_at', '<=', now())
+                           ->orWhere('created_at', '<=', now()->subMinutes(60));
+                    });
+            })
+            ->limit(20)
+            ->get();
+
+        foreach ($overdueTransactions as $trx) {
+            $trx->checkAndExpire();
+        }
+
         // Auto-sync transaksi PENDING terbaru langsung ke DOKU (Otomatis seperti admin monitoring)
         $pendingRecent = Transaction::where('status', 'PENDING')
             ->where('created_at', '>=', now()->subHours(24))
@@ -71,6 +87,10 @@ class TransactionController extends Controller
 
     public function show(Transaction $transaction, DokuService $dokuService, CustomerWebhookService $webhookService): Response
     {
+        // Cek dan kadaluarsakan jika transaksi sudah lebih dari 1 jam
+        $transaction->checkAndExpire();
+        $transaction->refresh();
+
         // Jika transaksi masih PENDING, sinkronkan otomatis ke server DOKU live
         if ($transaction->status === 'PENDING') {
             $dokuService->syncTransactionWithDoku($transaction, $webhookService);

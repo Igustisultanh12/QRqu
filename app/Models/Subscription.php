@@ -80,4 +80,67 @@ class Subscription extends Model
     {
         return $this->expires_at->isPast() && $this->isActive();
     }
+
+    /**
+     * Activate subscription with duration extension (stacking) if user already has an active subscription.
+     */
+    public function activateWithExtension(): bool
+    {
+        $customer = $this->customer;
+        $plan = $this->plan;
+
+        if (!$customer || !$plan) {
+            return false;
+        }
+
+        $currentActive = Subscription::where('customer_id', $this->customer_id)
+            ->where('id', '!=', $this->id)
+            ->whereIn('status', ['active', 'suspended'])
+            ->where('expires_at', '>', now())
+            ->latest('id')
+            ->first();
+        $startsAt = now();
+        $expiresAt = now()->addDays($plan->duration_days);
+        $isExtension = false;
+
+        // If customer already has an active subscription that has not expired yet, stack the duration
+        if ($currentActive && $currentActive->id !== $this->id && $currentActive->expires_at && $currentActive->expires_at->isFuture()) {
+            $expiresAt = $currentActive->expires_at->copy()->addDays($plan->duration_days);
+            $currentActive->update(['status' => 'completed']);
+            $isExtension = true;
+        }
+
+        $this->update([
+            'status' => 'active',
+            'starts_at' => $startsAt,
+            'expires_at' => $expiresAt,
+            'grace_period_days' => 3,
+            'auto_renew' => true,
+        ]);
+
+        SubscriptionHistory::create([
+            'subscription_id' => $this->id,
+            'customer_id' => $customer->id,
+            'plan_id' => $plan->id,
+            'event' => $isExtension ? 'upgraded' : 'created',
+            'note' => $isExtension
+                ? "Perpanjangan/Upgrade paket {$plan->name} (+{$plan->duration_days} hari). Masa aktif bertambah hingga " . $expiresAt->format('d/m/Y H:i')
+                : "Pembayaran QRIS lunas untuk paket {$plan->name} ({$plan->duration_days} hari)",
+            'amount_paid' => $this->invoice?->amount ?? ($plan->price ?? 0),
+        ]);
+
+        AuditLog::record('SUBSCRIBE_PLAN_PAID', $this, null, [
+            'plan' => $plan->name,
+            'amount' => $this->invoice?->amount ?? $plan->price,
+            'invoice_id' => $this->invoice_id,
+            'is_extension' => $isExtension,
+            'expires_at' => $expiresAt->toIso8601String(),
+        ]);
+
+        if ($customer->apiCredentials()->count() === 0) {
+            ApiCredential::generateCredentials($customer->id, 'sandbox', 'Sandbox Key');
+        }
+
+        return true;
+    }
 }

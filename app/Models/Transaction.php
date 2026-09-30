@@ -109,43 +109,7 @@ class Transaction extends Model
                     ->first();
 
                 if ($subscription) {
-                    $plan = $subscription->plan;
-                    $customer = $subscription->customer;
-                    $currentActive = $customer ? $customer->activeSubscription : null;
-
-                    $startsAt = now();
-                    $expiresAt = now()->addDays($plan->duration_days);
-
-                    if ($currentActive && $currentActive->id !== $subscription->id && $currentActive->expires_at->isFuture()) {
-                        $expiresAt = $currentActive->expires_at->copy()->addDays($plan->duration_days);
-                    }
-
-                    $subscription->update([
-                        'status' => 'active',
-                        'starts_at' => $startsAt,
-                        'expires_at' => $expiresAt,
-                        'grace_period_days' => 3,
-                        'auto_renew' => true,
-                    ]);
-
-                    SubscriptionHistory::create([
-                        'subscription_id' => $subscription->id,
-                        'customer_id' => $customer->id,
-                        'plan_id' => $plan->id,
-                        'event' => $currentActive ? 'upgraded' : 'created',
-                        'note' => "Pembayaran QRIS lunas untuk paket {$plan->name} ({$plan->duration_days} hari)",
-                        'amount_paid' => $this->amount,
-                    ]);
-
-                    AuditLog::record('SUBSCRIBE_PLAN_PAID', $subscription, null, [
-                        'plan' => $plan->name,
-                        'amount' => $this->amount,
-                        'invoice_id' => $this->invoice->id,
-                    ]);
-
-                    if ($customer && $customer->apiCredentials()->count() === 0) {
-                        ApiCredential::generateCredentials($customer->id, 'sandbox', 'Sandbox Key');
-                    }
+                    $subscription->activateWithExtension();
                 }
             }
         }
@@ -161,5 +125,43 @@ class Transaction extends Model
         ]);
 
         return true;
+    }
+
+    /**
+     * Check if transaction has exceeded 1 hour (60 minutes) or invoice expired_at, and transition to EXPIRED if so.
+     */
+    public function checkAndExpire(): bool
+    {
+        if (!in_array($this->status, ['CREATED', 'PENDING'])) {
+            return false;
+        }
+
+        $isOverdue = false;
+        if ($this->created_at && $this->created_at->diffInMinutes(now()) >= 60) {
+            $isOverdue = true;
+        } elseif ($this->invoice && $this->invoice->expired_at && $this->invoice->expired_at->isPast()) {
+            $isOverdue = true;
+        } elseif ($this->invoice && $this->invoice->created_at && $this->invoice->created_at->diffInMinutes(now()) >= 60) {
+            $isOverdue = true;
+        }
+
+        if ($isOverdue) {
+            $this->transitionTo('EXPIRED', 'system', 'Transaksi kadaluarsa / dibatalkan otomatis oleh sistem (melebihi batas waktu 1 jam)');
+
+            if ($this->invoice && $this->invoice->status !== 'EXPIRED') {
+                $this->invoice->update(['status' => 'EXPIRED']);
+            }
+
+            if ($this->invoice_id) {
+                Subscription::where('invoice_id', $this->invoice_id)
+                    ->where('status', 'pending_payment')
+                    ->update(['status' => 'cancelled']);
+                \Illuminate\Support\Facades\Cache::put('payment_status_' . $this->invoice_id, 'EXPIRED', 300);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }

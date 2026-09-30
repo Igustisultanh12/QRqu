@@ -24,6 +24,16 @@ class CheckoutController extends Controller
             ->orWhere('external_id', $invoiceId)
             ->firstOrFail();
 
+        if ($invoice->status === 'PENDING' && ($invoice->expired_at?->isPast() || ($invoice->created_at && $invoice->created_at->diffInMinutes(now()) >= 60))) {
+            $invoice->update(['status' => 'EXPIRED']);
+            if ($invoice->latestTransaction) {
+                $invoice->latestTransaction->checkAndExpire();
+            }
+            \App\Models\Subscription::where('invoice_id', $invoice->id)->where('status', 'pending_payment')->update(['status' => 'cancelled']);
+            Cache::put('payment_status_' . $invoice->id, 'EXPIRED', 300);
+            $invoice->refresh();
+        }
+
         $dokuUrl = $invoice->qr_url ?: $invoice->latestTransaction?->dokuTransaction?->doku_url;
         $hasExternalDokuUrl = !empty($dokuUrl)
             && !str_contains($dokuUrl, '/checkout/' . $invoice->id)
@@ -82,9 +92,16 @@ class CheckoutController extends Controller
         }
 
         // Check expiration
-        if ($invoice->status === 'PENDING' && $invoice->expired_at && $invoice->expired_at->isPast()) {
+        if ($invoice->status === 'PENDING' && ($invoice->expired_at?->isPast() || ($invoice->created_at && $invoice->created_at->diffInMinutes(now()) >= 60))) {
             $invoice->update(['status' => 'EXPIRED']);
+            if ($invoice->latestTransaction) {
+                $invoice->latestTransaction->checkAndExpire();
+            }
+            \App\Models\Subscription::where('invoice_id', $invoice->id)->where('status', 'pending_payment')->update(['status' => 'cancelled']);
             Cache::put('payment_status_' . $invoiceId, 'EXPIRED', 300);
+            if ($invoice->external_id) {
+                Cache::put('payment_status_' . $invoice->external_id, 'EXPIRED', 300);
+            }
         }
 
         // Active verify with DOKU (Mengikuti alur monitoring gateway yang otomatis deteksi lunas)

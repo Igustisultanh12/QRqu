@@ -574,6 +574,161 @@ class MonthlyReportAndSettingsTest extends TestCase
             ->where('transactions.data.0.external_id', 'API-MERCHANT-INV-01')
         );
     }
+
+    public function test_transaction_older_than_1_hour_auto_expires(): void
+    {
+        $invoice = Invoice::create([
+            'id' => 'INV-EXPIRE-TEST',
+            'customer_id' => $this->customer->id,
+            'external_id' => 'EXT-EXPIRE-01',
+            'amount' => 50000,
+            'status' => 'PENDING',
+            'expired_at' => now()->subMinutes(5),
+        ]);
+
+        $trx = Transaction::create([
+            'id' => 'TRX-EXPIRE-TEST',
+            'customer_id' => $this->customer->id,
+            'invoice_id' => $invoice->id,
+            'external_id' => 'EXT-EXPIRE-01',
+            'amount' => 50000,
+            'status' => 'PENDING',
+        ]);
+
+        \Illuminate\Support\Facades\DB::table('invoices')->where('id', $invoice->id)->update(['created_at' => now()->subMinutes(70)]);
+        \Illuminate\Support\Facades\DB::table('transactions')->where('id', $trx->id)->update(['created_at' => now()->subMinutes(70)]);
+        $trx->refresh();
+
+        $expired = $trx->checkAndExpire();
+        $this->assertTrue($expired);
+        $this->assertEquals('EXPIRED', $trx->fresh()->status);
+        $this->assertEquals('EXPIRED', $invoice->fresh()->status);
+
+        // Also test customer transaction show endpoint triggers checkAndExpire
+        $invoice2 = Invoice::create([
+            'id' => 'INV-EXPIRE-TEST-2',
+            'customer_id' => $this->customer->id,
+            'external_id' => 'EXT-EXPIRE-02',
+            'amount' => 75000,
+            'status' => 'PENDING',
+            'expired_at' => now()->addMinutes(10), // even if expired_at is in future, created_at > 60m
+        ]);
+
+        $trx2 = Transaction::create([
+            'id' => 'TRX-EXPIRE-TEST-2',
+            'customer_id' => $this->customer->id,
+            'invoice_id' => $invoice2->id,
+            'external_id' => 'EXT-EXPIRE-02',
+            'amount' => 75000,
+            'status' => 'PENDING',
+        ]);
+
+        \Illuminate\Support\Facades\DB::table('invoices')->where('id', $invoice2->id)->update(['created_at' => now()->subMinutes(65)]);
+        \Illuminate\Support\Facades\DB::table('transactions')->where('id', $trx2->id)->update(['created_at' => now()->subMinutes(65)]);
+        $trx2->refresh();
+
+        $response = $this->actingAs($this->merchantUser)
+            ->get("/transactions/{$trx2->id}");
+        $response->assertStatus(200);
+        $this->assertEquals('EXPIRED', $trx2->fresh()->status);
+    }
+
+    public function test_subscription_duration_stacks_when_subscribing_with_existing_active_subscription(): void
+    {
+        // Existing active subscription expiring in 10 days
+        $initialExpiresAt = now()->addDays(10);
+        $this->subscription->update([
+            'status' => 'active',
+            'starts_at' => now()->subDays(20),
+            'expires_at' => $initialExpiresAt,
+        ]);
+
+        // Customer subscribes to another 30-day plan
+        $newPlan = Plan::create([
+            'name' => 'Paket Pro (30 Hari)',
+            'slug' => 'pro-30d',
+            'duration_days' => 30,
+            'price' => 300000,
+            'transaction_limit' => 5000,
+            'api_limit' => 50000,
+            'rate_limit_rpm' => 120,
+            'features' => ['QRIS Dinamis', 'Webhooks Priority'],
+            'status' => 'active',
+        ]);
+
+        $newSubInvoice = Invoice::create([
+            'id' => 'INV-STACK-TEST',
+            'customer_id' => $this->customer->id,
+            'external_id' => 'SUB-' . $this->customer->id . '-' . $newPlan->id . '-999',
+            'amount' => 300000,
+            'status' => 'PENDING',
+            'expired_at' => now()->addHour(),
+        ]);
+
+        $newSub = Subscription::create([
+            'customer_id' => $this->customer->id,
+            'plan_id' => $newPlan->id,
+            'invoice_id' => $newSubInvoice->id,
+            'starts_at' => now(),
+            'expires_at' => now()->addDays(30),
+            'grace_period_days' => 3,
+            'status' => 'pending_payment',
+            'auto_renew' => true,
+        ]);
+
+        // Activate new subscription via activateWithExtension
+        $activated = $newSub->activateWithExtension();
+        $this->assertTrue($activated);
+
+        // Previous subscription should be completed
+        $this->assertEquals('completed', $this->subscription->fresh()->status);
+
+        // New subscription should be active and stacked by 30 days from initialExpiresAt
+        $freshNewSub = $newSub->fresh();
+        $this->assertEquals('active', $freshNewSub->status);
+        $expectedExpiry = $initialExpiresAt->copy()->addDays(30);
+
+        // Diff between expected and actual expires_at should be less than 5 seconds
+        $this->assertLessThan(5, abs($expectedExpiry->diffInSeconds($freshNewSub->expires_at)));
+        // Total remaining days should now be ~40 days (10 remaining + 30 new)
+        $this->assertGreaterThanOrEqual(39, $freshNewSub->remainingDays());
+    }
+
+    public function test_pending_subscription_cancelled_when_expired_via_command(): void
+    {
+        $invoice = Invoice::create([
+            'id' => 'INV-CMD-EXP',
+            'customer_id' => $this->customer->id,
+            'external_id' => 'SUB-CMD-01',
+            'amount' => 150000,
+            'status' => 'PENDING',
+            'expired_at' => now()->subMinute(),
+        ]);
+
+        $trx = Transaction::create([
+            'id' => 'TRX-CMD-EXP',
+            'customer_id' => $this->customer->id,
+            'invoice_id' => $invoice->id,
+            'external_id' => 'SUB-CMD-01',
+            'amount' => 150000,
+            'status' => 'PENDING',
+        ]);
+
+        $sub = Subscription::create([
+            'customer_id' => $this->customer->id,
+            'plan_id' => $this->plan->id,
+            'invoice_id' => $invoice->id,
+            'starts_at' => now(),
+            'expires_at' => now()->addDays(30),
+            'status' => 'pending_payment',
+        ]);
+
+        $this->artisan('qrqu:expire-invoices')->assertSuccessful();
+
+        $this->assertEquals('EXPIRED', $invoice->fresh()->status);
+        $this->assertEquals('EXPIRED', $trx->fresh()->status);
+        $this->assertEquals('cancelled', $sub->fresh()->status);
+    }
 }
 
 
